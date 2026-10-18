@@ -31,7 +31,10 @@
 					{/if}
 					<div class:divide-y={step.multi} class="divide-neutral-200 dark:divide-neutral-800">
 						{#each step.lines as line}
-							<div class="relative {step.multi ? 'py-1.5' : 'first:pt-1.5 last:pb-1.5'}">
+							<div
+								data-lang={line.lang}
+								class="relative {step.multi ? 'py-1.5' : 'first:pt-1.5 last:pb-1.5'}"
+							>
 								<span
 									class="absolute right-full mr-3 font-mono text-xs leading-[1.2rem] text-neutral-400 dark:text-neutral-500"
 									>{LABELS[line.lang] ?? line.lang}</span

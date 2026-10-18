@@ -18,8 +18,8 @@ export type Block =
 	| { kind: 'html'; html: string }
 	| {
 			kind: 'code';
-			output?: { label: string; html: string };
-			cols: { label: string; html: string }[];
+			output?: { label: string; html: string; lang?: string };
+			cols: { label: string; html: string; lang?: string }[];
 			steps?: Step[];
 	  };
 
@@ -62,13 +62,27 @@ function toHtml(code: string, lang: string): string {
 	});
 }
 
-function highlight(code: string, info: string, copy = true): { label: string; html: string } {
+const PICKABLE = ['python', 'rust', 'go'];
+
+// The language a column belongs to for the picker: the fence lang, or a label naming one (`sh Rust`).
+function pickLang(lang: string, label: string): string | undefined {
+	const byLabel = PICKABLE.find((l) => LABELS[l as Lang] === label);
+	return byLabel ?? (PICKABLE.includes(lang) ? lang : undefined);
+}
+
+function highlight(
+	code: string,
+	info: string,
+	copy = true
+): { label: string; html: string; lang?: string } {
 	const [lang, ...rest] = info.trim().split(/\s+/);
 	if (!LANGS.includes(lang as Lang)) throw new Error(`langs: unsupported fence language "${info}"`);
 	const html = toHtml(code, lang);
 	const button = copy ? '<button type="button" class="copy" aria-label="Copy">Copy</button>' : '';
+	const label = rest.join(' ') || LABELS[lang as Lang];
 	return {
-		label: rest.join(' ') || LABELS[lang as Lang],
+		label,
+		lang: pickLang(lang, label),
 		html: `<div class="snippet">${html}${button}</div>`
 	};
 }

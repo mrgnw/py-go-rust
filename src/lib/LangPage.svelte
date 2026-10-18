@@ -3,9 +3,14 @@
 
 	let { page }: { page: LangPage } = $props();
 	const toc = $derived(page.blocks.flatMap((b) => (b.kind === 'h2' ? [b] : [])));
+	const compares = $derived(
+		new Set(
+			page.blocks.flatMap((b) => (b.kind === 'code' ? b.cols.flatMap((c) => c.lang ?? []) : []))
+		).size > 1
+	);
 </script>
 
-<section class="langs pb-16">
+<section class="langs pb-16" data-compare={compares || undefined}>
 	<h1 class="mb-2 text-3xl font-bold">{page.title}</h1>
 	<div class="lg:grid lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-10">
 		<!-- ponytail: no active state; scroll-driven animations and :target-current are not Baseline yet (Firefox missing) -->
@@ -36,14 +41,12 @@
 						{@html block.html}
 					</div>
 				{:else if block.kind === 'code'}
-					<div
-						class="cols my-3 grid gap-3"
-						class:has-output={block.output}
-						style:--n={block.cols.length}
-					>
+					<div class="cols my-3 flex gap-3">
 						{#each block.output ? [block.output, ...block.cols] : block.cols as col}
 							<div
-								class="min-w-0 overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900"
+								data-lang={col.lang}
+								class:output={col === block.output}
+								class="col min-w-0 overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900"
 							>
 								<div
 									class="border-b border-neutral-200 px-3 py-1 font-mono text-xs text-neutral-500 dark:border-neutral-800 dark:text-neutral-400"
@@ -61,16 +64,19 @@
 </section>
 
 <style>
-	.cols {
-		grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+	.col {
+		flex: 1 1 0;
 	}
-	.cols.has-output {
-		grid-template-columns: fit-content(16rem) repeat(var(--n), minmax(0, 1fr));
+	.col.output {
+		flex: 0 1 auto;
+		max-width: 16rem;
 	}
 	@media (max-width: 56rem) {
-		.cols,
-		.cols.has-output {
-			grid-template-columns: 1fr;
+		.cols {
+			flex-direction: column;
+		}
+		.col.output {
+			max-width: none;
 		}
 	}
 	.langs :global(.prose code::before),

@@ -21,6 +21,16 @@ body {
 	@apply block;
 }
 
+html[data-hide~='python'] [data-lang='python'],
+html[data-hide~='rust'] [data-lang='rust'],
+html[data-hide~='go'] [data-lang='go'] {
+	display: none;
+}
+
+body:not(:has([data-compare])) .picker {
+	display: none;
+}
+
 @media print {
 	.copy {
 		display: none !important;
