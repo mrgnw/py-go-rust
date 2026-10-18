@@ -50,7 +50,11 @@ function highlight(code: string, info: string): { label: string; html: string } 
 		themes: { light: 'github-light', dark: 'github-dark' },
 		defaultColor: 'light-dark()'
 	});
-	return { label: rest.join(' ') || LABELS[lang as Lang], html };
+	const button = '<button type="button" class="copy" aria-label="Copy">Copy</button>';
+	return {
+		label: rest.join(' ') || LABELS[lang as Lang],
+		html: `<div class="snippet">${html}${button}</div>`
+	};
 }
 
 function toBlocks(md: string, slug: string): Block[] {

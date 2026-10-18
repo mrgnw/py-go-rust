@@ -8,3 +8,21 @@ html {
 body {
 	@apply bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100;
 }
+
+.snippet {
+	@apply relative;
+}
+
+.copy {
+	@apply absolute top-2 right-2 hidden cursor-pointer rounded px-2 py-0.5 text-xs text-neutral-500 opacity-40 transition-opacity hover:opacity-100 focus-visible:opacity-100 dark:text-neutral-400;
+}
+
+[data-copy] .copy {
+	@apply block;
+}
+
+@media print {
+	.copy {
+		display: none !important;
+	}
+}
