@@ -25,10 +25,10 @@ Renderer: `src/lib/content/langs.ts` parses the markdown with marked, highlights
 ## Next
 
 - [ ] Publish, later: content first. Until then `pnpm dev` locally and `wrangler versions upload` for a workers.dev preview. When ready, pick the domain, add a `custom_domain` route to `wrangler.jsonc`, `pnpm ship` from main.
-- [ ] Per-section pages (`/compare`, `/rust`, ...) if the single page gets too long. The data model already has one `LangPage` per file.
-- [ ] Table of contents that tracks scroll position (CSS scroll-driven or `scroll-marker` if Baseline allows; no JS framework state).
-- [ ] Copy button per snippet. Needs a few lines of JS; keep the page otherwise static.
-- [ ] A "Python → Rust → Go" quick index at the top of the compare section, or merge the mapping table at the end of the Python section into the overview.
+- [x] Per-section pages: `/`, `/compare`, `/python`, `/rust`, `/go` via `src/routes/[[slug]]`, nav in the layout.
+- [x] Sticky side table of contents from 64rem up. No active-section highlight: scroll-driven animations and `scroll-target-group` are not Baseline as of Oct 2026; revisit when they are.
+- [x] Copy button per snippet: one inline script in `+layout.svelte`, hidden when `navigator.clipboard` is missing.
+- [x] "Python → Rust → Go" index lives in the overview, every row linked to its compare section. Decorator, `with`, `uv` and `ruff` rows have no compare section yet.
 
 ## Ideas, not committed to
 
