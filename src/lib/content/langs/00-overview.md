@@ -2,7 +2,7 @@
 
 Python explores and glues. Go ships network services. Rust takes over when the machine's limits are the problem. Your starting split is close; the corrections are below.
 
-Snippets assume Python 3.14 + uv, Rust stable (2024 edition) + cargo, Go 1.25.
+Snippets assume Python 3.15 + uv, Rust stable (2024 edition) + cargo, Go 1.25.
 
 ## Rule of thumb
 

@@ -1,6 +1,6 @@
 # Side by side
 
-The same pattern in Python 3.14, Rust (2024 edition) and Go 1.25. Rust fragments run inside a `main` that returns `Result` (so `?` works); Go fragments run inside `main` or sit at top level, with the stdlib imports they use. Crates used: `serde`, `serde_json`, `reqwest`, `tokio`, `chrono`.
+The same pattern in Python 3.15, Rust (2024 edition) and Go 1.25. Rust fragments run inside a `main` that returns `Result` (so `?` works); Go fragments run inside `main` or sit at top level, with the stdlib imports they use. Crates used: `serde`, `serde_json`, `reqwest`, `tokio`, `chrono`.
 
 ## Print & string formatting
 
@@ -1404,7 +1404,7 @@ The manifest each command writes:
 [project]
 name = "hello"
 version = "0.1.0"
-requires-python = ">=3.14"
+requires-python = ">=3.15"
 dependencies = ["httpx>=0.28.1"]
 ```
 

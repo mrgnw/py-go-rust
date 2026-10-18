@@ -44,5 +44,5 @@ Renderer: `src/lib/content/langs.ts` parses the markdown with marked, highlights
 
 - Client JS only for features that need it. Pages stay prerendered; `csr = false` today, flips when the first interactive view (SPEC.md) lands.
 - Dark mode is CSS only (`color-scheme: light dark` + shiki `light-dark()`); don't add a toggle that needs state.
-- Snippets must be correct for Python 3.14 + uv, Rust stable 2024 edition, Go 1.25. Only comments that show output.
+- Snippets must be correct for Python 3.15 + uv, Rust stable 2024 edition, Go 1.25. Only comments that show output.
 - git: main-only. Ports 5237 (dev) and 5238 (preview).

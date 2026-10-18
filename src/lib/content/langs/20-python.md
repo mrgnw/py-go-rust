@@ -1,6 +1,6 @@
 # Python
 
-The Python you already know, tightened for 2026: Python 3.14, uv for everything, ruff for lint and format. Each section covers a feature where Rust or Go forces a different answer, so the contrast is the point.
+The Python you already know, tightened for 2026: Python 3.15, uv for everything, ruff for lint and format. Each section covers a feature where Rust or Go forces a different answer, so the contrast is the point.
 
 ## uv workflow
 
@@ -14,12 +14,12 @@ uv run main.py
 uv run pytest
 uv run ruff check --fix
 uv run ruff format
-uv python install 3.14
+uv python install 3.15
 ```
 
 ```python fetch.py
 # /// script
-# requires-python = '>=3.14'
+# requires-python = '>=3.15'
 # dependencies = ['httpx']
 # ///
 import httpx
@@ -278,7 +278,7 @@ asyncio.run(main())
 | blocking libs, file I/O   | threads (`asyncio.to_thread`, `ThreadPoolExecutor`) |
 | CPU-bound pure Python     | processes (`ProcessPoolExecutor`) or native code    |
 
-The GIL lets one thread run Python bytecode at a time, so threads do not speed up CPU work; 3.14 ships a supported free-threaded build (`uv python install 3.14t`) that removes it, at some single-thread cost and with extension-compatibility caveats. Use `async with asyncio.timeout(5):` for deadlines.
+The GIL lets one thread run Python bytecode at a time, so threads do not speed up CPU work; since 3.14 there is a supported free-threaded build (`uv python install 3.15t`) that removes it, at some single-thread cost and with extension-compatibility caveats. Use `async with asyncio.timeout(5):` for deadlines.
 
 ## concurrent.futures
 
@@ -402,7 +402,7 @@ app/
 [project]
 name = 'app'
 version = '0.1.0'
-requires-python = '>=3.14'
+requires-python = '>=3.15'
 dependencies = ['httpx>=0.28']
 
 [project.scripts]
