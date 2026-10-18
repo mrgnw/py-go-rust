@@ -19,6 +19,7 @@ The reader should be able to:
 | Python                     | `20-python.md`                         | written, reviewed, not executed                        |
 | Rust                       | `30-rust.md`                           | written, reviewed, not executed                        |
 | Go                         | `40-go.md`                             | written, reviewed, not executed                        |
+| Algorithms (13 patterns)   | `50-algorithms.md`                     | written, every snippet executed in all three languages |
 
 Renderer: `src/lib/content/langs.ts` parses the markdown with marked, highlights fences with shiki, and turns consecutive fences into columns. `src/routes/[[slug]]` renders one prerendered page per section. Content format rules are in CLAUDE.md.
 
@@ -31,11 +32,12 @@ Renderer: `src/lib/content/langs.ts` parses the markdown with marked, highlights
 - [x] "Python → Rust → Go" index lives in the overview, every row linked to its compare section. Decorator, `with`, `uv` and `ruff` rows have no compare section yet.
 - [x] Shared Output column: when every column of a row prints the same thing, the `# =>` comments are stripped and shown once, first.
 - [x] Compare sections for the four index rows that had none: decorator, `with`, `uv` / `cargo` / `go mod`, `ruff` / `clippy` / `go vet`. Code snippets executed, commands run once.
+- [x] Language picker: `py` / `rs` / `go` toggles in the nav hide a language's columns on any page that has more than one. Inline script plus `data-hide` on `<html>`, persisted in localStorage; no hydration.
 - [ ] Parts: compare at finer grain than a whole snippet, with the languages linked part by part. Design in SPEC.md, pivot prototype at `/lab`. Markers are comments (`# --`, `// --`), so authoring can land before the parser. Next step is markers on three sections, then the parser.
 
 ## Ideas, not committed to
 
-- Execute the Python, Rust and Go section snippets the way the compare section was (extract each fence, run it, diff the `# =>` comments against real output). Not needed while this is a reference sheet; reviewed snippets are enough.
+- Execute the Python, Rust and Go section snippets with `analysis/run_snippets.py` (used for compare and algorithms). Their Go fences omit `func main`, so the runner needs a wrap rule first.
 - Add more patterns to the compare section: string building, regex, logging, sleep/timers, process spawning, SQLite, Unicode handling, package publishing.
 - A fourth column toggle for TypeScript or Zig, if the reader list ever grows. The renderer already handles N columns.
 - Link each `##` to the relevant learnxinyminutes or official docs anchor.

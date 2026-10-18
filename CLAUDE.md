@@ -22,6 +22,12 @@ Sections live in `src/lib/content/langs/NN-name.md`, rendered in filename order.
 - If every column in a row has the same `=> ` outputs in the same order, the loader strips them and shows them once in a leading Output column. Split a row when one line's output differs.
 - Comment lines that are only dashes plus an optional label (`# --`, `// --- fallback`) are part markers (SPEC.md). The loader does not parse them yet and renders them as comments.
 
+Execute a content file's snippets and diff outputs against the `=>` comments:
+
+```sh
+uv run analysis/run_snippets.py src/lib/content/langs/50-algorithms.md
+```
+
 ## Shipping
 
 `pnpm ship` from a clean, pushed main.
