@@ -6,32 +6,32 @@ interface __BaseEnv_Env {
 }
 declare namespace Cloudflare {
 	interface GlobalProps {
-		mainModule: typeof import('./.svelte-kit/cloudflare/_worker');
+		mainModule: typeof import("./.svelte-kit/cloudflare/_worker");
 	}
 	interface Env extends __BaseEnv_Env {}
 }
 interface Env extends __BaseEnv_Env {}
-declare module '*.txt' {
+declare module "*.txt" {
 	const value: string;
 	export default value;
 }
-declare module '*.html' {
+declare module "*.html" {
 	const value: string;
 	export default value;
 }
-declare module '*.sql' {
+declare module "*.sql" {
 	const value: string;
 	export default value;
 }
-declare module '*.bin' {
+declare module "*.bin" {
 	const value: ArrayBuffer;
 	export default value;
 }
-declare module '*.wasm' {
+declare module "*.wasm" {
 	const value: WebAssembly.Module;
 	export default value;
 }
-declare module '*.wasm?module' {
+declare module "*.wasm?module" {
 	const value: WebAssembly.Module;
 	export default value;
 }
