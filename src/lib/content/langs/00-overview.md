@@ -75,10 +75,10 @@ The Python column is what you already write. Follow the link for side-by-side sn
 | `pytest`                        | `cargo test`                    | `go test`                          | [Tests](/compare#compare-tests)                                                   |
 | `datetime`                      | `chrono`, `jiff`                | `time`                             | [Dates & time](/compare#compare-dates-time)                                       |
 | `TypeVar`, `Generic`            | `<T: Trait>`                    | `[T any]`, constraints             | [Generics](/compare#compare-generics)                                             |
-| decorator                       | macro / trait wrapper           | higher-order function              |                                                                           |
-| `with`                          | `Drop` (RAII)                   | `defer`                            |                                                                           |
-| `uv` / `pyproject.toml`         | `cargo` / `Cargo.toml`          | `go mod` / `go.mod`                |                                                                           |
-| `ruff`                          | `clippy` + `rustfmt`            | `go vet` + `gofmt`                 |                                                                           |
+| decorator                       | macro / trait wrapper           | higher-order function              | [Decorators & wrappers](/compare#compare-decorators-wrappers)                     |
+| `with`                          | `Drop` (RAII)                   | `defer`                            | [with / Drop / defer](/compare#compare-with-drop-defer)                           |
+| `uv` / `pyproject.toml`         | `cargo` / `Cargo.toml`          | `go mod` / `go.mod`                | [Project & dependencies](/compare#compare-project-dependencies)                   |
+| `ruff`                          | `clippy` + `rustfmt`            | `go vet` + `gofmt`                 | [Format & lint](/compare#compare-format-lint)                                     |
 
 A Python function that returns `None` on failure is `Option<T>` in Rust but `(T, error)` in Go, because Go reports why it failed, not just that it did.
 

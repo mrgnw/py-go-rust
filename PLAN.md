@@ -15,7 +15,7 @@ The reader should be able to:
 | Section                    | File                                   | Status                                                 |
 | -------------------------- | -------------------------------------- | ------------------------------------------------------ |
 | When to pick each          | `src/lib/content/langs/00-overview.md` | written, reviewed                                      |
-| Side by side (33 patterns) | `10-compare.md`                        | written, every snippet executed in all three languages |
+| Side by side (37 patterns) | `10-compare.md`                        | written, every snippet executed in all three languages |
 | Python                     | `20-python.md`                         | written, reviewed, not executed                        |
 | Rust                       | `30-rust.md`                           | written, reviewed, not executed                        |
 | Go                         | `40-go.md`                             | written, reviewed, not executed                        |
@@ -30,7 +30,7 @@ Renderer: `src/lib/content/langs.ts` parses the markdown with marked, highlights
 - [x] Copy button per snippet: one inline script in `+layout.svelte`, hidden when `navigator.clipboard` is missing.
 - [x] "Python → Rust → Go" index lives in the overview, every row linked to its compare section. Decorator, `with`, `uv` and `ruff` rows have no compare section yet.
 - [x] Shared Output column: when every column of a row prints the same thing, the `# =>` comments are stripped and shown once, first.
-- [ ] Compare sections for the four index rows that have none: decorator, `with`, `uv` / `cargo` / `go mod`, `ruff` / `clippy` / `go vet`. Execute the two code ones like the rest of the compare page.
+- [x] Compare sections for the four index rows that had none: decorator, `with`, `uv` / `cargo` / `go mod`, `ruff` / `clippy` / `go vet`. Code snippets executed, commands run once.
 - [ ] Parts: compare at finer grain than a whole snippet, with the languages linked part by part. Design in SPEC.md, pivot prototype at `/lab`. Markers are comments (`# --`, `// --`), so authoring can land before the parser. Next step is markers on three sections, then the parser.
 
 ## Ideas, not committed to

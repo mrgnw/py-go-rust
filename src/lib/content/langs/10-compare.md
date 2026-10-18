@@ -1262,3 +1262,187 @@ func main() {
 ```
 
 Python's `[T]` is only a hint for type checkers. Rust and Go check the bound at compile time (`PartialOrd`, `cmp.Ordered`) and generate code per type.
+
+## Decorators & wrappers
+
+```python
+import functools
+
+def logged(fn):
+	@functools.wraps(fn)
+	def wrapper(*args):
+		result = fn(*args)
+		print(f'{fn.__name__}{args} = {result}')
+		return result
+	return wrapper
+
+@logged
+def add(a, b):
+	return a + b
+
+add(1, 2)  # => add(1, 2) = 3
+```
+
+```rust
+fn logged<F: Fn(i32, i32) -> i32>(name: &str, f: F) -> impl Fn(i32, i32) -> i32 {
+    let name = name.to_string();
+    move |a, b| {
+        let result = f(a, b);
+        println!("{name}({a}, {b}) = {result}");
+        result
+    }
+}
+
+fn add(a: i32, b: i32) -> i32 {
+    a + b
+}
+
+let add = logged("add", add);
+add(1, 2); // => add(1, 2) = 3
+```
+
+```go
+func logged(name string, f func(int, int) int) func(int, int) int {
+	return func(a, b int) int {
+		result := f(a, b)
+		fmt.Printf("%s(%d, %d) = %d\n", name, a, b, result)
+		return result
+	}
+}
+
+func add(a, b int) int { return a + b }
+
+func main() {
+	add := logged("add", add)
+	add(1, 2) // => add(1, 2) = 3
+}
+```
+
+`@logged` is sugar for `add = logged(add)`. Rust and Go have no sugar: pass the function in, get a closure back, and bind it under the same name. Rust attributes like `#[test]` and `#[tokio::main]` are macros, not decorators; they rewrite the item at compile time. Go middleware wraps `http.Handler` exactly this way.
+
+## with / Drop / defer
+
+```python
+class Resource:
+	def __enter__(self):
+		print('open')
+		return self
+	def __exit__(self, *exc):
+		print('close')
+
+with Resource():
+	print('use')
+```
+
+```rust
+struct Resource;
+
+impl Resource {
+    fn open() -> Self {
+        println!("open");
+        Resource
+    }
+}
+
+impl Drop for Resource {
+    fn drop(&mut self) {
+        println!("close");
+    }
+}
+
+{
+    let _r = Resource::open();
+    println!("use");
+}
+```
+
+```go
+type Resource struct{}
+
+func Open() *Resource {
+	fmt.Println("open")
+	return &Resource{}
+}
+
+func (r *Resource) Close() { fmt.Println("close") }
+
+func main() {
+	r := Open()
+	defer r.Close()
+	fmt.Println("use")
+}
+```
+
+All three print `open`, `use`, `close`. Python runs `__exit__` when the block ends, even on an exception. Rust runs `drop` when the owner goes out of scope, so there is nothing to forget; `let _r` keeps the value alive, `let _ =` drops it on the spot. Go's `defer` runs when the function returns, not when the block ends, so a loop that opens files should wrap its body in a function.
+
+## Project & dependencies
+
+```sh Python
+uv init hello && cd hello
+uv add httpx
+uv run main.py
+uv build
+```
+
+```sh Rust
+cargo new hello && cd hello
+cargo add reqwest --features blocking
+cargo run
+cargo build --release
+```
+
+```sh Go
+mkdir hello && cd hello && go mod init example.com/hello
+go get golang.org/x/sync
+go run .
+go build
+```
+
+The manifest each command writes:
+
+```toml pyproject.toml
+[project]
+name = "hello"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = ["httpx>=0.28.1"]
+```
+
+```toml Cargo.toml
+[package]
+name = "hello"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+reqwest = { version = "0.13.5", features = ["blocking"] }
+```
+
+```text go.mod
+module example.com/hello
+
+go 1.25
+
+require golang.org/x/sync v0.24.0
+```
+
+All three pin exact versions in a lockfile next to the manifest: `uv.lock`, `Cargo.lock`, `go.sum`. `uv run` syncs the environment before running, so there is no activate step. Cargo and Go fetch on build. Go imports a package by URL path, and `go mod tidy` adds and removes `require` lines to match the imports.
+
+## Format & lint
+
+```sh Python
+uvx ruff format
+uvx ruff check --fix
+```
+
+```sh Rust
+cargo fmt
+cargo clippy
+```
+
+```sh Go
+gofmt -w .
+go vet ./...
+```
+
+Formatting is settled in all three: `gofmt` has no options, `rustfmt` and `ruff format` have a few. `ruff check` replaces flake8, isort and most pylint rules and fixes what it can. `clippy` ships with the toolchain and is strict by default. `go vet` catches the bugs the compiler lets through; `staticcheck` or `golangci-lint` add the rest.
