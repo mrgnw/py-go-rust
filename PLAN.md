@@ -1,4 +1,4 @@
-# pygoru — plan
+# pygorst — plan
 
 ## Goal
 
