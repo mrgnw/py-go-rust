@@ -1,0 +1,10 @@
+#:schema https://pitchfork.jdx.dev/schema.json
+namespace = "pygorst"
+
+[daemons.pygorst]
+run = "exec pnpm dev"
+retry = true
+port = 5237
+ready_port = 5237
+boot_start = true
+env = { PATH = "~/Library/pnpm/bin:~/.local/share/fnm/aliases/default/bin:/usr/bin:/bin" }
