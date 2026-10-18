@@ -20,7 +20,7 @@ The reader should be able to:
 | Rust                       | `30-rust.md`                           | written, reviewed, not executed                        |
 | Go                         | `40-go.md`                             | written, reviewed, not executed                        |
 
-Renderer: `src/lib/content/langs.ts` parses the markdown with marked, highlights fences with shiki, and turns consecutive fences into columns. `src/routes/+page.svelte` renders everything on one prerendered page with no client JS. Content format rules are in CLAUDE.md.
+Renderer: `src/lib/content/langs.ts` parses the markdown with marked, highlights fences with shiki, and turns consecutive fences into columns. `src/routes/[[slug]]` renders one prerendered page per section. Content format rules are in CLAUDE.md.
 
 ## Next
 
@@ -29,6 +29,8 @@ Renderer: `src/lib/content/langs.ts` parses the markdown with marked, highlights
 - [x] Sticky side table of contents from 64rem up. No active-section highlight: scroll-driven animations and `scroll-target-group` are not Baseline as of Oct 2026; revisit when they are.
 - [x] Copy button per snippet: one inline script in `+layout.svelte`, hidden when `navigator.clipboard` is missing.
 - [x] "Python → Rust → Go" index lives in the overview, every row linked to its compare section. Decorator, `with`, `uv` and `ruff` rows have no compare section yet.
+- [x] Shared Output column: when every column of a row prints the same thing, the `# =>` comments are stripped and shown once, first.
+- [ ] Parts: compare at finer grain than a whole snippet, with the languages linked part by part. Design in SPEC.md, pivot prototype at `/lab`. Next step is authoring markers on three sections and building the parser.
 
 ## Ideas, not committed to
 
@@ -39,7 +41,7 @@ Renderer: `src/lib/content/langs.ts` parses the markdown with marked, highlights
 
 ## Constraints
 
-- No client JS unless a feature needs it; the page is `csr = false`.
+- Client JS only for features that need it. Pages stay prerendered; `csr = false` today, flips when the first interactive view (SPEC.md) lands.
 - Dark mode is CSS only (`color-scheme: light dark` + shiki `light-dark()`); don't add a toggle that needs state.
 - Snippets must be correct for Python 3.14 + uv, Rust stable 2024 edition, Go 1.25. Only comments that show output.
 - git: main-only. Ports 5237 (dev) and 5238 (preview).
