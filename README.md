@@ -1,4 +1,4 @@
-# langs
+# pygoru
 
 Python · Rust · Go, side by side. A cheatsheet for a Python developer learning Rust and Go: when to pick each, the same pattern in all three, then the concepts each language does differently.
 

@@ -1,4 +1,4 @@
-# langs
+# pygoru
 
 Python / Rust / Go side-by-side cheatsheet. Static SvelteKit site, prerendered, no client JS, hosted on Cloudflare Workers.
 
