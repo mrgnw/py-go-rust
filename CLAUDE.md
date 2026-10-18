@@ -20,7 +20,7 @@ Sections live in `src/lib/content/langs/NN-name.md`, rendered in filename order.
 - Fence info string is `lang` or `lang Label` (`python`, `sh Rust`, `toml Cargo.toml`). Allowed langs are the `LANGS` list in `src/lib/content/langs/index.ts`; anything else fails the build.
 - Python and Go snippets use tabs, Rust uses 4 spaces. Comments only to show output (`# => 3`).
 - If every column in a row has the same `=> ` outputs in the same order, the loader strips them and shows them once in a leading Output column. Split a row when one line's output differs.
-- `--` marker lines inside fences are reserved for parts (SPEC.md); the loader does not parse them yet.
+- Comment lines that are only dashes plus an optional label (`# --`, `// --- fallback`) are part markers (SPEC.md). The loader does not parse them yet and renders them as comments.
 
 ## Shipping
 

@@ -33,22 +33,24 @@ format changes; sections without markers behave exactly as today.
 ```python
 n = 15
 label = 'big' if n > 10 else 'small'
--- sign
+# -- sign
 if n < 0:
 	sign = '-'
----
+# ---
 elif n == 0:
 	sign = '0'
---- fallback
+# --- fallback
 else:
 	sign = '+'
---
+# --
 print(label, sign)  # => big +
 ```
 
-- `--` opens a depth-1 part, `--- ` a depth-2 part. Like markdown headings: a
-  marker closes open parts at its depth or deeper, then opens a new one. Text
-  before the first marker is the first part.
+- A marker is a comment line in the fence's language whose text is only dashes
+  and an optional label: `# --` in Python, `sh` and `toml`, `// --` in Rust and
+  Go. Two dashes open a depth-1 part, three a depth-2 part. Like markdown
+  headings: a marker closes open parts at its depth or deeper, then opens a
+  new one. Text before the first marker is the first part.
 - The label after the dashes is optional. Unnamed markers work; alignment never
   depends on names.
 - Alignment is positional: the k-th marker at a depth, under the same parent,
@@ -58,8 +60,11 @@ print(label, sign)  # => big +
 - A line with `# =>` / `// =>` output is its own leaf, labelled by its output,
   as the current loader already does. Markers add boundaries; they do not
   replace that rule.
-- Markers are stripped before highlighting. They are directives, not comments;
-  "comments only to show output" still holds.
+- Markers are stripped before highlighting. They are comments so every snippet
+  stays runnable, and the current loader renders them as plain comments until
+  the parser lands, so markers can be authored and committed section by
+  section ahead of step 2. "Comments only to show output" still holds for
+  everything that is not a marker.
 
 ## Build rules
 

@@ -30,7 +30,8 @@ Renderer: `src/lib/content/langs.ts` parses the markdown with marked, highlights
 - [x] Copy button per snippet: one inline script in `+layout.svelte`, hidden when `navigator.clipboard` is missing.
 - [x] "Python → Rust → Go" index lives in the overview, every row linked to its compare section. Decorator, `with`, `uv` and `ruff` rows have no compare section yet.
 - [x] Shared Output column: when every column of a row prints the same thing, the `# =>` comments are stripped and shown once, first.
-- [ ] Parts: compare at finer grain than a whole snippet, with the languages linked part by part. Design in SPEC.md, pivot prototype at `/lab`. Next step is authoring markers on three sections and building the parser.
+- [ ] Compare sections for the four index rows that have none: decorator, `with`, `uv` / `cargo` / `go mod`, `ruff` / `clippy` / `go vet`. Execute the two code ones like the rest of the compare page.
+- [ ] Parts: compare at finer grain than a whole snippet, with the languages linked part by part. Design in SPEC.md, pivot prototype at `/lab`. Markers are comments (`# --`, `// --`), so authoring can land before the parser. Next step is markers on three sections, then the parser.
 
 ## Ideas, not committed to
 
