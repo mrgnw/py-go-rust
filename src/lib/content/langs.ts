@@ -20,7 +20,15 @@ export type Block =
 			kind: 'code';
 			output?: { label: string; html: string };
 			cols: { label: string; html: string }[];
+			steps?: Step[];
 	  };
+
+// lab: the same row pivoted, one step per output with each language's line(s) stacked
+export interface Step {
+	output?: string;
+	multi: boolean;
+	lines: { lang: string; html: string }[];
+}
 
 export interface LangPage {
 	slug: string;
@@ -46,14 +54,18 @@ function slugify(text: string): string {
 		.replace(/^-|-$/g, '');
 }
 
-function highlight(code: string, info: string, copy = true): { label: string; html: string } {
-	const [lang, ...rest] = info.trim().split(/\s+/);
-	if (!LANGS.includes(lang as Lang)) throw new Error(`langs: unsupported fence language "${info}"`);
-	const html = highlighter.codeToHtml(code, {
+function toHtml(code: string, lang: string): string {
+	return highlighter.codeToHtml(code, {
 		lang,
 		themes: { light: 'github-light', dark: 'github-dark' },
 		defaultColor: 'light-dark()'
 	});
+}
+
+function highlight(code: string, info: string, copy = true): { label: string; html: string } {
+	const [lang, ...rest] = info.trim().split(/\s+/);
+	if (!LANGS.includes(lang as Lang)) throw new Error(`langs: unsupported fence language "${info}"`);
+	const html = toHtml(code, lang);
 	const button = copy ? '<button type="button" class="copy" aria-label="Copy">Copy</button>' : '';
 	return {
 		label: rest.join(' ') || LABELS[lang as Lang],
@@ -76,6 +88,7 @@ function codeRow(fences: { text: string; info: string }[]): Block {
 	return {
 		kind: 'code',
 		output: highlight(outputs[0].join('\n'), 'text Output', false),
+		steps: pivot(fences, outputs[0]),
 		cols: fences.map((f) =>
 			highlight(
 				f.text
@@ -86,6 +99,49 @@ function codeRow(fences: { text: string; info: string }[]): Block {
 			)
 		)
 	};
+}
+
+// Go's `func main() {` ... `}` wrapper is scaffolding; drop it so its body pivots like the rest.
+function unwrapMain(text: string, lang: string): string {
+	const lines = text.trimEnd().split('\n');
+	const start = lines.indexOf('func main() {');
+	if (lang !== 'go' || start < 0 || lines.at(-1) !== '}') return text;
+	const body = lines.slice(start + 1, -1).map((line) => line.replace(/^\t/, ''));
+	return [...lines.slice(0, start), ...body].join('\n');
+}
+
+// Split each fence at its output lines: lines leading up to output k form an
+// unlabelled step, the line that prints output k forms a step labelled with it.
+function pivot(fences: { text: string; info: string }[], outputs: string[]): Step[] {
+	const chunks = fences.map((f) => {
+		const lang = f.info.trim().split(/\s+/)[0];
+		const pre: string[][] = outputs.map(() => []);
+		const out: string[] = [];
+		let pending: string[] = [];
+		for (const line of unwrapMain(f.text, lang).split('\n')) {
+			if (OUTPUT.test(line)) {
+				pre[out.length] = pending;
+				out.push(line.replace(OUTPUT, '').trim());
+				pending = [];
+			} else if (line.trim() || pending.length) pending.push(line);
+		}
+		return { lang, pre, out, post: pending };
+	});
+	const step = (output: string | undefined, pick: (c: (typeof chunks)[number]) => string[]) => {
+		const lines = chunks.flatMap((c) => {
+			const code = pick(c).join('\n').trimEnd();
+			return code ? [{ lang: c.lang, html: toHtml(code, c.lang) }] : [];
+		});
+		const multi = chunks.some((c) => pick(c).join('\n').trim().includes('\n'));
+		return lines.length ? [{ output, multi, lines }] : [];
+	};
+	return [
+		...outputs.flatMap((output, k) => [
+			...step(undefined, (c) => c.pre[k]),
+			...step(output, (c) => [c.out[k]])
+		]),
+		...step(undefined, (c) => c.post)
+	];
 }
 
 function toBlocks(md: string, slug: string): Block[] {
