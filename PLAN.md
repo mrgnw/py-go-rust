@@ -25,7 +25,6 @@ Renderer: `src/lib/content/langs.ts` parses the markdown with marked, highlights
 ## Next
 
 - [ ] Publish, later: content first. Until then `pnpm dev` locally and `wrangler versions upload` for a workers.dev preview. When ready, pick the domain, add a `custom_domain` route to `wrangler.jsonc`, `pnpm ship` from main.
-- [ ] Execute the Python, Rust and Go section snippets the way the compare section was (extract each fence, run it, diff the `# =>` comments against real output). A script under `scripts/` that does this for all sections would keep the content honest as it changes.
 - [ ] Per-section pages (`/compare`, `/rust`, ...) if the single page gets too long. The data model already has one `LangPage` per file.
 - [ ] Table of contents that tracks scroll position (CSS scroll-driven or `scroll-marker` if Baseline allows; no JS framework state).
 - [ ] Copy button per snippet. Needs a few lines of JS; keep the page otherwise static.
@@ -33,6 +32,7 @@ Renderer: `src/lib/content/langs.ts` parses the markdown with marked, highlights
 
 ## Ideas, not committed to
 
+- Execute the Python, Rust and Go section snippets the way the compare section was (extract each fence, run it, diff the `# =>` comments against real output). Not needed while this is a reference sheet; reviewed snippets are enough.
 - Add more patterns to the compare section: string building, regex, logging, sleep/timers, process spawning, SQLite, Unicode handling, package publishing.
 - A fourth column toggle for TypeScript or Zig, if the reader list ever grows. The renderer already handles N columns.
 - Link each `##` to the relevant learnxinyminutes or official docs anchor.
