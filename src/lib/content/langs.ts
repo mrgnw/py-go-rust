@@ -81,7 +81,7 @@ function toBlocks(md: string, slug: string): Block[] {
 export const langPages: LangPage[] = Object.keys(sources)
 	.sort()
 	.map((path) => {
-		const slug = path.replace(/^\.\/\d+-|\.md$/g, '');
+		const slug = path.replace(/^\.\/langs\/\d+-|\.md$/g, '');
 		const blocks = toBlocks(sources[path], slug);
 		const h1 = blocks.find((b) => b.kind === 'h1');
 		if (!h1 || h1.kind !== 'h1') throw new Error(`langs: ${path} has no # title`);
