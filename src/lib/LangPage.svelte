@@ -36,8 +36,12 @@
 						{@html block.html}
 					</div>
 				{:else if block.kind === 'code'}
-					<div class="cols my-3 grid gap-3" style:--n={block.cols.length}>
-						{#each block.cols as col}
+					<div
+						class="cols my-3 grid gap-3"
+						class:has-output={block.output}
+						style:--n={block.cols.length}
+					>
+						{#each block.output ? [block.output, ...block.cols] : block.cols as col}
 							<div
 								class="min-w-0 overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900"
 							>
@@ -60,8 +64,12 @@
 	.cols {
 		grid-template-columns: repeat(var(--n), minmax(0, 1fr));
 	}
+	.cols.has-output {
+		grid-template-columns: fit-content(16rem) repeat(var(--n), minmax(0, 1fr));
+	}
 	@media (max-width: 56rem) {
-		.cols {
+		.cols,
+		.cols.has-output {
 			grid-template-columns: 1fr;
 		}
 	}

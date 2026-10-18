@@ -7,25 +7,34 @@ The same pattern in Python 3.14, Rust (2024 edition) and Go 1.25. Rust fragments
 ```python
 name, n = 'Ada', 3.14159
 print(f'{name} has {n:.2f}')  # => Ada has 3.14
-print(f'{n:>8.1f}|{42:05d}|{255:#x}')  # => 3.1|00042|0xff
-print(f'{name!r}')  # => 'Ada'
+print(f'{n:>8.1f}|{42:05d}|{255:#x}')  # =>      3.1|00042|0xff
 ```
 
 ```rust
 let (name, n) = ("Ada", 3.14159);
 println!("{name} has {n:.2}"); // => Ada has 3.14
-println!("{n:>8.1}|{:05}|{:#x}", 42, 255); // => 3.1|00042|0xff
-println!("{name:?}"); // => "Ada"
+println!("{n:>8.1}|{:05}|{:#x}", 42, 255); // =>      3.1|00042|0xff
 ```
 
 ```go
 name, n := "Ada", 3.14159
 fmt.Printf("%s has %.2f\n", name, n) // => Ada has 3.14
-fmt.Printf("%8.1f|%05d|%#x\n", n, 42, 255) // => 3.1|00042|0xff
-fmt.Printf("%q\n", name) // => "Ada"
+fmt.Printf("%8.1f|%05d|%#x\n", n, 42, 255) // =>      3.1|00042|0xff
 ```
 
 Go's `Println` and `Sprintf("%v")` print any value; Rust needs `{:?}` (Debug) for non-Display types.
+
+```python
+print(f'{name!r}')  # => 'Ada'
+```
+
+```rust
+println!("{name:?}"); // => "Ada"
+```
+
+```go
+fmt.Printf("%q\n", name) // => "Ada"
+```
 
 ## Variables & constants
 

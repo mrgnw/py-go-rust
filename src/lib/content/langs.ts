@@ -16,7 +16,11 @@ export type Block =
 	| { kind: 'h1'; title: string }
 	| { kind: 'h2'; id: string; title: string }
 	| { kind: 'html'; html: string }
-	| { kind: 'code'; cols: { label: string; html: string }[] };
+	| {
+			kind: 'code';
+			output?: { label: string; html: string };
+			cols: { label: string; html: string }[];
+	  };
 
 export interface LangPage {
 	slug: string;
@@ -42,7 +46,7 @@ function slugify(text: string): string {
 		.replace(/^-|-$/g, '');
 }
 
-function highlight(code: string, info: string): { label: string; html: string } {
+function highlight(code: string, info: string, copy = true): { label: string; html: string } {
 	const [lang, ...rest] = info.trim().split(/\s+/);
 	if (!LANGS.includes(lang as Lang)) throw new Error(`langs: unsupported fence language "${info}"`);
 	const html = highlighter.codeToHtml(code, {
@@ -50,27 +54,54 @@ function highlight(code: string, info: string): { label: string; html: string } 
 		themes: { light: 'github-light', dark: 'github-dark' },
 		defaultColor: 'light-dark()'
 	});
-	const button = '<button type="button" class="copy" aria-label="Copy">Copy</button>';
+	const button = copy ? '<button type="button" class="copy" aria-label="Copy">Copy</button>' : '';
 	return {
 		label: rest.join(' ') || LABELS[lang as Lang],
 		html: `<div class="snippet">${html}${button}</div>`
 	};
 }
 
+const OUTPUT = /[ \t]+(?:#|\/\/) => (.*)$/;
+
+// When every column prints the same thing, show it once in a leading Output column.
+function codeRow(fences: { text: string; info: string }[]): Block {
+	const outputs = fences.map((f) =>
+		f.text.split('\n').flatMap((line) => line.match(OUTPUT)?.[1] ?? [])
+	);
+	const shared =
+		fences.length > 1 &&
+		outputs[0].length > 0 &&
+		outputs.every((o) => o.join('\n') === outputs[0].join('\n'));
+	if (!shared) return { kind: 'code', cols: fences.map((f) => highlight(f.text, f.info)) };
+	return {
+		kind: 'code',
+		output: highlight(outputs[0].join('\n'), 'text Output', false),
+		cols: fences.map((f) =>
+			highlight(
+				f.text
+					.split('\n')
+					.map((line) => line.replace(OUTPUT, ''))
+					.join('\n'),
+				f.info
+			)
+		)
+	};
+}
+
 function toBlocks(md: string, slug: string): Block[] {
 	const blocks: Block[] = [];
-	let row: Block | null = null;
+	let fences: { text: string; info: string }[] = [];
+	const flush = () => {
+		if (fences.length) blocks.push(codeRow(fences));
+		fences = [];
+	};
 	for (const token of marked.lexer(md) as Token[]) {
 		if (token.type === 'space') continue;
 		if (token.type === 'code') {
-			if (row?.kind !== 'code') {
-				row = { kind: 'code', cols: [] };
-				blocks.push(row);
-			}
-			row.cols.push(highlight(token.text, token.lang ?? ''));
+			fences.push({ text: token.text, info: token.lang ?? '' });
 			continue;
 		}
-		row = null;
+		flush();
 		if (token.type === 'heading' && token.depth === 1) {
 			blocks.push({ kind: 'h1', title: token.text });
 		} else if (token.type === 'heading' && token.depth === 2) {
@@ -79,6 +110,7 @@ function toBlocks(md: string, slug: string): Block[] {
 			blocks.push({ kind: 'html', html: marked.parser([token]) });
 		}
 	}
+	flush();
 	return blocks;
 }
 
