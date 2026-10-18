@@ -35,6 +35,53 @@ Go and Rust overlap: both produce a single deployable binary. Go compiles in sec
 | Compile / iteration speed | Instant                                                           | Slow full builds; `cargo check` is fast                                                 | Seconds                                                             |
 | Learning curve            | Gentle                                                            | Steep: ownership, lifetimes, traits                                                     | Shallow: 25 keywords                                                |
 
+## Python → Rust → Go
+
+The Python column is what you already write. Follow the link for side-by-side snippets where they exist.
+
+| Python                          | Rust                            | Go                                 | Compare                                                                   |
+| ------------------------------- | ------------------------------- | ---------------------------------- | ------------------------------------------------------------------------- |
+| `print`, f-string               | `println!`, `format!`           | `fmt.Println`, `fmt.Sprintf`       | [Print & string formatting](#compare-print-string-formatting)             |
+| variable, `Final`               | `let`, `let mut`, `const`       | `:=`, `var`, `const`               | [Variables & constants](#compare-variables-constants)                     |
+| `int()`, `float()`, `str()`     | `parse()`, `as`, `From`         | `strconv`, type conversion         | [Basic types & conversion](#compare-basic-types-conversion)               |
+| `str`                           | `String`, `&str`                | `string` (bytes), `[]rune`         | [Strings](#compare-strings)                                               |
+| `list`                          | `Vec<T>`                        | slice `[]T`                        | [Lists / Vec / slices](#compare-lists-vec-slices)                         |
+| `dict`                          | `HashMap<K, V>`                 | `map[K]V`                          | [Dicts / HashMap / map](#compare-dicts-hashmap-map)                       |
+| `set`                           | `HashSet<T>`                    | `map[T]struct{}`                   | [Sets](#compare-sets)                                                     |
+| `tuple`                         | tuple / struct                  | struct, multiple returns           | [Tuples & destructuring](#compare-tuples-destructuring)                   |
+| `None`, `X \| None`             | `Option<T>`                     | `nil` / zero value                 | [None / Option / nil](#compare-none-option-nil)                           |
+| `if` / `elif`, `x if c else y`  | `if` expression, `match`        | `if`, `switch`                     | [If-else & ternary-ish](#compare-if-else-ternary-ish)                     |
+| `for`, `while`                  | `for`, `while`, `loop`          | `for` (one keyword)                | [Loops](#compare-loops)                                                   |
+| `def`, `return a, b`            | `fn`, tuple return              | `func`, multiple returns           | [Functions & multiple returns](#compare-functions-multiple-returns)       |
+| `lambda`, closure               | `\|x\| ...`                     | `func(x T) { ... }`                | [Closures / lambdas](#compare-closures-lambdas)                           |
+| `class`                         | `struct` + `impl`               | `struct` + methods                 | [Structs / classes & constructors](#compare-structs-classes-constructors) |
+| method, `self`                  | `impl` block, `&self`           | receiver `(s *T)`                  | [Methods](#compare-methods)                                               |
+| `@dataclass`                    | `#[derive(...)]` struct         | struct                             | [Structs / classes & constructors](#compare-structs-classes-constructors) |
+| `Protocol` / ABC                | `trait`                         | `interface`                        | [Interfaces / traits / Protocols](#compare-interfaces-traits-protocols)   |
+| `Enum`, `match`                 | `enum` + `match`                | `const` + `iota`, `switch`         | [Enums & match / switch](#compare-enums-match-switch)                     |
+| exception, `try/except`         | `Result<T, E>`, `?`             | `error` value, `if err != nil`     | [Error handling](#compare-error-handling)                                 |
+| generator, comprehension        | `Iterator`, iterator chain      | `for` loop, channel / closure      | [Iterators & comprehensions](#compare-iterators-comprehensions)           |
+| `sorted`, `list.sort`           | `sort_by`, `sort_by_key`        | `slices.SortFunc`, `sort.Slice`    | [Sorting](#compare-sorting)                                               |
+| mutable default, `copy`         | move, `.clone()`                | value copy, shared slices and maps | [Mutable vs immutable & copying](#compare-mutable-vs-immutable-copying)   |
+| `open`, `pathlib`               | `std::fs`                       | `os`, `bufio`                      | [File read & write](#compare-file-read-write)                             |
+| `json`, pydantic                | `serde_json`                    | `encoding/json`                    | [JSON encode/decode to a struct](#compare-json-encode-decode-to-a-struct) |
+| `httpx`, `requests`             | `reqwest`                       | `net/http`                         | [HTTP GET](#compare-http-get)                                             |
+| `asyncio`, `ThreadPoolExecutor` | `tokio`, `rayon`, `std::thread` | goroutines + `sync.WaitGroup`      | [Concurrency: run tasks in parallel](#compare-concurrency-run-tasks-in-parallel) |
+| `queue.Queue`, `asyncio.Queue`  | `mpsc` channel                  | channel                            | [Channels & queues](#compare-channels-queues)                             |
+| `threading.Lock`                | `Mutex<T>`, `Arc`               | `sync.Mutex`                       | [Shared state](#compare-shared-state)                                     |
+| `import`, packages              | `mod`, `use`, crates            | packages, `import`                 | [Modules & imports](#compare-modules-imports)                             |
+| `argparse`, `sys.argv`          | `clap`, `std::env::args`        | `flag`, `os.Args`                  | [CLI args](#compare-cli-args)                                             |
+| `os.environ`                    | `std::env::var`                 | `os.Getenv`                        | [Environment variables](#compare-environment-variables)                   |
+| `pytest`                        | `cargo test`                    | `go test`                          | [Tests](#compare-tests)                                                   |
+| `datetime`                      | `chrono`, `jiff`                | `time`                             | [Dates & time](#compare-dates-time)                                       |
+| `TypeVar`, `Generic`            | `<T: Trait>`                    | `[T any]`, constraints             | [Generics](#compare-generics)                                             |
+| decorator                       | macro / trait wrapper           | higher-order function              |                                                                           |
+| `with`                          | `Drop` (RAII)                   | `defer`                            |                                                                           |
+| `uv` / `pyproject.toml`         | `cargo` / `Cargo.toml`          | `go mod` / `go.mod`                |                                                                           |
+| `ruff`                          | `clippy` + `rustfmt`            | `go vet` + `gofmt`                 |                                                                           |
+
+A Python function that returns `None` on failure is `Option<T>` in Rust but `(T, error)` in Go, because Go reports why it failed, not just that it did.
+
 ## Toolchain
 
 Order in each column: install, new project, add dependency, run, test, format, lint.
