@@ -19,7 +19,7 @@ Sections live in `src/lib/content/langs/NN-name.md`, rendered in filename order.
 - Consecutive fenced code blocks render as side-by-side columns; a single fence is full width.
 - Fence info string is `lang` or `lang Label` (`python`, `sh Rust`, `toml Cargo.toml`). Allowed langs are the `LANGS` list in `src/lib/content/langs/index.ts`; anything else fails the build.
 - Python and Go snippets use tabs, Rust uses 4 spaces. Comments only to show output (`# => 3`).
-- If every column in a row has the same `=> ` outputs in the same order, the loader strips them and shows them once in a leading Output column. Split a row when one line's output differs.
+- `=> ` outputs never render as comments. If every column in a row prints the same lines in the same order, they show once in an Output strip above the row; otherwise each column shows its own outputs in a strip under its label. Split a row when one line's output differs and the shared strip matters.
 - Comment lines that are only dashes plus an optional label (`# --`, `// --- fallback`) are part markers (SPEC.md). The loader does not parse them yet and renders them as comments.
 
 Execute a content file's snippets and diff outputs against the `=>` comments:

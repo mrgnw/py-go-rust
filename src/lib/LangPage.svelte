@@ -41,21 +41,31 @@
 						{@html block.html}
 					</div>
 				{:else if block.kind === 'code'}
-					<div class="cols my-3 flex gap-3">
-						{#each block.output ? [block.output, ...block.cols] : block.cols as col}
+					<div class="my-3 flex flex-col gap-2">
+						{#if block.output}
 							<div
-								data-lang={col.lang}
-								class:output={col === block.output}
-								class="col min-w-0 overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900"
+								class="out rounded-lg border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900"
 							>
-								<div
-									class="border-b border-neutral-200 px-3 py-1 font-mono text-xs text-neutral-500 dark:border-neutral-800 dark:text-neutral-400"
-								>
-									{col.label}
-								</div>
-								{@html col.html}
+								{@render label(block.output.label)}
+								{@html block.output.html}
 							</div>
-						{/each}
+						{/if}
+						<div class="cols flex gap-3">
+							{#each block.cols as col}
+								<div
+									data-lang={col.lang}
+									class="col min-w-0 overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900"
+								>
+									{@render label(col.label)}
+									{#if col.output}
+										<div class="out border-b border-neutral-200 dark:border-neutral-800">
+											{@html col.output.html}
+										</div>
+									{/if}
+									{@html col.html}
+								</div>
+							{/each}
+						</div>
 					</div>
 				{/if}
 			{/each}
@@ -63,21 +73,26 @@
 	</div>
 </section>
 
+{#snippet label(text: string)}
+	<div
+		class="border-b border-neutral-200 px-3 py-1 font-mono text-xs text-neutral-500 dark:border-neutral-800 dark:text-neutral-400"
+	>
+		{text}
+	</div>
+{/snippet}
+
 <style>
 	.col {
 		flex: 1 1 0;
-	}
-	.col.output {
-		flex: 0 1 auto;
-		max-width: 16rem;
 	}
 	@media (max-width: 56rem) {
 		.cols {
 			flex-direction: column;
 		}
-		.col.output {
-			max-width: none;
-		}
+	}
+	.langs :global(.out pre.shiki) {
+		padding: 0.5rem 0.75rem;
+		font-weight: 600;
 	}
 	.langs :global(.prose code::before),
 	.langs :global(.prose code::after) {

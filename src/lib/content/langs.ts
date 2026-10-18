@@ -18,10 +18,18 @@ export type Block =
 	| { kind: 'html'; html: string }
 	| {
 			kind: 'code';
-			output?: { label: string; html: string; lang?: string };
-			cols: { label: string; html: string; lang?: string }[];
+			output?: Col;
+			cols: Col[];
 			steps?: Step[];
 	  };
+
+// output: when every column prints the same, the row carries it; otherwise each column carries its own
+export interface Col {
+	label: string;
+	html: string;
+	lang?: string;
+	output?: Col;
+}
 
 // lab: the same row pivoted, one step per output with each language's line(s) stacked
 export interface Step {
@@ -70,11 +78,7 @@ function pickLang(lang: string, label: string): string | undefined {
 	return byLabel ?? (PICKABLE.includes(lang) ? lang : undefined);
 }
 
-function highlight(
-	code: string,
-	info: string,
-	copy = true
-): { label: string; html: string; lang?: string } {
+function highlight(code: string, info: string, copy = true): Col {
 	const [lang, ...rest] = info.trim().split(/\s+/);
 	if (!LANGS.includes(lang as Lang)) throw new Error(`langs: unsupported fence language "${info}"`);
 	const html = toHtml(code, lang);
@@ -98,19 +102,26 @@ function codeRow(fences: { text: string; info: string }[]): Block {
 		fences.length > 1 &&
 		outputs[0].length > 0 &&
 		outputs.every((o) => o.join('\n') === outputs[0].join('\n'));
-	if (!shared) return { kind: 'code', cols: fences.map((f) => highlight(f.text, f.info)) };
+	const strip = (text: string) =>
+		text
+			.split('\n')
+			.map((line) => line.replace(OUTPUT, ''))
+			.join('\n');
+	const outputCol = (lines: string[]) => highlight(lines.join('\n'), 'text Output', false);
+	if (shared) {
+		return {
+			kind: 'code',
+			output: outputCol(outputs[0]),
+			steps: pivot(fences, outputs[0]),
+			cols: fences.map((f) => highlight(strip(f.text), f.info))
+		};
+	}
 	return {
 		kind: 'code',
-		output: highlight(outputs[0].join('\n'), 'text Output', false),
-		steps: pivot(fences, outputs[0]),
-		cols: fences.map((f) =>
-			highlight(
-				f.text
-					.split('\n')
-					.map((line) => line.replace(OUTPUT, ''))
-					.join('\n'),
-				f.info
-			)
+		cols: fences.map((f, i) =>
+			outputs[i].length
+				? { ...highlight(strip(f.text), f.info), output: outputCol(outputs[i]) }
+				: highlight(f.text, f.info)
 		)
 	};
 }
