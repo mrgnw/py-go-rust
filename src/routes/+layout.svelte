@@ -38,7 +38,11 @@
 	const saved = (localStorage.getItem('order') ?? '').split(' ');
 	showOrder(saved.length === LANGS.length && LANGS.every((lang) => saved.includes(lang)) ? saved : LANGS);
 	const currentOrder = () => html.dataset.order.split(' ');
-	const saveOrder = () => localStorage.setItem('order', html.dataset.order);
+	const place = (lang, slot) => {
+		const order = currentOrder().filter((l) => l !== lang);
+		order.splice(slot, 0, lang);
+		showOrder(order);
+	};
 	const sortChips = () => {
 		const picker = document.querySelector('.picker');
 		const order = currentOrder();
@@ -46,15 +50,15 @@
 		picker.append(...[...picker.children].sort((a, b) => order.indexOf(a.dataset.pick) - order.indexOf(b.dataset.pick)));
 		focused.focus();
 	};
-	const moveLang = (lang, step) => {
-		const order = currentOrder();
-		const to = order.indexOf(lang) + step;
-		if (to < 0 || to >= order.length) return;
-		order.splice(order.indexOf(lang), 1);
-		order.splice(to, 0, lang);
-		showOrder(order);
-		saveOrder();
+	const saveOrder = () => {
+		localStorage.setItem('order', html.dataset.order);
 		sortChips();
+	};
+	const moveLang = (lang, step) => {
+		const to = currentOrder().indexOf(lang) + step;
+		if (to < 0 || to >= LANGS.length) return;
+		place(lang, to);
+		saveOrder();
 	};
 	const syncSidebar = () => {
 		const toggle = document.querySelector('[data-sidebar-toggle]');
@@ -251,11 +255,7 @@
 			drag.chip.setPointerCapture(event.pointerId);
 			drag.chip.setAttribute('data-dragging', '');
 		}
-		const lang = drag.chip.dataset.pick;
-		const slot = Math.max(0, drag.slots.findLastIndex((rect) => event.clientX >= rect.left));
-		const order = currentOrder().filter((l) => l !== lang);
-		order.splice(slot, 0, lang);
-		showOrder(order);
+		place(drag.chip.dataset.pick, Math.max(0, drag.slots.findLastIndex((rect) => event.clientX >= rect.left)));
 		drag.chip.style.transform = '';
 		drag.chip.style.transform = 'translateX(' + (event.clientX - drag.grab - drag.chip.getBoundingClientRect().left) + 'px)';
 	});
@@ -268,7 +268,6 @@
 		chip.removeAttribute('data-dragging');
 		dragged = event.type === 'pointerup';
 		saveOrder();
-		sortChips();
 	};
 	document.addEventListener('pointerup', endDrag);
 	document.addEventListener('pointercancel', endDrag);
