@@ -161,10 +161,12 @@
 		>
 			{#if linked}
 				<div
-					class="tools flex flex-wrap items-start justify-end gap-x-2 pr-2 pl-1 font-mono text-[0.7rem] leading-[1.2rem] select-none"
+					class="tools flex items-start justify-end gap-x-2 pr-2 pl-1 font-mono text-[0.7rem] leading-[1.2rem] whitespace-nowrap select-none"
 				>
 					{#if part.label}
-						<span class="text-neutral-400 dark:text-neutral-500">{part.label}</span>
+						<span class="max-w-40 truncate text-neutral-400 dark:text-neutral-500"
+							>{part.label}</span
+						>
 					{/if}
 					<button type="button" class="copy-part" aria-label="Copy part">Copy</button>
 					{#if part.parts.length}
@@ -268,7 +270,7 @@
 		scroll-margin-block: 4rem;
 		--tools: hidden;
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-columns: minmax(0, 1fr) 0;
 		font-size: 0.8rem;
 		line-height: 1.5;
 		padding-top: calc(var(--pad-top, 0) * 1lh);
@@ -280,11 +282,12 @@
 	.tools {
 		grid-column: 2;
 		grid-row: 1;
-		max-width: 10rem;
+		justify-self: end;
 		visibility: var(--tools);
 	}
-	.tools ~ :global(pre.shiki) {
-		padding-right: 0;
+	.part:global([data-lit]),
+	.part:has(> .tools:focus-within) {
+		grid-template-columns: minmax(0, 1fr) auto;
 	}
 	.tools :global(.copy-part) {
 		padding-block: 0;
