@@ -1,5 +1,6 @@
 <script lang="ts">
-	import type { LangPage, Part } from './content/langs';
+	import type { Col, LangPage, Part } from './content/langs';
+	import Pivot from './Pivot.svelte';
 
 	let { page }: { page: LangPage } = $props();
 	const grouped = $derived(page.blocks.some((b) => b.kind === 'group'));
@@ -84,28 +85,26 @@
 						{@html block.html}
 					</div>
 				{:else if block.kind === 'code'}
+					{@const linked =
+						block.cols[0].parts.length > 1 || block.cols[0].parts[0].parts.length > 0}
 					<div
-						class="my-3 overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900"
+						class="row my-3 overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900"
 					>
-						<div class="cols">
-							{#each block.cols as col}
+						{@render columns(block.cols, (col) => col.parts, linked, true, true)}
+						{#each block.cols[0].parts.filter((part) => part.parts.length) as group (group.path)}
+							{@const k = Number(group.path)}
+							<div data-split={group.path} hidden>
+								{@render columns(block.cols, (col) => col.parts.slice(0, k), true, true, false)}
 								<div
-									data-lang={col.lang}
-									class="col min-w-0 border-neutral-200 dark:border-neutral-800"
+									data-collapse
+									class="relative border-y border-neutral-200 pt-6 pr-3 pb-3 pl-2 dark:border-neutral-800"
 								>
-									{@render label(col.label)}
-									<div class="snippet">
-										{@render parts(
-											col.parts,
-											col.parts.length > 1 || col.parts[0].parts.length > 0
-										)}
-									</div>
-									{#if col.output}
-										{@render output(col.output)}
-									{/if}
+									{@render toggle(true)}
+									<Pivot cols={block.cols} lists={block.cols.map((col) => col.parts[k].parts)} />
 								</div>
-							{/each}
-						</div>
+								{@render columns(block.cols, (col) => col.parts.slice(k + 1), true, false, true)}
+							</div>
+						{/each}
 					</div>
 				{/if}
 			{/each}
@@ -113,11 +112,50 @@
 	</div>
 </section>
 
+{#snippet columns(
+	cols: Col[],
+	pick: (col: Col) => Part[],
+	linked: boolean,
+	head: boolean,
+	foot: boolean
+)}
+	<div class="cols">
+		{#each cols as col}
+			<div data-lang={col.lang} class="col min-w-0 border-neutral-200 dark:border-neutral-800">
+				{#if head}
+					{@render label(col.label, foot)}
+				{/if}
+				{#if pick(col).length}
+					<div class="snippet">
+						{@render parts(pick(col), linked)}
+					</div>
+				{/if}
+				{#if foot && col.output}
+					{@render output(col.output)}
+				{/if}
+			</div>
+		{/each}
+	</div>
+{/snippet}
+
+{#snippet toggle(expanded: boolean)}
+	<button
+		type="button"
+		data-toggle
+		aria-expanded={expanded}
+		class="toggle absolute right-3 z-10 cursor-pointer {expanded
+			? 'top-1'
+			: 'bottom-0'} rounded px-1.5 font-mono text-[0.7rem] leading-[1.2rem] text-neutral-500 dark:text-neutral-400"
+		>{expanded ? 'columns' : 'pivot'}</button
+	>
+{/snippet}
+
 {#snippet parts(list: Part[], linked: boolean)}
 	{#each list as part (part.path)}
 		<div
 			class="part"
 			data-part={linked ? part.path : undefined}
+			data-group={part.parts.length ? part.path : undefined}
 			style:--pad-top={part.pad[0] || undefined}
 			style:--pad-bottom={part.pad[1] || undefined}
 		>
@@ -132,6 +170,7 @@
 				</div>
 			{/if}
 			{#if part.parts.length}
+				{@render toggle(false)}
 				{@render parts(part.parts, true)}
 			{:else}
 				{@html part.html}
@@ -151,12 +190,14 @@
 	</div>
 {/snippet}
 
-{#snippet label(text: string)}
+{#snippet label(text: string, copy: boolean)}
 	<div
 		class="flex items-center justify-between border-b border-neutral-200 px-3 py-1 font-mono text-xs text-neutral-500 dark:border-neutral-800 dark:text-neutral-400"
 	>
 		{text}
-		<button type="button" class="copy" aria-label="Copy {text}">Copy</button>
+		{#if copy}
+			<button type="button" class="copy" aria-label="Copy {text}">Copy</button>
+		{/if}
 	</div>
 {/snippet}
 
@@ -234,6 +275,17 @@
 	}
 	.part .part > .tools {
 		right: 7.75rem;
+	}
+	.part[data-group],
+	[data-collapse] {
+		cursor: pointer;
+	}
+	.part > .toggle {
+		opacity: 0;
+	}
+	.part:global([data-lit]) > .toggle,
+	.toggle:focus {
+		opacity: 1;
 	}
 	.langs .part :global(pre.shiki) {
 		padding-top: 0;

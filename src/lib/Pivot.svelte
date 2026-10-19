@@ -58,7 +58,7 @@
 </div>
 
 <style>
-	.pivot :global(pre.shiki),
+	.pivot .lines :global(pre.shiki),
 	.out {
 		margin: 0;
 		padding: 0 0.75rem;

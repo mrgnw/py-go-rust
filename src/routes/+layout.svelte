@@ -199,6 +199,19 @@
 		keys[event.key]();
 	};
 	document.addEventListener('click', (event) => {
+		const button = event.target.closest('button');
+		if ((button && !button.matches('[data-toggle]')) || !getSelection().isCollapsed) return;
+		const view = event.target.closest('[data-group], [data-collapse]');
+		if (!view) return;
+		const row = view.closest('.row');
+		const path = view.dataset.group ?? view.parentElement.dataset.split;
+		const open = view.dataset.group !== undefined;
+		for (const child of row.children) child.hidden = open ? child.dataset.split !== path : child.dataset.split !== undefined;
+		hovered = null;
+		const shown = open ? row.querySelector('[data-split="' + path + '"] [data-toggle]') : [...row.querySelectorAll('[data-group="' + path + '"] > [data-toggle]')].find((b) => b.checkVisibility());
+		if (event.detail === 0) shown?.focus();
+	});
+	document.addEventListener('click', (event) => {
 		const button = event.target.closest('[data-pick]');
 		if (button) toggleLang(button.dataset.pick);
 		if (event.target.closest('[data-sidebar-toggle]')) toggleSidebar();
