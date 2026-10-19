@@ -9,12 +9,31 @@ body {
 	@apply bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100;
 }
 
-.copy {
+.copy,
+.copy-line {
 	@apply hidden cursor-pointer rounded px-2 py-0.5 font-mono text-xs text-neutral-500 opacity-40 transition-opacity hover:opacity-100 focus-visible:opacity-100 dark:text-neutral-400;
 }
 
 [data-copy] .copy {
 	@apply block;
+}
+
+[data-copy] .copy-line {
+	@apply ml-3 inline-block opacity-0 select-none;
+}
+
+[data-copy] .line:hover .copy-line,
+[data-copy] .copy-line:focus-visible,
+[data-copy] .copy-line[data-copied] {
+	@apply opacity-100;
+}
+
+.copy-line::after {
+	content: 'Copy';
+}
+
+.copy-line[data-copied]::after {
+	content: 'Copied';
 }
 
 html[data-hide~='python'] [data-lang='python'],
@@ -28,7 +47,8 @@ body:not(:has([data-compare])) .picker {
 }
 
 @media print {
-	.copy {
+	.copy,
+	.copy-line {
 		display: none !important;
 	}
 }

@@ -47,6 +47,12 @@
 		syncPicker();
 	});
 	document.addEventListener('click', async (event) => {
+		const line = event.target.closest('.copy-line');
+		if (line) {
+			await navigator.clipboard.writeText(line.parentElement.textContent);
+			line.dataset.copied = '';
+			return setTimeout(() => delete line.dataset.copied, 1500);
+		}
 		const button = event.target.closest('.copy');
 		if (!button) return;
 		await navigator.clipboard.writeText(button.closest('.col').querySelector('pre').textContent);

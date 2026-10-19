@@ -1,5 +1,5 @@
 import { marked, type Token } from 'marked';
-import { createHighlighter } from 'shiki';
+import { createHighlighter, type ShikiTransformer } from 'shiki';
 
 const LANGS = ['python', 'rust', 'go', 'sh', 'toml', 'text'] as const;
 type Lang = (typeof LANGS)[number];
@@ -63,11 +63,24 @@ function slugify(text: string): string {
 		.replace(/^-|-$/g, '');
 }
 
+const lineCopy: ShikiTransformer = {
+	line(line) {
+		if (!line.children.length) return;
+		line.children.push({
+			type: 'element',
+			tagName: 'button',
+			properties: { type: 'button', class: 'copy-line', ariaLabel: 'Copy line' },
+			children: []
+		});
+	}
+};
+
 function toHtml(code: string, lang: string): string {
 	return highlighter.codeToHtml(code, {
 		lang,
 		themes: { light: 'github-light', dark: 'github-dark' },
-		defaultColor: 'light-dark()'
+		defaultColor: 'light-dark()',
+		transformers: lang === 'sh' ? [lineCopy] : []
 	});
 }
 
