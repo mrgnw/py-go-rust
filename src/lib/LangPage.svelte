@@ -193,6 +193,7 @@
 	}
 	.part {
 		position: relative;
+		scroll-margin-block: 4rem;
 		--caption: none;
 		font-size: 0.8rem;
 		line-height: 1.5;
@@ -206,14 +207,14 @@
 		padding-top: 0;
 		padding-bottom: 0;
 	}
-	.cols:has([data-part='0']:hover) [data-part='0'],
-	.cols:has([data-part='1']:hover) [data-part='1'],
-	.cols:has([data-part='2']:hover) [data-part='2'],
-	.cols:has([data-part='3']:hover) [data-part='3'],
-	.cols:has([data-part='4']:hover) [data-part='4'],
-	.cols:has([data-part='5']:hover) [data-part='5'],
-	.cols:has([data-part='6']:hover) [data-part='6'],
-	.cols:has([data-part='7']:hover) [data-part='7'] {
+	.cols:is(:has([data-part='0']:hover), :global([data-part-active='0'])) [data-part='0'],
+	.cols:is(:has([data-part='1']:hover), :global([data-part-active='1'])) [data-part='1'],
+	.cols:is(:has([data-part='2']:hover), :global([data-part-active='2'])) [data-part='2'],
+	.cols:is(:has([data-part='3']:hover), :global([data-part-active='3'])) [data-part='3'],
+	.cols:is(:has([data-part='4']:hover), :global([data-part-active='4'])) [data-part='4'],
+	.cols:is(:has([data-part='5']:hover), :global([data-part-active='5'])) [data-part='5'],
+	.cols:is(:has([data-part='6']:hover), :global([data-part-active='6'])) [data-part='6'],
+	.cols:is(:has([data-part='7']:hover), :global([data-part-active='7'])) [data-part='7'] {
 		--caption: block;
 		background: light-dark(
 			color-mix(in oklab, var(--color-amber-200) 35%, transparent),

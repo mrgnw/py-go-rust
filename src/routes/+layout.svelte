@@ -17,6 +17,7 @@
 		['1 2 3', 'Toggle Python / Rust / Go'],
 		['j k', 'Next / previous section'],
 		['n p', 'Next / previous code row'],
+		['. ,', 'Next / previous part (Esc clears)'],
 		['?', 'This list']
 	];
 
@@ -134,6 +135,24 @@
 		const top = (r) => r.getBoundingClientRect().top;
 		(step > 0 ? rows.find((r) => top(r) > 60) : rows.findLast((r) => top(r) < 52))?.scrollIntoView({ block: 'start' });
 	};
+	const partCount = (row) => Math.max(0, ...[...row.querySelectorAll('[data-part]')].filter((e) => e.checkVisibility()).map((e) => +e.dataset.part + 1));
+	const clearPart = () => document.querySelector('[data-part-active]')?.removeAttribute('data-part-active');
+	const stepPart = (step) => {
+		const rows = [...document.querySelectorAll('.cols')].filter((r) => r.offsetHeight && partCount(r));
+		if (!rows.length) return;
+		const active = rows.find((r) => r.hasAttribute('data-part-active'));
+		let i = active ? rows.indexOf(active) : rows.findIndex((r) => r.getBoundingClientRect().bottom > 60);
+		if (i < 0) i = rows.length - 1;
+		let part = (active ? +active.dataset.partActive : step > 0 ? -1 : partCount(rows[i])) + step;
+		if (part >= partCount(rows[i]) || part < 0) {
+			i += step;
+			if (!rows[i]) return;
+			part = step > 0 ? 0 : partCount(rows[i]) - 1;
+		}
+		clearPart();
+		rows[i].dataset.partActive = part;
+		[...rows[i].querySelectorAll('[data-part="' + part + '"]')].find((e) => e.checkVisibility())?.scrollIntoView({ block: 'nearest' });
+	};
 	const shortcut = (event) => {
 		const picks = document.querySelector('[data-compare]') ? [...document.querySelectorAll('[data-pick]')] : [];
 		const keys = {
@@ -144,6 +163,9 @@
 			k: () => stepSection(-1),
 			n: () => stepRow(1),
 			p: () => stepRow(-1),
+			'.': () => stepPart(1),
+			',': () => stepPart(-1),
+			Escape: clearPart,
 			'?': () => byId('help').showModal()
 		};
 		if (!keys[event.key]) return;
