@@ -14,6 +14,7 @@ const LABELS: Record<Lang, string> = {
 
 export type Block =
 	| { kind: 'h1'; title: string }
+	| { kind: 'group'; id: string; title: string }
 	| { kind: 'h2'; id: string; title: string }
 	| { kind: 'html'; html: string }
 	| {
@@ -176,7 +177,11 @@ function toBlocks(md: string, slug: string): Block[] {
 		if (fences.length) blocks.push(codeRow(fences));
 		fences = [];
 	};
-	for (const token of marked.lexer(md) as Token[]) {
+	const tokens = marked.lexer(md) as Token[];
+	// With `###` present, `##` headings are groups (component-party style) and `###` are the sections.
+	const grouped = tokens.some((t) => t.type === 'heading' && t.depth === 3);
+	const sectionDepth = grouped ? 3 : 2;
+	for (const token of tokens) {
 		if (token.type === 'space') continue;
 		if (token.type === 'code') {
 			fences.push({ text: token.text, info: token.lang ?? '' });
@@ -185,8 +190,12 @@ function toBlocks(md: string, slug: string): Block[] {
 		flush();
 		if (token.type === 'heading' && token.depth === 1) {
 			blocks.push({ kind: 'h1', title: token.text });
-		} else if (token.type === 'heading' && token.depth === 2) {
+		} else if (token.type === 'heading' && token.depth === sectionDepth) {
 			blocks.push({ kind: 'h2', id: `${slug}-${slugify(token.text)}`, title: token.text });
+		} else if (token.type === 'heading' && grouped && token.depth === 2) {
+			blocks.push({ kind: 'group', id: `${slug}-${slugify(token.text)}`, title: token.text });
+		} else if (token.type === 'heading') {
+			throw new Error(`langs: ${slug}: unexpected heading depth ${token.depth} "${token.text}"`);
 		} else {
 			blocks.push({ kind: 'html', html: marked.parser([token]) });
 		}

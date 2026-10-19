@@ -15,7 +15,7 @@ git: main-only
 
 Sections live in `src/lib/content/langs/NN-name.md`, rendered in filename order. Format the loader depends on:
 
-- One `# Title` at the top, then only `##` headings.
+- One `# Title` at the top, then `##` sections. A page may group sections component-party style: `##` becomes the group and `###` the section as soon as the file has any `###`. Section ids come from the section title either way, so anchors survive regrouping.
 - Consecutive fenced code blocks render as side-by-side columns; a single fence is full width.
 - Fence info string is `lang` or `lang Label` (`python`, `sh Rust`, `toml Cargo.toml`). Allowed langs are the `LANGS` list in `src/lib/content/langs/index.ts`; anything else fails the build.
 - Python and Go snippets use tabs, Rust uses 4 spaces. Comments only to show output (`# => 3`).

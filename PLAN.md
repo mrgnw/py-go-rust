@@ -12,14 +12,14 @@ The reader should be able to:
 
 ## Structure (done)
 
-| Section                    | File                                   | Status                                                 |
-| -------------------------- | -------------------------------------- | ------------------------------------------------------ |
-| When to pick each          | `src/lib/content/langs/00-overview.md` | written, reviewed                                      |
-| Side by side (37 patterns) | `10-compare.md`                        | written, every snippet executed in all three languages |
-| Python                     | `20-python.md`                         | written, reviewed, not executed                        |
-| Rust                       | `30-rust.md`                           | written, reviewed, not executed                        |
-| Go                         | `40-go.md`                             | written, reviewed, not executed                        |
-| Algorithms (13 patterns)   | `50-algorithms.md`                     | written, every snippet executed in all three languages |
+| Section                  | File                                   | Status                                                 |
+| ------------------------ | -------------------------------------- | ------------------------------------------------------ |
+| When to pick each        | `src/lib/content/langs/00-overview.md` | written, reviewed                                      |
+| Patterns (37, 8 groups)  | `10-compare.md`                        | written, every snippet executed in all three languages |
+| Python                   | `20-python.md`                         | written, reviewed, not executed                        |
+| Rust                     | `30-rust.md`                           | written, reviewed, not executed                        |
+| Go                       | `40-go.md`                             | written, reviewed, not executed                        |
+| Algorithms (13 patterns) | `15-algorithms.md`                     | written, every snippet executed in all three languages |
 
 Renderer: `src/lib/content/langs.ts` parses the markdown with marked, highlights fences with shiki, and turns consecutive fences into columns. `src/routes/[[slug]]` renders one prerendered page per section. Content format rules are in CLAUDE.md.
 
@@ -27,7 +27,7 @@ Renderer: `src/lib/content/langs.ts` parses the markdown with marked, highlights
 
 - [ ] Publish, later: content first. Until then `pnpm dev` locally and `wrangler versions upload` for a workers.dev preview. When ready, pick the domain, add a `custom_domain` route to `wrangler.jsonc`, `pnpm ship` from main.
 - [x] Per-section pages: `/`, `/compare`, `/python`, `/rust`, `/go` via `src/routes/[[slug]]`, nav in the layout.
-- [x] Sticky side table of contents from 64rem up. No active-section highlight: scroll-driven animations and `scroll-target-group` are not Baseline as of Oct 2026; revisit when they are.
+- [x] Sticky side table of contents from 64rem up, grouped on the Patterns page, current section highlighted by a small inline scroll listener (no hydration).
 - [x] Copy button per snippet: one inline script in `+layout.svelte`, hidden when `navigator.clipboard` is missing.
 - [x] "Python → Rust → Go" index lives in the overview, every row linked to its compare section. Decorator, `with`, `uv` and `ruff` rows have no compare section yet.
 - [x] Output strips: `# =>` comments are stripped from code. Shared across the row they show once above the columns; otherwise each column shows its own at the top.
