@@ -21,7 +21,22 @@
 		for (const b of document.querySelectorAll('[data-pick]'))
 			b.setAttribute('aria-pressed', String(!hidden.includes(b.dataset.pick)));
 	};
-	document.addEventListener('DOMContentLoaded', syncPicker);
+	const trackSections = () => {
+		const toc = document.querySelector('nav[aria-label="Sections"]');
+		if (!toc) return;
+		const links = [...toc.querySelectorAll('a[href^="#"]')];
+		const heads = links.map((a) => document.getElementById(decodeURIComponent(a.hash.slice(1))));
+		let queued = false;
+		const update = () => {
+			queued = false;
+			const i = Math.max(0, heads.findLastIndex((h) => h && h.getBoundingClientRect().top <= 96));
+			links.forEach((a, k) => a.toggleAttribute('aria-current', k === i));
+			if (toc.scrollHeight > toc.clientHeight) links[i].scrollIntoView({ block: 'nearest' });
+		};
+		addEventListener('scroll', () => { if (!queued) { queued = true; requestAnimationFrame(update); } }, { passive: true });
+		update();
+	};
+	document.addEventListener('DOMContentLoaded', () => { syncPicker(); trackSections(); });
 	document.addEventListener('click', (event) => {
 		const button = event.target.closest('[data-pick]');
 		if (!button) return;
