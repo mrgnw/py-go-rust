@@ -190,14 +190,14 @@
 	.caption {
 		display: var(--caption);
 	}
-	.part :global(pre.shiki) {
+	.langs .part :global(pre.shiki) {
 		padding-top: 0;
 		padding-bottom: 0;
 	}
-	.part:first-child :global(pre.shiki) {
+	.langs .part:first-child :global(pre.shiki) {
 		padding-top: 0.75rem;
 	}
-	.part:last-child :global(pre.shiki) {
+	.langs .part:last-child :global(pre.shiki) {
 		padding-bottom: 0.75rem;
 	}
 	.cols:has([data-part='0']:hover) [data-part='0'],
