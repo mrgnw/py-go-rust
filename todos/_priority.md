@@ -2,8 +2,10 @@
 
 1. [copy-button-placement](done/1018-copy-button-placement.md) — small, independent
 2. ~~[granular-output-diff](done/1018-granular-output-diff.md)~~ — done, PR #3
-3. [command-palette](command-palette.md)
-4. [keyboard-shortcuts](keyboard-shortcuts.md) — same file as 3, do after 3 lands or in the same worktree
+3. [command-palette](done/1018-command-palette.md)
+4. [keyboard-shortcuts](done/1018-keyboard-shortcuts.md) — same file as 3, do after 3 lands or in the same worktree
+5. [parts-hover-link](parts-hover-link.md) — parts parser plus the first feature on top of it; per-part copy buttons (from 1) follow it
+6. [drag-reorder-languages](drag-reorder-languages.md) — maybe
 5. [parts-hover-link](parts-hover-link.md) — parts parser plus the first feature on top of it; per-part copy buttons (from 1) follow it
 6. [drag-reorder-languages](drag-reorder-languages.md) — maybe
 

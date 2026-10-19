@@ -1,5 +1,6 @@
 ---
 title: Command palette to search and jump to a section
+pull-request: 4
 ---
 
 # Command palette
