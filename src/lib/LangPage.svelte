@@ -4,9 +4,9 @@
 	let { page }: { page: LangPage } = $props();
 	const grouped = $derived(page.blocks.some((b) => b.kind === 'group'));
 	const toc = $derived.by(() => {
-		const groups: { title?: string; sections: { id: string; title: string }[] }[] = [];
+		const groups: { id?: string; title?: string; sections: { id: string; title: string }[] }[] = [];
 		for (const b of page.blocks) {
-			if (b.kind === 'group') groups.push({ title: b.title, sections: [] });
+			if (b.kind === 'group') groups.push({ id: b.id, title: b.title, sections: [] });
 			if (b.kind === 'h2')
 				(groups.at(-1) ?? groups[groups.push({ sections: [] }) - 1]).sections.push(b);
 		}
@@ -28,11 +28,12 @@
 		>
 			{#each toc as group, i (group.title ?? i)}
 				{#if group.title}
-					<div
-						class="mt-4 mb-1 text-xs font-semibold tracking-wide text-neutral-400 uppercase first:mt-0 dark:text-neutral-500"
+					<a
+						href="#{group.id}"
+						class="mt-4 mb-1 block text-xs font-semibold tracking-wide text-neutral-400 uppercase first:mt-0 hover:text-neutral-900 dark:text-neutral-500 dark:hover:text-neutral-50"
 					>
 						{group.title}
-					</div>
+					</a>
 				{/if}
 				<ul class="flex flex-wrap gap-x-3 gap-y-1 text-sm lg:flex-col lg:gap-x-0">
 					{#each group.sections as h2 (h2.id)}
@@ -72,14 +73,14 @@
 					<div
 						class="my-3 overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900"
 					>
-						<div class="cols flex">
+						<div class="cols">
 							{#each block.cols as col}
 								<div
 									data-lang={col.lang}
-									class="col flex min-w-0 flex-col border-neutral-200 dark:border-neutral-800"
+									class="col min-w-0 border-neutral-200 dark:border-neutral-800"
 								>
 									{@render label(col.label)}
-									<div class="flex-1">{@html col.html}</div>
+									<div>{@html col.html}</div>
 									{#if col.output}
 										{@render output(col.output.html, col.odd)}
 									{/if}
@@ -114,19 +115,36 @@
 {/snippet}
 
 <style>
-	/* every column draws its leading edge; the wrapper clips the first visible one, so hiding any column keeps single dividers */
+	/* label / code / output share three grid rows across the columns, so output strips line up
+	   whatever their line count. Every column draws its leading edge and the wrapper clips the
+	   first visible one, so hiding any column keeps single dividers. */
 	.cols {
+		display: grid;
+		grid-auto-flow: column;
+		grid-auto-columns: minmax(0, 1fr);
+		grid-template-rows: auto 1fr auto;
 		margin-left: -1px;
 	}
 	.col {
-		flex: 1 1 0;
+		display: grid;
+		grid-row: span 3;
+		grid-template-rows: subgrid;
+		grid-template-columns: minmax(0, 1fr);
 		border-left-width: 1px;
+	}
+	.col > * {
+		min-width: 0;
+	}
+	.col > :last-child:nth-child(2) {
+		grid-row: span 2;
 	}
 	@media (max-width: 56rem) {
 		.cols {
+			grid-auto-flow: row;
+			grid-auto-columns: auto;
+			grid-template-rows: none;
 			margin-left: 0;
 			margin-top: -1px;
-			flex-direction: column;
 		}
 		.col {
 			border-left-width: 0;

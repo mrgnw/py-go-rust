@@ -24,7 +24,7 @@
 	const trackSections = () => {
 		const toc = document.querySelector('nav[aria-label="Sections"]');
 		if (!toc) return;
-		const links = [...toc.querySelectorAll('a[href^="#"]')];
+		const links = [...toc.querySelectorAll('li a[href^="#"]')];
 		const heads = links.map((a) => document.getElementById(decodeURIComponent(a.hash.slice(1))));
 		let queued = false;
 		const update = () => {
