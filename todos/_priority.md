@@ -6,7 +6,6 @@
 4. [keyboard-shortcuts](done/1018-keyboard-shortcuts.md) — done, PR #4
 5. [parts-hover-link](done/1018-parts-hover-link.md) — done, PR #5
 6. [drag-reorder-languages](drag-reorder-languages.md) — maybe
-6. [drag-reorder-languages](drag-reorder-languages.md) — maybe
 
 ## Context every agent needs
 
