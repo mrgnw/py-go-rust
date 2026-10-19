@@ -11,7 +11,7 @@ git: main-only
 - dev: 5237 (`pnpm dev`)
 - preview: 5238 (`pnpm preview`, runs the built worker)
 
-A fresh worktree needs one `pnpm build` before `pnpm check`: `wrangler types --check` reads the built worker.
+`pnpm check` needs a build first: `wrangler types --check` reads the built worker.
 
 ## Content
 

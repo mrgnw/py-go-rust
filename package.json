@@ -5,7 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
-		"build": "wrangler types --check && vite build",
+		"build": "vite build",
 		"preview": "wrangler dev .svelte-kit/cloudflare/_worker.js --port 5238",
 		"ship": "pnpm build && wrangler deploy",
 		"cfb": "pnpm build && wrangler versions upload --preview-alias $(git branch --show-current | sed 's/[^a-zA-Z0-9-]/-/g')",
