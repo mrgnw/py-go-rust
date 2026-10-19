@@ -184,6 +184,20 @@
 	.part + .part {
 		border-top: 1px solid light-dark(var(--color-neutral-200), var(--color-neutral-800));
 	}
+	/* one rule per part index, up to MAX_PARTS in langs.ts */
+	.cols:has([data-part='0']:hover) [data-part='0'],
+	.cols:has([data-part='1']:hover) [data-part='1'],
+	.cols:has([data-part='2']:hover) [data-part='2'],
+	.cols:has([data-part='3']:hover) [data-part='3'],
+	.cols:has([data-part='4']:hover) [data-part='4'],
+	.cols:has([data-part='5']:hover) [data-part='5'],
+	.cols:has([data-part='6']:hover) [data-part='6'],
+	.cols:has([data-part='7']:hover) [data-part='7'] {
+		background: light-dark(
+			color-mix(in oklab, var(--color-amber-200) 35%, transparent),
+			color-mix(in oklab, var(--color-amber-300) 12%, transparent)
+		);
+	}
 	.part:has(+ .part) :global(pre.shiki) {
 		padding-bottom: 0.375rem;
 	}
