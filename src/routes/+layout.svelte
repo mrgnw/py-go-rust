@@ -160,21 +160,16 @@
 		const top = (r) => r.getBoundingClientRect().top;
 		(step > 0 ? rows.find((r) => top(r) > 60) : rows.findLast((r) => top(r) < 52))?.scrollIntoView({ block: 'start' });
 	};
-	const partCount = (row) => Math.max(0, ...[...row.querySelectorAll('[data-part]')].filter((e) => e.checkVisibility()).map((e) => parseInt(e.dataset.part) + 1));
+	const stops = () => [...document.querySelectorAll('.cols')].filter((row) => row.offsetHeight).flatMap((row) => [...new Set([...row.querySelectorAll('.snippet > [data-part]')].filter((e) => e.checkVisibility()).map((e) => e.dataset.part))].map((path) => ({ row, path })));
 	const stepPart = (step) => {
-		const rows = [...document.querySelectorAll('.cols')].filter((r) => r.offsetHeight && partCount(r));
-		if (!rows.length) return;
+		const all = stops();
+		if (!all.length) return;
 		const lit = document.querySelector('.part[data-lit]');
-		const current = lit ? rows.findIndex((r) => r.contains(lit)) : -1;
-		let i = current >= 0 ? current : rows.findIndex((r) => r.getBoundingClientRect().bottom > 60);
-		if (i < 0) i = rows.length - 1;
-		let part = (current >= 0 ? parseInt(lit.dataset.part) : step > 0 ? -1 : partCount(rows[i])) + step;
-		if (part >= partCount(rows[i]) || part < 0) {
-			i += step;
-			if (!rows[i]) return;
-			part = step > 0 ? 0 : partCount(rows[i]) - 1;
-		}
-		const target = [...rows[i].querySelectorAll('[data-part="' + part + '"]')].find((e) => e.checkVisibility());
+		const at = lit ? all.findIndex((s) => s.row.contains(lit) && s.path === lit.dataset.part.split('.')[0]) : -1;
+		const row = (all.find((s) => s.row.getBoundingClientRect().bottom > 60) ?? all.at(-1)).row;
+		const next = at >= 0 ? all[at + step] : step > 0 ? all.find((s) => s.row === row) : all.findLast((s) => s.row === row);
+		if (!next) return;
+		const target = [...next.row.querySelectorAll('[data-part="' + next.path + '"]')].find((e) => e.checkVisibility());
 		light(target);
 		target.scrollIntoView({ block: 'nearest' });
 	};
@@ -208,6 +203,7 @@
 		const open = view.dataset.group !== undefined;
 		for (const child of row.children) child.hidden = open ? child.dataset.split !== path : child.dataset.split !== undefined;
 		hovered = null;
+		light(null);
 		const shown = open ? row.querySelector('[data-split="' + path + '"] [data-toggle]') : [...row.querySelectorAll('[data-group="' + path + '"] > [data-toggle]')].find((b) => b.checkVisibility());
 		if (event.detail === 0) shown?.focus();
 	});

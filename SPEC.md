@@ -127,8 +127,8 @@ Steps 1-4 (markers, tree and build checks, hover-link, pivot and expand) are don
 
 1. Label agreement check (Build rules) when a section first needs it.
 2. More groups (`---` markers): only If-else has one, so only it expands.
-3. Keyboard stepping (`.` / `,`) treats the split view's column blocks as
-   separate rows and skips the pivot.
+3. Keyboard stepping (`.` / `,`) walks the parts present in each column
+   block, so in a split view it skips the pivoted group.
 
 Open: parts like `} else if n == 0 {` are honest but ugly stacked. Keep, or
 let an author mark scaffolding lines. Decide after seeing step 3.
