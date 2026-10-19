@@ -108,9 +108,10 @@
 
 {#snippet label(text: string)}
 	<div
-		class="border-b border-neutral-200 px-3 py-1 font-mono text-xs text-neutral-500 dark:border-neutral-800 dark:text-neutral-400"
+		class="flex items-center justify-between border-b border-neutral-200 px-3 py-1 font-mono text-xs text-neutral-500 dark:border-neutral-800 dark:text-neutral-400"
 	>
 		{text}
+		<button type="button" class="copy" aria-label="Copy {text}">Copy</button>
 	</div>
 {/snippet}
 

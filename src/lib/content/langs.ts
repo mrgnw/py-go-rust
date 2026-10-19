@@ -79,16 +79,15 @@ function pickLang(lang: string, label: string): string | undefined {
 	return byLabel ?? (PICKABLE.includes(lang) ? lang : undefined);
 }
 
-function highlight(code: string, info: string, copy = true): Col {
+function highlight(code: string, info: string): Col {
 	const [lang, ...rest] = info.trim().split(/\s+/);
 	if (!LANGS.includes(lang as Lang)) throw new Error(`langs: unsupported fence language "${info}"`);
 	const html = toHtml(code, lang);
-	const button = copy ? '<button type="button" class="copy" aria-label="Copy">Copy</button>' : '';
 	const label = rest.join(' ') || LABELS[lang as Lang];
 	return {
 		label,
 		lang: pickLang(lang, label),
-		html: `<div class="snippet">${html}${button}</div>`
+		html
 	};
 }
 
@@ -116,7 +115,7 @@ function codeRow(fences: { text: string; info: string }[]): Block {
 		outputs[i].length
 			? {
 					...highlight(strip(f.text), f.info),
-					output: highlight(outputs[i].join('\n'), 'text Output', false),
+					output: highlight(outputs[i].join('\n'), 'text Output'),
 					odd: fences.length > 1 && values.every((v, k) => k === i || v !== values[i])
 				}
 			: highlight(f.text, f.info)

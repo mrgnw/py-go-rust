@@ -49,7 +49,7 @@
 	document.addEventListener('click', async (event) => {
 		const button = event.target.closest('.copy');
 		if (!button) return;
-		await navigator.clipboard.writeText(button.parentElement.querySelector('pre').textContent);
+		await navigator.clipboard.writeText(button.closest('.col').querySelector('pre').textContent);
 		button.textContent = 'Copied';
 		setTimeout(() => (button.textContent = 'Copy'), 1500);
 	});
