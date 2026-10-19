@@ -82,7 +82,12 @@
 									{@render label(col.label)}
 									<div class="snippet">
 										{#each col.parts as part, k}
-											<div class="part" data-part={col.parts.length > 1 ? k : undefined}>
+											<div
+												class="part"
+												data-part={col.parts.length > 1 ? k : undefined}
+												style:--pad-top={part.pad[0] || undefined}
+												style:--pad-bottom={part.pad[1] || undefined}
+											>
 												{#if part.label}
 													<div
 														class="caption absolute top-0 right-3 font-mono text-[0.7rem] text-neutral-400 select-none dark:text-neutral-500"
@@ -183,9 +188,16 @@
 	}
 	/* parts are invisible until hovered: no rules, no gaps. The hovered index tints itself in every
 	   column and shows its caption. One rule per index, up to MAX_PARTS in langs.ts. */
+	.snippet {
+		padding-block: 0.75rem;
+	}
 	.part {
 		position: relative;
 		--caption: none;
+		font-size: 0.8rem;
+		line-height: 1.5;
+		padding-top: calc(var(--pad-top, 0) * 1lh);
+		padding-bottom: calc(var(--pad-bottom, 0) * 1lh);
 	}
 	.caption {
 		display: var(--caption);
@@ -193,12 +205,6 @@
 	.langs .part :global(pre.shiki) {
 		padding-top: 0;
 		padding-bottom: 0;
-	}
-	.langs .part:first-child :global(pre.shiki) {
-		padding-top: 0.75rem;
-	}
-	.langs .part:last-child :global(pre.shiki) {
-		padding-bottom: 0.75rem;
 	}
 	.cols:has([data-part='0']:hover) [data-part='0'],
 	.cols:has([data-part='1']:hover) [data-part='1'],

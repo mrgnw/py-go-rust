@@ -23,9 +23,11 @@ export type Block =
 			steps?: Step[];
 	  };
 
+// pad: blank lines the author left above and below the part, kept as spacing so the code reads as written
 export interface Part {
 	label?: string;
 	html: string;
+	pad: [number, number];
 }
 
 // output: each column carries its own, with `<span class="diff">` around tokens another column lacks
@@ -100,22 +102,26 @@ function pickLang(lang: string, label: string): string | undefined {
 const MARKER = /^[ \t]*(?:#|\/\/) -{2,3}(?: (.*))?$/;
 const MAX_PARTS = 8;
 
-// Text before the first marker is a part only when it has code; blank lines at part edges belong to nobody.
-function splitParts(code: string): { label?: string; code: string }[] {
+// Marker lines vanish; every other line stays. Text before the first marker is a part only when it has code.
+function splitParts(code: string): { label?: string; code: string; pad: [number, number] }[] {
 	const parts: { label?: string; lines: string[] }[] = [{ lines: [] }];
 	for (const line of code.split('\n')) {
 		const marker = line.match(MARKER);
 		if (marker) parts.push({ label: marker[1]?.trim() || undefined, lines: [] });
 		else parts[parts.length - 1].lines.push(line);
 	}
-	const leading = parts.length === 1 || parts[0].lines.some((line) => line.trim());
-	return (leading ? parts : parts.slice(1)).map((p) => ({
-		label: p.label,
-		code: p.lines
-			.join('\n')
-			.replace(/^(?:[ \t]*\n)+/, '')
-			.trimEnd()
-	}));
+	const blank = (line: string) => !line.trim();
+	const leading = parts.length === 1 || !parts[0].lines.every(blank);
+	return (leading ? parts : parts.slice(1)).map((p) => {
+		const first = p.lines.findIndex((line) => !blank(line));
+		if (first < 0) return { label: p.label, code: '', pad: [p.lines.length, 0] };
+		const last = p.lines.findLastIndex((line) => !blank(line));
+		return {
+			label: p.label,
+			code: p.lines.slice(first, last + 1).join('\n'),
+			pad: [first, p.lines.length - 1 - last]
+		};
+	});
 }
 
 function highlight(code: string, info: string): Col {
@@ -127,7 +133,8 @@ function highlight(code: string, info: string): Col {
 		lang: pickLang(lang, label),
 		parts: splitParts(code).map((p) => ({
 			label: p.label,
-			html: p.code ? toHtml(p.code, lang) : ''
+			html: p.code ? toHtml(p.code, lang) : '',
+			pad: p.pad
 		}))
 	};
 }
