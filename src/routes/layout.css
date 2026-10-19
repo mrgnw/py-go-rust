@@ -44,6 +44,39 @@ html[data-hide~='go'] [data-lang='go'] {
 	display: none;
 }
 
+html {
+	--order-python: 0;
+	--order-rust: 1;
+	--order-go: 2;
+}
+
+.cols > [data-lang='python'],
+.lines > [data-lang='python'],
+[data-pick='python'] {
+	order: var(--order-python);
+}
+
+.cols > [data-lang='rust'],
+.lines > [data-lang='rust'],
+[data-pick='rust'] {
+	order: var(--order-rust);
+}
+
+.cols > [data-lang='go'],
+.lines > [data-lang='go'],
+[data-pick='go'] {
+	order: var(--order-go);
+}
+
+[data-pick] {
+	touch-action: pan-y;
+	user-select: none;
+}
+
+[data-pick][data-dragging] {
+	@apply relative z-10 cursor-grabbing bg-neutral-100 shadow-md dark:bg-neutral-800;
+}
+
 html[data-sidebar='collapsed'] #sections-nav {
 	display: none;
 }

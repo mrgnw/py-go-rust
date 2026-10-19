@@ -15,6 +15,7 @@
 	const SHORTCUTS = [
 		['⌘K', 'Search sections'],
 		['1 2 3', 'Toggle Python / Rust / Go'],
+		['⇧← ⇧→', 'Move the focused language chip left / right'],
 		['j k', 'Next / previous section'],
 		['n p', 'Next / previous code row'],
 		['. ,', 'Next / previous part (Esc clears)'],
@@ -29,6 +30,32 @@
 	const html = document.documentElement;
 	html.dataset.hide = localStorage.getItem('hide') ?? '';
 	html.dataset.sidebar = localStorage.getItem('sidebar') ?? '';
+	const LANGS = ['python', 'rust', 'go'];
+	const showOrder = (order) => {
+		html.dataset.order = order.join(' ');
+		order.forEach((lang, i) => html.style.setProperty('--order-' + lang, i));
+	};
+	const saved = (localStorage.getItem('order') ?? '').split(' ');
+	showOrder(saved.length === LANGS.length && LANGS.every((lang) => saved.includes(lang)) ? saved : LANGS);
+	const currentOrder = () => html.dataset.order.split(' ');
+	const saveOrder = () => localStorage.setItem('order', html.dataset.order);
+	const sortChips = () => {
+		const picker = document.querySelector('.picker');
+		const order = currentOrder();
+		const focused = document.activeElement;
+		picker.append(...[...picker.children].sort((a, b) => order.indexOf(a.dataset.pick) - order.indexOf(b.dataset.pick)));
+		focused.focus();
+	};
+	const moveLang = (lang, step) => {
+		const order = currentOrder();
+		const to = order.indexOf(lang) + step;
+		if (to < 0 || to >= order.length) return;
+		order.splice(order.indexOf(lang), 1);
+		order.splice(to, 0, lang);
+		showOrder(order);
+		saveOrder();
+		sortChips();
+	};
 	const syncSidebar = () => {
 		const toggle = document.querySelector('[data-sidebar-toggle]');
 		if (toggle) toggle.setAttribute('aria-expanded', String(html.dataset.sidebar !== 'collapsed'));
@@ -58,7 +85,7 @@
 		addEventListener('scroll', () => { if (!queued) { queued = true; requestAnimationFrame(update); } }, { passive: true });
 		update();
 	};
-	document.addEventListener('DOMContentLoaded', () => { syncPicker(); syncSidebar(); trackSections(); });
+	document.addEventListener('DOMContentLoaded', () => { sortChips(); syncPicker(); syncSidebar(); trackSections(); });
 	const light = (part) => {
 		for (const lit of document.querySelectorAll('[data-lit]')) lit.removeAttribute('data-lit');
 		if (!part) return;
@@ -174,11 +201,11 @@
 		target.scrollIntoView({ block: 'nearest' });
 	};
 	const shortcut = (event) => {
-		const picks = document.querySelector('[data-compare]') ? [...document.querySelectorAll('[data-pick]')] : [];
+		const lang = (name) => () => document.querySelector('[data-compare]') && toggleLang(name);
 		const keys = {
-			1: () => picks[0] && toggleLang(picks[0].dataset.pick),
-			2: () => picks[1] && toggleLang(picks[1].dataset.pick),
-			3: () => picks[2] && toggleLang(picks[2].dataset.pick),
+			1: lang('python'),
+			2: lang('rust'),
+			3: lang('go'),
 			b: toggleSidebar,
 			j: () => stepSection(1),
 			k: () => stepSection(-1),
@@ -207,9 +234,55 @@
 		const shown = open ? row.querySelector('[data-split="' + path + '"] [data-toggle]') : [...row.querySelectorAll('[data-group="' + path + '"] > .tools [data-toggle]')].find((b) => b.checkVisibility());
 		if (event.detail === 0) shown?.focus();
 	});
+	let drag = null;
+	let dragged = false;
+	document.addEventListener('pointerdown', (event) => {
+		const chip = event.target.closest('[data-pick]');
+		dragged = false;
+		if (!chip || !event.isPrimary || event.button !== 0) return;
+		const slots = [...document.querySelectorAll('[data-pick]')].map((b) => b.getBoundingClientRect()).sort((a, b) => a.left - b.left);
+		drag = { chip, slots, x: event.clientX, grab: event.clientX - chip.getBoundingClientRect().left, moving: false };
+	});
+	document.addEventListener('pointermove', (event) => {
+		if (!drag || !event.isPrimary) return;
+		if (!drag.moving) {
+			if (Math.abs(event.clientX - drag.x) < 6) return;
+			drag.moving = true;
+			drag.chip.setPointerCapture(event.pointerId);
+			drag.chip.setAttribute('data-dragging', '');
+		}
+		const lang = drag.chip.dataset.pick;
+		const slot = Math.max(0, drag.slots.findLastIndex((rect) => event.clientX >= rect.left));
+		const order = currentOrder().filter((l) => l !== lang);
+		order.splice(slot, 0, lang);
+		showOrder(order);
+		drag.chip.style.transform = '';
+		drag.chip.style.transform = 'translateX(' + (event.clientX - drag.grab - drag.chip.getBoundingClientRect().left) + 'px)';
+	});
+	const endDrag = (event) => {
+		if (!drag || !event.isPrimary) return;
+		const { chip, moving } = drag;
+		drag = null;
+		if (!moving) return;
+		chip.style.transform = '';
+		chip.removeAttribute('data-dragging');
+		dragged = event.type === 'pointerup';
+		saveOrder();
+		sortChips();
+	};
+	document.addEventListener('pointerup', endDrag);
+	document.addEventListener('pointercancel', endDrag);
+	document.addEventListener('keydown', (event) => {
+		const chip = event.target.closest('[data-pick]');
+		const step = { ArrowLeft: -1, ArrowRight: 1 }[event.key];
+		if (!chip || !step || !event.shiftKey || event.metaKey || event.ctrlKey || event.altKey) return;
+		event.preventDefault();
+		moveLang(chip.dataset.pick, step);
+	});
 	document.addEventListener('click', (event) => {
 		const button = event.target.closest('[data-pick]');
-		if (button) toggleLang(button.dataset.pick);
+		if (button && !dragged) toggleLang(button.dataset.pick);
+		dragged = false;
 		if (event.target.closest('[data-sidebar-toggle]')) toggleSidebar();
 		if (event.target.closest('[data-help]')) byId('help').showModal();
 	});

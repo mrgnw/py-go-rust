@@ -69,6 +69,8 @@
 		background: transparent !important;
 	}
 	.lines {
+		display: flex;
+		flex-direction: column;
 		clip-path: inset(1px -10rem 0 -10rem);
 	}
 	.out {
