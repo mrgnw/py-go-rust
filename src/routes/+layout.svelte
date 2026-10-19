@@ -59,16 +59,19 @@
 		update();
 	};
 	document.addEventListener('DOMContentLoaded', () => { syncPicker(); syncSidebar(); trackSections(); });
-	let hovered = null;
-	document.addEventListener('mouseover', (event) => {
-		const part = event.target.closest('[data-part]');
-		if (part === hovered) return;
-		hovered = part;
+	const light = (part) => {
 		for (const lit of document.querySelectorAll('[data-lit]')) lit.removeAttribute('data-lit');
 		if (!part) return;
 		const path = part.dataset.part.split('.');
 		const same = path.map((_, i) => '[data-part="' + path.slice(0, i + 1).join('.') + '"]').join(', ');
 		for (const lit of part.closest('.cols').querySelectorAll(same)) lit.setAttribute('data-lit', '');
+	};
+	let hovered = null;
+	document.addEventListener('mouseover', (event) => {
+		const part = event.target.closest('[data-part]');
+		if (part === hovered) return;
+		hovered = part;
+		light(part);
 	});
 	const fields = 'input, textarea, select, [contenteditable]';
 	const byId = (id) => document.getElementById(id);
@@ -158,22 +161,22 @@
 		(step > 0 ? rows.find((r) => top(r) > 60) : rows.findLast((r) => top(r) < 52))?.scrollIntoView({ block: 'start' });
 	};
 	const partCount = (row) => Math.max(0, ...[...row.querySelectorAll('[data-part]')].filter((e) => e.checkVisibility()).map((e) => parseInt(e.dataset.part) + 1));
-	const clearPart = () => document.querySelector('[data-part-active]')?.removeAttribute('data-part-active');
 	const stepPart = (step) => {
 		const rows = [...document.querySelectorAll('.cols')].filter((r) => r.offsetHeight && partCount(r));
 		if (!rows.length) return;
-		const active = rows.find((r) => r.hasAttribute('data-part-active'));
-		let i = active ? rows.indexOf(active) : rows.findIndex((r) => r.getBoundingClientRect().bottom > 60);
+		const lit = document.querySelector('.part[data-lit]');
+		const current = lit ? rows.findIndex((r) => r.contains(lit)) : -1;
+		let i = current >= 0 ? current : rows.findIndex((r) => r.getBoundingClientRect().bottom > 60);
 		if (i < 0) i = rows.length - 1;
-		let part = (active ? +active.dataset.partActive : step > 0 ? -1 : partCount(rows[i])) + step;
+		let part = (current >= 0 ? parseInt(lit.dataset.part) : step > 0 ? -1 : partCount(rows[i])) + step;
 		if (part >= partCount(rows[i]) || part < 0) {
 			i += step;
 			if (!rows[i]) return;
 			part = step > 0 ? 0 : partCount(rows[i]) - 1;
 		}
-		clearPart();
-		rows[i].dataset.partActive = part;
-		[...rows[i].querySelectorAll('[data-part="' + part + '"]')].find((e) => e.checkVisibility())?.scrollIntoView({ block: 'nearest' });
+		const target = [...rows[i].querySelectorAll('[data-part="' + part + '"]')].find((e) => e.checkVisibility());
+		light(target);
+		target.scrollIntoView({ block: 'nearest' });
 	};
 	const shortcut = (event) => {
 		const picks = document.querySelector('[data-compare]') ? [...document.querySelectorAll('[data-pick]')] : [];
@@ -188,7 +191,7 @@
 			p: () => stepRow(-1),
 			'.': () => stepPart(1),
 			',': () => stepPart(-1),
-			Escape: clearPart,
+			Escape: () => light(null),
 			'?': () => byId('help').showModal()
 		};
 		if (!keys[event.key]) return;

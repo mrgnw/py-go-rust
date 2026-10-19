@@ -123,7 +123,7 @@
 		>
 			{#if linked}
 				<div
-					class="tools absolute top-0 right-3 items-center gap-2 rounded bg-neutral-50/90 pl-1 font-mono text-[0.7rem] select-none dark:bg-neutral-900/90"
+					class="tools absolute top-0 right-3 z-10 items-center gap-2 rounded bg-neutral-50/90 pl-1 font-mono text-[0.7rem] select-none dark:bg-neutral-900/90"
 				>
 					{#if part.label}
 						<span class="text-neutral-400 dark:text-neutral-500">{part.label}</span>
@@ -216,7 +216,7 @@
 	}
 	/* parts are invisible until hovered: no rules, no gaps. The layout script marks the hovered part
 	   and its parent with data-lit in every column; a lit child sits darker inside its lit parent.
-	   Keyboard stepping walks top-level parts only, one rule per index up to MAX_PARTS in langs.ts. */
+	   Keyboard stepping lights the same way and walks top-level parts only. */
 	.snippet {
 		padding-block: 0.75rem;
 	}
@@ -232,19 +232,14 @@
 	.tools {
 		display: var(--tools);
 	}
+	.part .part > .tools {
+		right: 7.75rem;
+	}
 	.langs .part :global(pre.shiki) {
 		padding-top: 0;
 		padding-bottom: 0;
 	}
-	.part:global([data-lit]),
-	.cols:global([data-part-active='0']) [data-part='0'],
-	.cols:global([data-part-active='1']) [data-part='1'],
-	.cols:global([data-part-active='2']) [data-part='2'],
-	.cols:global([data-part-active='3']) [data-part='3'],
-	.cols:global([data-part-active='4']) [data-part='4'],
-	.cols:global([data-part-active='5']) [data-part='5'],
-	.cols:global([data-part-active='6']) [data-part='6'],
-	.cols:global([data-part-active='7']) [data-part='7'] {
+	.part:global([data-lit]) {
 		--tools: flex;
 		background: light-dark(
 			color-mix(in oklab, var(--color-amber-200) 35%, transparent),
