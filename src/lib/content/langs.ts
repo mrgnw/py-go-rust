@@ -19,17 +19,17 @@ export type Block =
 	| { kind: 'html'; html: string }
 	| {
 			kind: 'code';
-			output?: Col;
 			cols: Col[];
 			steps?: Step[];
 	  };
 
-// output: when every column prints the same, the row carries it; otherwise each column carries its own
+// output: each column carries its own; `odd` marks a value no other column in the row prints
 export interface Col {
 	label: string;
 	html: string;
 	lang?: string;
 	output?: Col;
+	odd?: boolean;
 }
 
 // lab: the same row pivoted, one step per output with each language's line(s) stacked
@@ -105,32 +105,23 @@ function codeRow(fences: { text: string; info: string }[]): Block {
 			.join('\n')
 			.replaceAll("'", '"')
 			.replace(/\b(True|False)\b/g, (m) => m.toLowerCase());
-	const shared =
-		fences.length > 1 &&
-		outputs[0].length > 0 &&
-		outputs.every((o) => sameValue(o) === sameValue(outputs[0]));
+	const values = outputs.map(sameValue);
+	const shared = fences.length > 1 && outputs[0].length > 0 && values.every((v) => v === values[0]);
 	const strip = (text: string) =>
 		text
 			.split('\n')
 			.map((line) => line.replace(OUTPUT, ''))
 			.join('\n');
-	const outputCol = (lines: string[]) => highlight(lines.join('\n'), 'text Output', false);
-	if (shared) {
-		return {
-			kind: 'code',
-			output: outputCol(outputs[0]),
-			steps: pivot(fences, outputs[0]),
-			cols: fences.map((f) => highlight(strip(f.text), f.info))
-		};
-	}
-	return {
-		kind: 'code',
-		cols: fences.map((f, i) =>
-			outputs[i].length
-				? { ...highlight(strip(f.text), f.info), output: outputCol(outputs[i]) }
-				: highlight(f.text, f.info)
-		)
-	};
+	const cols = fences.map((f, i) =>
+		outputs[i].length
+			? {
+					...highlight(strip(f.text), f.info),
+					output: highlight(outputs[i].join('\n'), 'text Output', false),
+					odd: fences.length > 1 && values.every((v, k) => k === i || v !== values[i])
+				}
+			: highlight(f.text, f.info)
+	);
+	return shared ? { kind: 'code', cols, steps: pivot(fences, outputs[0]) } : { kind: 'code', cols };
 }
 
 // Go's `func main() {` ... `}` wrapper is scaffolding; drop it so its body pivots like the rest.

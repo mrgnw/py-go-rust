@@ -82,8 +82,8 @@ prerendered); flip `csr = false` in `src/routes/+layout.server.ts` when the
 first interactive view lands.
 
 1. **Columns** (default, unchanged): whole snippets side by side in one block,
-   output strip under the row when every language prints the same value, else
-   one under each column.
+   an output strip under each column, colored by language when that output is
+   the odd one out.
 2. **Hover-link**: in columns, hovering or tapping a part highlights the same
    part in the other columns. No new layout; try this first, it tests whether
    part boundaries feel right.
