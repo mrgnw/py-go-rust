@@ -81,9 +81,9 @@ All read the same frozen tree. Client JS is allowed now (hydrate; still
 prerendered); flip `csr = false` in `src/routes/+layout.server.ts` when the
 first interactive view lands.
 
-1. **Columns** (default, unchanged): whole snippets side by side, one Output
-   strip above the row when every language prints the same thing, else one per
-   column.
+1. **Columns** (default, unchanged): whole snippets side by side in one block,
+   output strip under the row when every language prints the same value, else
+   one under each column.
 2. **Hover-link**: in columns, hovering or tapping a part highlights the same
    part in the other columns. No new layout; try this first, it tests whether
    part boundaries feel right.

@@ -99,10 +99,16 @@ function codeRow(fences: { text: string; info: string }[]): Block {
 	const outputs = fences.map((f) =>
 		f.text.split('\n').flatMap((line) => line.match(OUTPUT)?.[1] ?? [])
 	);
+	// 'Ada' and "Ada", True and true are the same value printed by different languages.
+	const sameValue = (lines: string[]) =>
+		lines
+			.join('\n')
+			.replaceAll("'", '"')
+			.replace(/\b(True|False)\b/g, (m) => m.toLowerCase());
 	const shared =
 		fences.length > 1 &&
 		outputs[0].length > 0 &&
-		outputs.every((o) => o.join('\n') === outputs[0].join('\n'));
+		outputs.every((o) => sameValue(o) === sameValue(outputs[0]));
 	const strip = (text: string) =>
 		text
 			.split('\n')

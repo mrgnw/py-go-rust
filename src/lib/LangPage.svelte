@@ -69,37 +69,43 @@
 						{@html block.html}
 					</div>
 				{:else if block.kind === 'code'}
-					<div class="my-3 flex flex-col gap-2">
-						{#if block.output}
-							<div
-								class="out rounded-lg border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900"
-							>
-								{@render label(block.output.label)}
-								{@html block.output.html}
-							</div>
-						{/if}
-						<div class="cols flex gap-3">
+					<div
+						class="my-3 overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900"
+					>
+						<div class="cols flex">
 							{#each block.cols as col}
 								<div
 									data-lang={col.lang}
-									class="col min-w-0 overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900"
+									class="col flex min-w-0 flex-col border-neutral-200 dark:border-neutral-800"
 								>
 									{@render label(col.label)}
+									<div class="flex-1">{@html col.html}</div>
 									{#if col.output}
-										<div class="out border-b border-neutral-200 dark:border-neutral-800">
-											{@html col.output.html}
-										</div>
+										{@render output(col.output.html)}
 									{/if}
-									{@html col.html}
 								</div>
 							{/each}
 						</div>
+						{#if block.output}
+							{@render output(block.output.html)}
+						{/if}
 					</div>
 				{/if}
 			{/each}
 		</div>
 	</div>
 </section>
+
+{#snippet output(html: string)}
+	<div
+		class="out flex border-t border-neutral-200 bg-neutral-100 text-neutral-800 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200"
+	>
+		<span class="px-3 py-1.5 font-mono text-xs text-neutral-400 select-none dark:text-neutral-500">
+			&rsaquo;
+		</span>
+		{@html html}
+	</div>
+{/snippet}
 
 {#snippet label(text: string)}
 	<div
@@ -110,16 +116,27 @@
 {/snippet}
 
 <style>
+	/* every column draws its leading edge; the wrapper clips the first visible one, so hiding any column keeps single dividers */
+	.cols {
+		margin-left: -1px;
+	}
 	.col {
 		flex: 1 1 0;
+		border-left-width: 1px;
 	}
 	@media (max-width: 56rem) {
 		.cols {
+			margin-left: 0;
+			margin-top: -1px;
 			flex-direction: column;
+		}
+		.col {
+			border-left-width: 0;
+			border-top-width: 1px;
 		}
 	}
 	.langs :global(.out pre.shiki) {
-		padding: 0.5rem 0.75rem;
+		padding: 0.375rem 0.75rem 0.375rem 0;
 		font-weight: 600;
 	}
 	.langs :global(.prose code::before),
