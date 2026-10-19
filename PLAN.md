@@ -31,6 +31,7 @@ Renderer: `src/lib/content/langs.ts` parses the markdown with marked, highlights
 - [x] Copy button per snippet: one inline script in `+layout.svelte`, hidden when `navigator.clipboard` is missing.
 - [x] "Python → Rust → Go" index lives in the overview, every row linked to its compare section. Decorator, `with`, `uv` and `ruff` rows have no compare section yet.
 - [x] Output strips: `# =>` comments are stripped from code and shown under each column. An output only one language prints takes that language's color (blue / orange / teal, mockup in `mockups/output-colors.html`); matches stay neutral. Quotes and boolean spelling are ignored when comparing.
+- [x] Granular output diff: only the tokens another column lacks on the same line take the language color (`8080` stays neutral, the extra `true`s light up). Punctuation is colored only when glued to a colored word.
 - [x] Compare sections for the four index rows that had none: decorator, `with`, `uv` / `cargo` / `go mod`, `ruff` / `clippy` / `go vet`. Code snippets executed, commands run once.
 - [x] Language picker: `py` / `rs` / `go` toggles in the nav hide a language's columns on any page that has more than one. Inline script plus `data-hide` on `<html>`, persisted in localStorage; no hydration.
 - [ ] Parts: compare at finer grain than a whole snippet, with the languages linked part by part. Design in SPEC.md, pivot prototype at `/lab`. Markers are comments (`# --`, `// --`), so authoring can land before the parser. Next step is markers on three sections, then the parser.
