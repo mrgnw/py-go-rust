@@ -10,7 +10,7 @@ Today: one absolutely positioned `Copy` button in the top right of every snippet
 ## Do
 
 1. Move the whole-snippet button to the right end of the label row (`Python`, `Rust`, `Cargo.toml`), same row as the language name. The label snippet lives in `LangPage.svelte`; the button is currently inside `col.html`, so either move the button markup out of `highlight()` into the label snippet, or render it in the label snippet and drop it from `highlight()`. Keep `button.parentElement.querySelector('pre')` working or update the click handler to find the column's `pre` from the label.
-2. Per-part copy on hover. Blocked on the parts parser ([parts-hover-link](parts-hover-link.md)); until parts exist, add per-line copy for fences where every line is its own command, i.e. `sh` fences (`uv init hello && cd hello`, `uv add httpx`, ...). Button appears at the end of the line on hover, copies that line without the `=>` comment (already stripped by the loader). CSS only for show/hide (`:hover`), same delegated click handler.
+2. Per-part copy on hover. Blocked on the parts parser ([parts-hover-link](done/1018-parts-hover-link.md)); until parts exist, add per-line copy for fences where every line is its own command, i.e. `sh` fences (`uv init hello && cd hello`, `uv add httpx`, ...). Button appears at the end of the line on hover, copies that line without the `=>` comment (already stripped by the loader). CSS only for show/hide (`:hover`), same delegated click handler.
 3. Parts have landed (`col.parts`, one `<div class="part" data-part>` per part in `LangPage.svelte`); this step can start. Switch the per-line rule to per-part: one button per part, one line in simple examples, several lines in longer ones.
 
 ## Don't

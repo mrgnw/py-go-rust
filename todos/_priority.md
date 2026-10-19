@@ -1,12 +1,11 @@
 # Priority
 
-1. [copy-button-placement](done/1018-copy-button-placement.md) — small, independent
-2. ~~[granular-output-diff](done/1018-granular-output-diff.md)~~ — done, PR #3
-3. [command-palette](done/1018-command-palette.md)
-4. [keyboard-shortcuts](done/1018-keyboard-shortcuts.md) — same file as 3, do after 3 lands or in the same worktree
-5. [parts-hover-link](parts-hover-link.md) — parts parser plus the first feature on top of it; per-part copy buttons (from 1) follow it
+1. [copy-button-placement](done/1018-copy-button-placement.md) — done, PR #2; step 3 (per-part copy) still open
+2. [granular-output-diff](done/1018-granular-output-diff.md) — done, PR #3
+3. [command-palette](done/1018-command-palette.md) — done, PR #4
+4. [keyboard-shortcuts](done/1018-keyboard-shortcuts.md) — done, PR #4
+5. [parts-hover-link](done/1018-parts-hover-link.md) — done, PR #5
 6. [drag-reorder-languages](drag-reorder-languages.md) — maybe
-5. [parts-hover-link](parts-hover-link.md) — parts parser plus the first feature on top of it; per-part copy buttons (from 1) follow it
 6. [drag-reorder-languages](drag-reorder-languages.md) — maybe
 
 ## Context every agent needs
