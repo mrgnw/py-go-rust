@@ -24,11 +24,15 @@ export type Block =
 			steps?: Step[];
 	  };
 
-// pad: blank lines the author left above and below the part, kept as spacing so the code reads as written
+// A part is the same idea in every column of a row, found at the same path (`1`, `1.0`).
+// A leaf has html; a group has parts and no lines of its own. pad: blank lines the author left above
+// and below a leaf, kept as spacing so the code reads as written.
 export interface Part {
+	path: string;
 	label?: string;
 	html: string;
 	pad: [number, number];
+	parts: Part[];
 }
 
 // output: each column carries its own, with `<span class="diff">` around tokens another column lacks
@@ -99,45 +103,78 @@ function pickLang(lang: string, label: string): string | undefined {
 	return byLabel ?? (PICKABLE.includes(lang) ? lang : undefined);
 }
 
-// SPEC.md parts: `# --` / `// --` plus an optional label. Depth (`---`) is not used yet; parts are flat.
-const MARKER = /^[ \t]*(?:#|\/\/) -{2,3}(?: (.*))?$/;
+// SPEC.md parts: `# --` / `// --` plus an optional label. Two dashes are depth 1, three depth 2.
+const MARKER = /^[ \t]*(?:#|\/\/) (-{2,})(?: (.*))?$/;
+const MAX_DEPTH = 2;
 const MAX_PARTS = 8;
 
-// Marker lines vanish; every other line stays. Text before the first marker is a part only when it has code.
-function splitParts(code: string): { label?: string; code: string; pad: [number, number] }[] {
-	const parts: { label?: string; lines: string[] }[] = [{ lines: [] }];
-	for (const line of code.split('\n')) {
-		const marker = line.match(MARKER);
-		if (marker) parts.push({ label: marker[1]?.trim() || undefined, lines: [] });
-		else parts[parts.length - 1].lines.push(line);
+const markerDepth = (line: string) => (line.match(MARKER)?.[1].length ?? 1) - 1;
+const blank = (line: string) => !line.trim();
+
+// Split at markers of exactly `depth`; deeper markers stay with their lines for the next level.
+// Blank text before the first marker joins the first part instead of becoming one.
+function chunks(lines: string[], depth: number): { label?: string; lines: string[] }[] {
+	const out: { label?: string; lines: string[] }[] = [{ lines: [] }];
+	for (const line of lines) {
+		if (markerDepth(line) === depth)
+			out.push({ label: line.match(MARKER)?.[2]?.trim() || undefined, lines: [] });
+		else out[out.length - 1].lines.push(line);
 	}
-	const blank = (line: string) => !line.trim();
-	const leading = parts.length === 1 || !parts[0].lines.every(blank);
-	return (leading ? parts : parts.slice(1)).map((p) => {
-		const first = p.lines.findIndex((line) => !blank(line));
-		if (first < 0) return { label: p.label, code: '', pad: [p.lines.length, 0] };
-		const last = p.lines.findLastIndex((line) => !blank(line));
-		return {
-			label: p.label,
-			code: p.lines.slice(first, last + 1).join('\n'),
-			pad: [first, p.lines.length - 1 - last]
-		};
+	if (out.length > 1 && out[0].lines.every(blank)) out[1].lines.unshift(...out.shift()!.lines);
+	return out;
+}
+
+function leaf(lines: string[], lang: string): { html: string; pad: [number, number] } {
+	const first = lines.findIndex((line) => !blank(line));
+	if (first < 0) return { html: '', pad: [lines.length, 0] };
+	const last = lines.findLastIndex((line) => !blank(line));
+	return {
+		html: toHtml(lines.slice(first, last + 1).join('\n'), lang),
+		pad: [first, lines.length - 1 - last]
+	};
+}
+
+// Marker lines vanish; every other line, blank ones included, lands in exactly one leaf.
+function toParts(lines: string[], lang: string, depth = 1, prefix = ''): Part[] {
+	return chunks(lines, depth).map((chunk, k) => {
+		const path = prefix + k;
+		if (!chunk.lines.some((line) => MARKER.test(line)))
+			return { path, label: chunk.label, parts: [], ...leaf(chunk.lines, lang) };
+		const parts = toParts(chunk.lines, lang, depth + 1, `${path}.`);
+		return { path, label: chunk.label, html: '', pad: [0, 0], parts };
 	});
 }
 
-function highlight(code: string, info: string): Col {
+function highlight(code: string, info: string, section: string): Col {
 	const [lang, ...rest] = info.trim().split(/\s+/);
 	if (!LANGS.includes(lang as Lang)) throw new Error(`langs: unsupported fence language "${info}"`);
 	const label = rest.join(' ') || LABELS[lang as Lang];
-	return {
-		label,
-		lang: pickLang(lang, label),
-		parts: splitParts(code).map((p) => ({
-			label: p.label,
-			html: p.code ? toHtml(p.code, lang) : '',
-			pad: p.pad
-		}))
-	};
+	const lines = code.split('\n');
+	const depths = lines.map(markerDepth).filter((d) => d > 0);
+	if (depths.some((d) => d > MAX_DEPTH))
+		throw new Error(`langs: ${section}: ${label} has a marker deeper than ${MAX_DEPTH} levels`);
+	if (depths[0] > 1)
+		throw new Error(`langs: ${section}: ${label} has a depth-2 marker without a depth-1 parent`);
+	return { label, lang: pickLang(lang, label), parts: toParts(lines, lang) };
+}
+
+// Every column needs the same tree: the same number of parts under each path, at most MAX_PARTS.
+function checkShape(section: string, cols: Col[], lists: Part[][], under = ''): void {
+	const counts = lists.map((parts) => parts.length);
+	const where = under ? ` under part ${under}` : '';
+	if (counts.some((n) => n !== counts[0]))
+		throw new Error(
+			`langs: ${section}:${where} ${cols.map((c, i) => `${c.label} has ${counts[i]} parts`).join(', ')}`
+		);
+	if (counts[0] > MAX_PARTS)
+		throw new Error(`langs: ${section}:${where} more than ${MAX_PARTS} parts`);
+	for (const [k, part] of lists[0].entries())
+		checkShape(
+			section,
+			cols,
+			lists.map((parts) => parts[k].parts),
+			part.path
+		);
 }
 
 // When every column prints the same thing, show it once in a leading Output column.
@@ -166,15 +203,14 @@ function codeRow(fences: { text: string; info: string }[], section: string): Blo
 	};
 	const cols = fences.map((f, i) =>
 		outputs[i].length
-			? { ...highlight(strip(f.text), f.info), output: outputHtml(i) }
-			: highlight(f.text, f.info)
+			? { ...highlight(strip(f.text), f.info, section), output: outputHtml(i) }
+			: highlight(f.text, f.info, section)
 	);
-	const counts = cols.map((c) => c.parts.length);
-	if (counts.some((n) => n !== counts[0]))
-		throw new Error(
-			`langs: ${section}: ${cols.map((c) => `${c.label} has ${c.parts.length} parts`).join(', ')}`
-		);
-	if (counts[0] > MAX_PARTS) throw new Error(`langs: ${section}: more than ${MAX_PARTS} parts`);
+	checkShape(
+		section,
+		cols,
+		cols.map((c) => c.parts)
+	);
 	return shared ? { kind: 'code', cols, steps: pivot(fences, outputs[0]) } : { kind: 'code', cols };
 }
 

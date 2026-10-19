@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { LangPage } from './content/langs';
+	import type { LangPage, Part } from './content/langs';
 
 	let { page }: { page: LangPage } = $props();
 	const grouped = $derived(page.blocks.some((b) => b.kind === 'group'));
@@ -81,23 +81,10 @@
 								>
 									{@render label(col.label)}
 									<div class="snippet">
-										{#each col.parts as part, k}
-											<div
-												class="part"
-												data-part={col.parts.length > 1 ? k : undefined}
-												style:--pad-top={part.pad[0] || undefined}
-												style:--pad-bottom={part.pad[1] || undefined}
-											>
-												{#if part.label}
-													<div
-														class="caption absolute top-0 right-3 font-mono text-[0.7rem] text-neutral-400 select-none dark:text-neutral-500"
-													>
-														{part.label}
-													</div>
-												{/if}
-												{@html part.html}
-											</div>
-										{/each}
+										{@render parts(
+											col.parts,
+											col.parts.length > 1 || col.parts[0].parts.length > 0
+										)}
 									</div>
 									{#if col.output}
 										{@render output(col.output)}
@@ -111,6 +98,30 @@
 		</div>
 	</div>
 </section>
+
+{#snippet parts(list: Part[], linked: boolean)}
+	{#each list as part (part.path)}
+		<div
+			class="part"
+			data-part={linked ? part.path : undefined}
+			style:--pad-top={part.pad[0] || undefined}
+			style:--pad-bottom={part.pad[1] || undefined}
+		>
+			{#if part.label}
+				<div
+					class="caption absolute top-0 right-3 font-mono text-[0.7rem] text-neutral-400 select-none dark:text-neutral-500"
+				>
+					{part.label}
+				</div>
+			{/if}
+			{#if part.parts.length}
+				{@render parts(part.parts, true)}
+			{:else}
+				{@html part.html}
+			{/if}
+		</div>
+	{/each}
+{/snippet}
 
 {#snippet output(html: string)}
 	<div
@@ -186,8 +197,9 @@
 	[data-lang='go'] .out {
 		--odd: light-dark(var(--color-teal-600), var(--color-teal-300));
 	}
-	/* parts are invisible until hovered: no rules, no gaps. The hovered index tints itself in every
-	   column and shows its caption. One rule per index, up to MAX_PARTS in langs.ts. */
+	/* parts are invisible until hovered: no rules, no gaps. The layout script marks the hovered part
+	   and its parent with data-lit in every column; a lit child sits darker inside its lit parent.
+	   Keyboard stepping walks top-level parts only, one rule per index up to MAX_PARTS in langs.ts. */
 	.snippet {
 		padding-block: 0.75rem;
 	}
@@ -207,14 +219,15 @@
 		padding-top: 0;
 		padding-bottom: 0;
 	}
-	.cols:is(:has([data-part='0']:hover), :global([data-part-active='0'])) [data-part='0'],
-	.cols:is(:has([data-part='1']:hover), :global([data-part-active='1'])) [data-part='1'],
-	.cols:is(:has([data-part='2']:hover), :global([data-part-active='2'])) [data-part='2'],
-	.cols:is(:has([data-part='3']:hover), :global([data-part-active='3'])) [data-part='3'],
-	.cols:is(:has([data-part='4']:hover), :global([data-part-active='4'])) [data-part='4'],
-	.cols:is(:has([data-part='5']:hover), :global([data-part-active='5'])) [data-part='5'],
-	.cols:is(:has([data-part='6']:hover), :global([data-part-active='6'])) [data-part='6'],
-	.cols:is(:has([data-part='7']:hover), :global([data-part-active='7'])) [data-part='7'] {
+	.part:global([data-lit]),
+	.cols:global([data-part-active='0']) [data-part='0'],
+	.cols:global([data-part-active='1']) [data-part='1'],
+	.cols:global([data-part-active='2']) [data-part='2'],
+	.cols:global([data-part-active='3']) [data-part='3'],
+	.cols:global([data-part-active='4']) [data-part='4'],
+	.cols:global([data-part-active='5']) [data-part='5'],
+	.cols:global([data-part-active='6']) [data-part='6'],
+	.cols:global([data-part-active='7']) [data-part='7'] {
 		--caption: block;
 		background: light-dark(
 			color-mix(in oklab, var(--color-amber-200) 35%, transparent),

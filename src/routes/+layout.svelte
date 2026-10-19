@@ -48,6 +48,17 @@
 		update();
 	};
 	document.addEventListener('DOMContentLoaded', () => { syncPicker(); trackSections(); });
+	let hovered = null;
+	document.addEventListener('mouseover', (event) => {
+		const part = event.target.closest('[data-part]');
+		if (part === hovered) return;
+		hovered = part;
+		for (const lit of document.querySelectorAll('[data-lit]')) lit.removeAttribute('data-lit');
+		if (!part) return;
+		const path = part.dataset.part.split('.');
+		const same = path.map((_, i) => '[data-part="' + path.slice(0, i + 1).join('.') + '"]').join(', ');
+		for (const lit of part.closest('.cols').querySelectorAll(same)) lit.setAttribute('data-lit', '');
+	});
 	const fields = 'input, textarea, select, [contenteditable]';
 	const byId = (id) => document.getElementById(id);
 	let entries;
@@ -135,7 +146,7 @@
 		const top = (r) => r.getBoundingClientRect().top;
 		(step > 0 ? rows.find((r) => top(r) > 60) : rows.findLast((r) => top(r) < 52))?.scrollIntoView({ block: 'start' });
 	};
-	const partCount = (row) => Math.max(0, ...[...row.querySelectorAll('[data-part]')].filter((e) => e.checkVisibility()).map((e) => +e.dataset.part + 1));
+	const partCount = (row) => Math.max(0, ...[...row.querySelectorAll('[data-part]')].filter((e) => e.checkVisibility()).map((e) => parseInt(e.dataset.part) + 1));
 	const clearPart = () => document.querySelector('[data-part-active]')?.removeAttribute('data-part-active');
 	const stepPart = (step) => {
 		const rows = [...document.querySelectorAll('.cols')].filter((r) => r.offsetHeight && partCount(r));
