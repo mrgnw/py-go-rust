@@ -44,6 +44,24 @@ html[data-hide~='go'] [data-lang='go'] {
 	display: none;
 }
 
+html[data-sidebar='collapsed'] #sections-nav {
+	display: none;
+}
+
+@media (min-width: 64rem) {
+	html[data-sidebar='collapsed'] .sidebar-grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.sidebar-toggle::before {
+	content: '▾ ';
+}
+
+.sidebar-toggle[aria-expanded='false']::before {
+	content: '▸ ';
+}
+
 body:not(:has([data-compare])) .picker {
 	display: none;
 }

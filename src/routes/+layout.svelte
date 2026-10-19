@@ -18,6 +18,7 @@
 		['j k', 'Next / previous section'],
 		['n p', 'Next / previous code row'],
 		['. ,', 'Next / previous part (Esc clears)'],
+		['b', 'Show / hide the sections sidebar'],
 		['?', 'This list']
 	];
 
@@ -27,6 +28,16 @@
 	if (navigator.clipboard) document.documentElement.dataset.copy = '';
 	const html = document.documentElement;
 	html.dataset.hide = localStorage.getItem('hide') ?? '';
+	html.dataset.sidebar = localStorage.getItem('sidebar') ?? '';
+	const syncSidebar = () => {
+		const toggle = document.querySelector('[data-sidebar-toggle]');
+		if (toggle) toggle.setAttribute('aria-expanded', String(html.dataset.sidebar !== 'collapsed'));
+	};
+	const toggleSidebar = () => {
+		html.dataset.sidebar = html.dataset.sidebar === 'collapsed' ? '' : 'collapsed';
+		localStorage.setItem('sidebar', html.dataset.sidebar);
+		syncSidebar();
+	};
 	const syncPicker = () => {
 		const hidden = html.dataset.hide.split(' ');
 		for (const b of document.querySelectorAll('[data-pick]'))
@@ -47,7 +58,7 @@
 		addEventListener('scroll', () => { if (!queued) { queued = true; requestAnimationFrame(update); } }, { passive: true });
 		update();
 	};
-	document.addEventListener('DOMContentLoaded', () => { syncPicker(); trackSections(); });
+	document.addEventListener('DOMContentLoaded', () => { syncPicker(); syncSidebar(); trackSections(); });
 	let hovered = null;
 	document.addEventListener('mouseover', (event) => {
 		const part = event.target.closest('[data-part]');
@@ -170,6 +181,7 @@
 			1: () => picks[0] && toggleLang(picks[0].dataset.pick),
 			2: () => picks[1] && toggleLang(picks[1].dataset.pick),
 			3: () => picks[2] && toggleLang(picks[2].dataset.pick),
+			b: toggleSidebar,
 			j: () => stepSection(1),
 			k: () => stepSection(-1),
 			n: () => stepRow(1),
@@ -186,6 +198,7 @@
 	document.addEventListener('click', (event) => {
 		const button = event.target.closest('[data-pick]');
 		if (button) toggleLang(button.dataset.pick);
+		if (event.target.closest('[data-sidebar-toggle]')) toggleSidebar();
 		if (event.target.closest('[data-help]')) byId('help').showModal();
 	});
 	document.addEventListener('click', async (event) => {

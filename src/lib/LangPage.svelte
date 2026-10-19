@@ -20,9 +20,23 @@
 </script>
 
 <section class="langs pb-16" data-compare={compares || undefined}>
-	<h1 class="mb-2 text-3xl font-bold">{page.title}</h1>
-	<div class="lg:grid lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-10">
+	<div class="mb-2 flex items-center justify-between gap-4">
+		<h1 class="text-3xl font-bold">{page.title}</h1>
+		{#if toc.length}
+			<button
+				type="button"
+				data-sidebar-toggle
+				aria-expanded="true"
+				aria-controls="sections-nav"
+				aria-keyshortcuts="b"
+				class="sidebar-toggle cursor-pointer rounded-md px-2 py-1 font-mono text-xs text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
+				>Sections</button
+			>
+		{/if}
+	</div>
+	<div class="sidebar-grid lg:grid lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-10">
 		<nav
+			id="sections-nav"
 			aria-label="Sections"
 			class="mb-8 lg:sticky lg:top-16 lg:mb-0 lg:max-h-[calc(100dvh-5rem)] lg:self-start lg:overflow-y-auto"
 		>
