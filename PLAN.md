@@ -39,6 +39,7 @@ Renderer: `src/lib/content/langs.ts` parses the markdown with marked, highlights
 - [x] Keyboard stepping through parts: `.` / `,` move across rows, Esc clears; the active part tints like hover (`data-part-active`). Steps top-level parts only.
 - [x] Nested parts: `---` markers are children of the enclosing `--` part (If-else branches). Hover tints the child and, lighter, its parent, via `data-lit` set by the inline script.
 - [x] Per-part copy: a small `Copy` button beside each part's caption on hover or when keyboard-active, copying only that part (nested parts included); hidden on single-part columns.
+- [x] Collapsible sections sidebar: `Sections` toggle beside the page title or `b`; `data-sidebar="collapsed"` on `<html>` plus localStorage, set before first paint; the grid column goes away at `lg`, below it the stacked list hides.
 - [ ] Parts, next: markers on more sections, then pivot and expand against the part tree (SPEC.md "Views").
 
 Handoff tasks for parallel agents: `todos/_priority.md`.
