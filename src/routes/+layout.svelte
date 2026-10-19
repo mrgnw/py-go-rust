@@ -12,6 +12,14 @@
 		['go', 'go']
 	];
 
+	const SHORTCUTS = [
+		['⌘K', 'Search sections'],
+		['1 2 3', 'Toggle Python / Rust / Go'],
+		['j k', 'Next / previous section'],
+		['n p', 'Next / previous code row'],
+		['?', 'This list']
+	];
+
 	const sectionsJson = $derived(JSON.stringify(data.sections).replaceAll('<', '\\u003c'));
 
 	const inlineScript = `<script>
@@ -94,7 +102,10 @@
 			byId('palette').open ? byId('palette').close() : openPalette();
 			return;
 		}
-		if (target.id === 'palette-input') paletteKey(event);
+		if (target.id === 'palette-input') return paletteKey(event);
+		if (event.metaKey || event.ctrlKey || event.altKey || target.closest(fields)) return;
+		if (document.querySelector('dialog[open]')) return;
+		shortcut(event);
 	});
 	document.addEventListener('input', (event) => {
 		if (event.target.id === 'palette-input') search();
@@ -104,14 +115,45 @@
 		if (event.target.localName === 'dialog') event.target.close();
 		if (event.target.closest('#palette-list a')) byId('palette').close();
 	});
-	document.addEventListener('click', (event) => {
-		const button = event.target.closest('[data-pick]');
-		if (!button) return;
+	const toggleLang = (name) => {
 		const hidden = new Set(html.dataset.hide.split(' ').filter(Boolean));
-		hidden.has(button.dataset.pick) ? hidden.delete(button.dataset.pick) : hidden.add(button.dataset.pick);
+		hidden.has(name) ? hidden.delete(name) : hidden.add(name);
 		html.dataset.hide = [...hidden].join(' ');
 		localStorage.setItem('hide', html.dataset.hide);
 		syncPicker();
+	};
+	const stepSection = (step) => {
+		const links = [...document.querySelectorAll('nav[aria-label="Sections"] li a[href^="#"]')];
+		if (!links.length) return;
+		const i = links.findIndex((a) => a.hasAttribute('aria-current'));
+		const next = links[Math.min(links.length - 1, Math.max(0, i + step))];
+		document.getElementById(decodeURIComponent(next.hash.slice(1))).scrollIntoView({ block: 'start' });
+	};
+	const stepRow = (step) => {
+		const rows = [...document.querySelectorAll('.cols')].filter((r) => r.offsetHeight);
+		const top = (r) => r.getBoundingClientRect().top;
+		(step > 0 ? rows.find((r) => top(r) > 60) : rows.findLast((r) => top(r) < 52))?.scrollIntoView({ block: 'start' });
+	};
+	const shortcut = (event) => {
+		const picks = document.querySelector('[data-compare]') ? [...document.querySelectorAll('[data-pick]')] : [];
+		const keys = {
+			1: () => picks[0] && toggleLang(picks[0].dataset.pick),
+			2: () => picks[1] && toggleLang(picks[1].dataset.pick),
+			3: () => picks[2] && toggleLang(picks[2].dataset.pick),
+			j: () => stepSection(1),
+			k: () => stepSection(-1),
+			n: () => stepRow(1),
+			p: () => stepRow(-1),
+			'?': () => byId('help').showModal()
+		};
+		if (!keys[event.key]) return;
+		event.preventDefault();
+		keys[event.key]();
+	};
+	document.addEventListener('click', (event) => {
+		const button = event.target.closest('[data-pick]');
+		if (button) toggleLang(button.dataset.pick);
+		if (event.target.closest('[data-help]')) byId('help').showModal();
 	});
 	document.addEventListener('click', async (event) => {
 		const line = event.target.closest('.copy-line');
@@ -166,8 +208,34 @@
 			class="cursor-pointer rounded-md px-2 py-1 whitespace-nowrap text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
 			>search <kbd>⌘K</kbd></button
 		>
+		<button
+			type="button"
+			data-help
+			aria-label="Keyboard shortcuts"
+			class="cursor-pointer rounded-md px-2 py-1 text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
+			><kbd>?</kbd></button
+		>
 	</div>
 </nav>
+
+<dialog
+	id="help"
+	aria-label="Keyboard shortcuts"
+	class="m-auto w-[min(26rem,calc(100vw-2rem))] rounded-lg border border-neutral-200 bg-white p-5 text-sm text-neutral-900 shadow-xl dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
+>
+	<table class="w-full">
+		<tbody>
+			{#each SHORTCUTS as [keys, action] (keys)}
+				<tr>
+					<th scope="row" class="py-1 pr-4 text-left font-mono font-normal whitespace-nowrap"
+						><kbd>{keys}</kbd></th
+					>
+					<td class="py-1 text-neutral-500 dark:text-neutral-400">{action}</td>
+				</tr>
+			{/each}
+		</tbody>
+	</table>
+</dialog>
 
 <dialog
 	id="palette"

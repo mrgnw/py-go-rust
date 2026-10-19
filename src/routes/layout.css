@@ -68,3 +68,11 @@ body:not(:has([data-compare])) .picker {
 #palette-list [aria-selected='true'] a {
 	@apply bg-neutral-100 dark:bg-neutral-800;
 }
+
+.cols {
+	scroll-margin-top: 3.5rem;
+}
+
+#help::backdrop {
+	@apply bg-black/40;
+}
