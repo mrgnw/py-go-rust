@@ -1,6 +1,6 @@
 import { marked, type Token } from 'marked';
 import { createHighlighter, type ShikiTransformer } from 'shiki';
-import { diffLine, escapeHtml, OUTPUT, sameValue } from './diff';
+import { diffLine, escapeHtml, OUTPUT } from './diff';
 
 const LANGS = ['python', 'rust', 'go', 'sh', 'toml', 'text'] as const;
 type Lang = (typeof LANGS)[number];
@@ -18,19 +18,16 @@ export type Block =
 	| { kind: 'group'; id: string; title: string }
 	| { kind: 'h2'; id: string; title: string }
 	| { kind: 'html'; html: string }
-	| {
-			kind: 'code';
-			cols: Col[];
-			steps?: Step[];
-	  };
+	| { kind: 'code'; cols: Col[] };
 
 // A part is the same idea in every column of a row, found at the same path (`1`, `1.0`).
 // A leaf has html; a group has parts and no lines of its own. pad: blank lines the author left above
-// and below a leaf, kept as spacing so the code reads as written.
+// and below a leaf, kept as spacing so the code reads as written. output: the leaf's `=>` lines.
 export interface Part {
 	path: string;
 	label?: string;
 	html: string;
+	output?: string;
 	pad: [number, number];
 	parts: Part[];
 }
@@ -41,13 +38,6 @@ export interface Col {
 	parts: Part[];
 	lang?: string;
 	output?: string;
-}
-
-// lab: the same row pivoted, one step per output with each language's line(s) stacked
-export interface Step {
-	output?: string;
-	multi: boolean;
-	lines: { lang: string; html: string }[];
 }
 
 export interface LangPage {
@@ -124,12 +114,18 @@ function chunks(lines: string[], depth: number): { label?: string; lines: string
 	return out;
 }
 
-function leaf(lines: string[], lang: string): { html: string; pad: [number, number] } {
+function leaf(
+	raw: string[],
+	lang: string
+): { html: string; output?: string; pad: [number, number] } {
+	const outputs = raw.flatMap((line) => line.match(OUTPUT)?.[1] ?? []);
+	const lines = raw.map((line) => line.replace(OUTPUT, ''));
 	const first = lines.findIndex((line) => !blank(line));
 	if (first < 0) return { html: '', pad: [lines.length, 0] };
 	const last = lines.findLastIndex((line) => !blank(line));
 	return {
 		html: toHtml(lines.slice(first, last + 1).join('\n'), lang),
+		output: outputs.length ? outputs.join('\n') : undefined,
 		pad: [first, lines.length - 1 - last]
 	};
 }
@@ -177,18 +173,10 @@ function checkShape(section: string, cols: Col[], lists: Part[][], under = ''): 
 		);
 }
 
-// When every column prints the same thing, show it once in a leading Output column.
 function codeRow(fences: { text: string; info: string }[], section: string): Block {
 	const outputs = fences.map((f) =>
 		f.text.split('\n').flatMap((line) => line.match(OUTPUT)?.[1] ?? [])
 	);
-	const values = outputs.map((lines) => sameValue(lines.join('\n')));
-	const shared = fences.length > 1 && outputs[0].length > 0 && values.every((v) => v === values[0]);
-	const strip = (text: string) =>
-		text
-			.split('\n')
-			.map((line) => line.replace(OUTPUT, ''))
-			.join('\n');
 	const outputHtml = (i: number) => {
 		const others = outputs.filter((lines, k) => k !== i && lines.length);
 		const body = outputs[i].map((line, k) =>
@@ -201,61 +189,16 @@ function codeRow(fences: { text: string; info: string }[], section: string): Blo
 		);
 		return `<pre class="shiki"><code>${body.join('\n')}</code></pre>`;
 	};
-	const cols = fences.map((f, i) =>
-		outputs[i].length
-			? { ...highlight(strip(f.text), f.info, section), output: outputHtml(i) }
-			: highlight(f.text, f.info, section)
-	);
+	const cols = fences.map((f, i) => ({
+		...highlight(f.text, f.info, section),
+		output: outputs[i].length ? outputHtml(i) : undefined
+	}));
 	checkShape(
 		section,
 		cols,
 		cols.map((c) => c.parts)
 	);
-	return shared ? { kind: 'code', cols, steps: pivot(fences, outputs[0]) } : { kind: 'code', cols };
-}
-
-// Go's `func main() {` ... `}` wrapper is scaffolding; drop it so its body pivots like the rest.
-function unwrapMain(text: string, lang: string): string {
-	const lines = text.trimEnd().split('\n');
-	const start = lines.indexOf('func main() {');
-	if (lang !== 'go' || start < 0 || lines.at(-1) !== '}') return text;
-	const body = lines.slice(start + 1, -1).map((line) => line.replace(/^\t/, ''));
-	return [...lines.slice(0, start), ...body].join('\n');
-}
-
-// Split each fence at its output lines: lines leading up to output k form an
-// unlabelled step, the line that prints output k forms a step labelled with it.
-function pivot(fences: { text: string; info: string }[], outputs: string[]): Step[] {
-	const chunks = fences.map((f) => {
-		const lang = f.info.trim().split(/\s+/)[0];
-		const pre: string[][] = outputs.map(() => []);
-		const out: string[] = [];
-		let pending: string[] = [];
-		for (const line of unwrapMain(f.text, lang).split('\n')) {
-			if (MARKER.test(line)) continue;
-			if (OUTPUT.test(line)) {
-				pre[out.length] = pending;
-				out.push(line.replace(OUTPUT, '').trim());
-				pending = [];
-			} else if (line.trim() || pending.length) pending.push(line);
-		}
-		return { lang, pre, out, post: pending };
-	});
-	const step = (output: string | undefined, pick: (c: (typeof chunks)[number]) => string[]) => {
-		const lines = chunks.flatMap((c) => {
-			const code = pick(c).join('\n').trimEnd();
-			return code ? [{ lang: c.lang, html: toHtml(code, c.lang) }] : [];
-		});
-		const multi = chunks.some((c) => pick(c).join('\n').trim().includes('\n'));
-		return lines.length ? [{ output, multi, lines }] : [];
-	};
-	return [
-		...outputs.flatMap((output, k) => [
-			...step(undefined, (c) => c.pre[k]),
-			...step(output, (c) => [c.out[k]])
-		]),
-		...step(undefined, (c) => c.post)
-	];
+	return { kind: 'code', cols };
 }
 
 function toBlocks(md: string, slug: string): Block[] {
