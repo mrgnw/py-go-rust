@@ -1,5 +1,6 @@
 ---
 title: Color only the tokens that differ in an output strip
+pull-request: 3
 ---
 
 # Granular output diff
