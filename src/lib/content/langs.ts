@@ -23,10 +23,15 @@ export type Block =
 			steps?: Step[];
 	  };
 
+export interface Part {
+	label?: string;
+	html: string;
+}
+
 // output: each column carries its own, with `<span class="diff">` around tokens another column lacks
 export interface Col {
 	label: string;
-	html: string;
+	parts: Part[];
 	lang?: string;
 	output?: string;
 }
@@ -91,15 +96,39 @@ function pickLang(lang: string, label: string): string | undefined {
 	return byLabel ?? (PICKABLE.includes(lang) ? lang : undefined);
 }
 
+// SPEC.md parts: `# --` / `// --` plus an optional label. Depth (`---`) is not used yet; parts are flat.
+const MARKER = /^[ \t]*(?:#|\/\/) -{2,3}(?: (.*))?$/;
+const MAX_PARTS = 8;
+
+// Text before the first marker is a part only when it has code; blank lines at part edges belong to nobody.
+function splitParts(code: string): { label?: string; code: string }[] {
+	const parts: { label?: string; lines: string[] }[] = [{ lines: [] }];
+	for (const line of code.split('\n')) {
+		const marker = line.match(MARKER);
+		if (marker) parts.push({ label: marker[1]?.trim() || undefined, lines: [] });
+		else parts[parts.length - 1].lines.push(line);
+	}
+	const leading = parts.length === 1 || parts[0].lines.some((line) => line.trim());
+	return (leading ? parts : parts.slice(1)).map((p) => ({
+		label: p.label,
+		code: p.lines
+			.join('\n')
+			.replace(/^(?:[ \t]*\n)+/, '')
+			.trimEnd()
+	}));
+}
+
 function highlight(code: string, info: string): Col {
 	const [lang, ...rest] = info.trim().split(/\s+/);
 	if (!LANGS.includes(lang as Lang)) throw new Error(`langs: unsupported fence language "${info}"`);
-	const html = toHtml(code, lang);
 	const label = rest.join(' ') || LABELS[lang as Lang];
 	return {
 		label,
 		lang: pickLang(lang, label),
-		html
+		parts: splitParts(code).map((p) => ({
+			label: p.label,
+			html: p.code ? toHtml(p.code, lang) : ''
+		}))
 	};
 }
 
@@ -154,7 +183,7 @@ function diffLine(line: string, others: string[]): string {
 }
 
 // When every column prints the same thing, show it once in a leading Output column.
-function codeRow(fences: { text: string; info: string }[]): Block {
+function codeRow(fences: { text: string; info: string }[], section: string): Block {
 	const outputs = fences.map((f) =>
 		f.text.split('\n').flatMap((line) => line.match(OUTPUT)?.[1] ?? [])
 	);
@@ -182,6 +211,12 @@ function codeRow(fences: { text: string; info: string }[]): Block {
 			? { ...highlight(strip(f.text), f.info), output: outputHtml(i) }
 			: highlight(f.text, f.info)
 	);
+	const counts = cols.map((c) => c.parts.length);
+	if (counts.some((n) => n !== counts[0]))
+		throw new Error(
+			`langs: ${section}: ${cols.map((c) => `${c.label} has ${c.parts.length} parts`).join(', ')}`
+		);
+	if (counts[0] > MAX_PARTS) throw new Error(`langs: ${section}: more than ${MAX_PARTS} parts`);
 	return shared ? { kind: 'code', cols, steps: pivot(fences, outputs[0]) } : { kind: 'code', cols };
 }
 
@@ -203,6 +238,7 @@ function pivot(fences: { text: string; info: string }[], outputs: string[]): Ste
 		const out: string[] = [];
 		let pending: string[] = [];
 		for (const line of unwrapMain(f.text, lang).split('\n')) {
+			if (MARKER.test(line)) continue;
 			if (OUTPUT.test(line)) {
 				pre[out.length] = pending;
 				out.push(line.replace(OUTPUT, '').trim());
@@ -231,8 +267,9 @@ function pivot(fences: { text: string; info: string }[], outputs: string[]): Ste
 function toBlocks(md: string, slug: string): Block[] {
 	const blocks: Block[] = [];
 	let fences: { text: string; info: string }[] = [];
+	let section = slug;
 	const flush = () => {
-		if (fences.length) blocks.push(codeRow(fences));
+		if (fences.length) blocks.push(codeRow(fences, section));
 		fences = [];
 	};
 	const tokens = marked.lexer(md) as Token[];
@@ -249,6 +286,7 @@ function toBlocks(md: string, slug: string): Block[] {
 		if (token.type === 'heading' && token.depth === 1) {
 			blocks.push({ kind: 'h1', title: token.text });
 		} else if (token.type === 'heading' && token.depth === sectionDepth) {
+			section = `${slug}: ${token.text}`;
 			blocks.push({ kind: 'h2', id: `${slug}-${slugify(token.text)}`, title: token.text });
 		} else if (token.type === 'heading' && grouped && token.depth === 2) {
 			blocks.push({ kind: 'group', id: `${slug}-${slugify(token.text)}`, title: token.text });

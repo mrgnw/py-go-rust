@@ -80,7 +80,20 @@
 									class="col min-w-0 border-neutral-200 dark:border-neutral-800"
 								>
 									{@render label(col.label)}
-									<div>{@html col.html}</div>
+									<div class="snippet">
+										{#each col.parts as part, k}
+											<div class="part" data-part={col.parts.length > 1 ? k : undefined}>
+												{#if part.label}
+													<div
+														class="caption px-3 pt-1.5 font-mono text-[0.7rem] text-neutral-400 select-none dark:text-neutral-500"
+													>
+														{part.label}
+													</div>
+												{/if}
+												{@html part.html}
+											</div>
+										{/each}
+									</div>
 									{#if col.output}
 										{@render output(col.output)}
 									{/if}
@@ -167,6 +180,16 @@
 	}
 	[data-lang='go'] .out {
 		--odd: light-dark(var(--color-teal-600), var(--color-teal-300));
+	}
+	.part + .part {
+		border-top: 1px solid light-dark(var(--color-neutral-200), var(--color-neutral-800));
+	}
+	.part:has(+ .part) :global(pre.shiki) {
+		padding-bottom: 0.375rem;
+	}
+	.part + .part :global(pre.shiki),
+	.caption + :global(pre.shiki) {
+		padding-top: 0.375rem;
 	}
 	.langs :global(.prose code::before),
 	.langs :global(.prose code::after) {

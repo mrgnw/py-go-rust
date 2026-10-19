@@ -164,7 +164,8 @@
 		}
 		const button = event.target.closest('.copy');
 		if (!button) return;
-		await navigator.clipboard.writeText(button.closest('.col').querySelector('pre').textContent);
+		const code = [...button.closest('.col').querySelectorAll('.snippet pre')].map((pre) => pre.textContent);
+		await navigator.clipboard.writeText(code.join('\\n'));
 		button.textContent = 'Copied';
 		setTimeout(() => (button.textContent = 'Copy'), 1500);
 	});
