@@ -377,44 +377,59 @@ Python names are references. Rust assignment moves (the old name is dead) and `&
 
 ```python
 n = 15
+# --
 label = 'big' if n > 10 else 'small'
+# --
 if n < 0:
 	sign = '-'
+# ---
 elif n == 0:
 	sign = '0'
+# ---
 else:
 	sign = '+'
+# --
 print(label, sign)  # => big +
 ```
 
 ```rust
 let n = 15;
+// --
 let label = if n > 10 { "big" } else { "small" };
+// --
 let sign = if n < 0 {
     "-"
+// ---
 } else if n == 0 {
     "0"
+// ---
 } else {
     "+"
 };
+// --
 println!("{label} {sign}"); // => big +
 ```
 
 ```go
 n := 15
+// --
 label := "small"
 if n > 10 {
 	label = "big"
 }
+// --
 var sign string
 switch {
 case n < 0:
 	sign = "-"
+// ---
 case n == 0:
 	sign = "0"
+// ---
 default:
 	sign = "+"
 }
+// --
 fmt.Println(label, sign) // => big +
 ```
 
@@ -735,39 +750,51 @@ Rust makes mutation explicit in the signature (`&mut self`). In Go a value recei
 from typing import Protocol
 class Shape(Protocol):
 	def area(self) -> float: ...
+# --
 class Square:
 	def __init__(self, s):
 		self.s = s
+	# --
 	def area(self):
 		return self.s ** 2
+# --
 def describe(shape: Shape):
 	print(shape.area())
+# --
 describe(Square(3))  # => 9
 ```
 
 ```rust
 trait Shape { fn area(&self) -> f64; }
 
+// --
 struct Square(f64);
 
+// --
 impl Shape for Square {
     fn area(&self) -> f64 { self.0 * self.0 }
 }
 
+// --
 fn describe(shape: &dyn Shape) { println!("{}", shape.area()); }
 
+// --
 describe(&Square(3.0)); // => 9
 ```
 
 ```go
 type Shape interface{ Area() float64 }
 
+// --
 type Square struct{ S float64 }
 
+// --
 func (s Square) Area() float64 { return s.S * s.S }
 
+// --
 func describe(shape Shape) { fmt.Println(shape.Area()) }
 
+// --
 func main() {
 	describe(Square{3}) // => 9
 }
@@ -880,12 +907,17 @@ Python's `[T]` is only a hint for type checkers. Rust and Go check the bound at 
 ### Error handling
 
 ```python
+# -- import
+# -- parse
 def parse_port(s):
 	try:
 		return int(s)
+	# -- wrap
 	except ValueError as e:
 		raise RuntimeError(f'bad port {s!r}') from e
+	# -- ok
 
+# -- handle
 try:
 	parse_port('x')
 except RuntimeError as e:
@@ -893,27 +925,37 @@ except RuntimeError as e:
 ```
 
 ```rust
+// -- import
 use std::error::Error;
 
+// -- parse
 fn parse_port(s: &str) -> Result<u16, Box<dyn Error>> {
+    // -- wrap
     let n = s.parse::<u16>().map_err(|e| format!("bad port {s:?}: {e}"))?;
+    // -- ok
     Ok(n)
 }
 
+// -- handle
 if let Err(e) = parse_port("x") {
     println!("{e}"); // => bad port "x": invalid digit found in string
 }
 ```
 
 ```go
+// -- import
+// -- parse
 func parsePort(s string) (int, error) {
 	n, err := strconv.Atoi(s)
+	// -- wrap
 	if err != nil {
 		return 0, fmt.Errorf("bad port %q: %w", s, err)
 	}
+	// -- ok
 	return n, nil
 }
 
+// -- handle
 func main() {
 	if _, err := parsePort("x"); err != nil {
 		fmt.Println(err) // => bad port "x": strconv.Atoi: parsing "x": invalid syntax
