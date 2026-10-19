@@ -1,6 +1,6 @@
 # Priority
 
-1. [copy-button-placement](done/1018-copy-button-placement.md) — done, PR #2 and per-part copy
+1. [copy-button-placement](done/1018-copy-button-placement.md) — done, PR #2, per-part copy in PR #14
 2. [granular-output-diff](done/1018-granular-output-diff.md) — done, PR #3
 3. [command-palette](done/1018-command-palette.md) — done, PR #4
 4. [keyboard-shortcuts](done/1018-keyboard-shortcuts.md) — done, PR #4

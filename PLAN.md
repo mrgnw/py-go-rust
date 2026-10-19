@@ -36,7 +36,7 @@ Renderer: `src/lib/content/langs.ts` parses the markdown with marked, highlights
 - [x] Compare sections for the four index rows that had none: decorator, `with`, `uv` / `cargo` / `go mod`, `ruff` / `clippy` / `go vet`. Code snippets executed, commands run once.
 - [x] Language picker: `py` / `rs` / `go` toggles in the nav hide a language's columns on any page that has more than one. Inline script plus `data-hide` on `<html>`, persisted in localStorage; no hydration.
 - [x] Parts: compare at finer grain than a whole snippet, with the languages linked part by part. Design in SPEC.md, pivot prototype at `/lab`. Markers (`# --`, `// --`) are parsed into flat parts on If-else, Interfaces and Error handling; hovering a part tints the same part in every column.
-- [x] Keyboard stepping through parts: `.` / `,` move across rows, Esc clears; the active part tints like hover (`data-part-active`). Steps top-level parts only.
+- [x] Keyboard stepping through parts: `.` / `,` move across rows, Esc clears; the stepped part is lit through the same `data-lit` as hover. Steps top-level parts only.
 - [x] Nested parts: `---` markers are children of the enclosing `--` part (If-else branches). Hover tints the child and, lighter, its parent, via `data-lit` set by the inline script.
 - [x] Per-part copy: a small `Copy` button beside each part's caption on hover or when keyboard-active, copying only that part (nested parts included); hidden on single-part columns.
 - [x] Collapsible sections sidebar: `Sections` toggle beside the page title or `b`; `data-sidebar="collapsed"` on `<html>` plus localStorage, set before first paint; the grid column goes away at `lg`, below it the stacked list hides.
