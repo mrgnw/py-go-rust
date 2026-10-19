@@ -107,11 +107,14 @@
 			style:--pad-top={part.pad[0] || undefined}
 			style:--pad-bottom={part.pad[1] || undefined}
 		>
-			{#if part.label}
+			{#if linked}
 				<div
-					class="caption absolute top-0 right-3 font-mono text-[0.7rem] text-neutral-400 select-none dark:text-neutral-500"
+					class="tools absolute top-0 right-3 items-center gap-2 rounded bg-neutral-50/90 pl-1 font-mono text-[0.7rem] select-none dark:bg-neutral-900/90"
 				>
-					{part.label}
+					{#if part.label}
+						<span class="text-neutral-400 dark:text-neutral-500">{part.label}</span>
+					{/if}
+					<button type="button" class="copy-part" aria-label="Copy part">Copy</button>
 				</div>
 			{/if}
 			{#if part.parts.length}
@@ -206,14 +209,14 @@
 	.part {
 		position: relative;
 		scroll-margin-block: 4rem;
-		--caption: none;
+		--tools: none;
 		font-size: 0.8rem;
 		line-height: 1.5;
 		padding-top: calc(var(--pad-top, 0) * 1lh);
 		padding-bottom: calc(var(--pad-bottom, 0) * 1lh);
 	}
-	.caption {
-		display: var(--caption);
+	.tools {
+		display: var(--tools);
 	}
 	.langs .part :global(pre.shiki) {
 		padding-top: 0;
@@ -228,7 +231,7 @@
 	.cols:global([data-part-active='5']) [data-part='5'],
 	.cols:global([data-part-active='6']) [data-part='6'],
 	.cols:global([data-part-active='7']) [data-part='7'] {
-		--caption: block;
+		--tools: flex;
 		background: light-dark(
 			color-mix(in oklab, var(--color-amber-200) 35%, transparent),
 			color-mix(in oklab, var(--color-amber-300) 12%, transparent)

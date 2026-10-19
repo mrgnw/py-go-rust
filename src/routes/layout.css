@@ -10,11 +10,13 @@ body {
 }
 
 .copy,
+.copy-part,
 .copy-line {
 	@apply hidden cursor-pointer rounded px-2 py-0.5 font-mono text-xs text-neutral-500 opacity-40 transition-opacity hover:opacity-100 focus-visible:opacity-100 dark:text-neutral-400;
 }
 
-[data-copy] .copy {
+[data-copy] .copy,
+[data-copy] .copy-part {
 	@apply block;
 }
 
@@ -48,6 +50,7 @@ body:not(:has([data-compare])) .picker {
 
 @media print {
 	.copy,
+	.copy-part,
 	.copy-line {
 		display: none !important;
 	}

@@ -195,9 +195,10 @@
 			line.dataset.copied = '';
 			return setTimeout(() => delete line.dataset.copied, 1500);
 		}
-		const button = event.target.closest('.copy');
+		const button = event.target.closest('.copy, .copy-part');
 		if (!button) return;
-		const code = [...button.closest('.col').querySelectorAll('.snippet pre')].map((pre) => pre.textContent);
+		const scope = button.closest('.part') ?? button.closest('.col');
+		const code = [...scope.querySelectorAll('.snippet pre')].map((pre) => pre.textContent);
 		await navigator.clipboard.writeText(code.join('\\n'));
 		button.textContent = 'Copied';
 		setTimeout(() => (button.textContent = 'Copy'), 1500);
