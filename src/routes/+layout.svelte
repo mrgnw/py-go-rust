@@ -204,7 +204,7 @@
 		for (const child of row.children) child.hidden = open ? child.dataset.split !== path : child.dataset.split !== undefined;
 		hovered = null;
 		light(null);
-		const shown = open ? row.querySelector('[data-split="' + path + '"] [data-toggle]') : [...row.querySelectorAll('[data-group="' + path + '"] > [data-toggle]')].find((b) => b.checkVisibility());
+		const shown = open ? row.querySelector('[data-split="' + path + '"] [data-toggle]') : [...row.querySelectorAll('[data-group="' + path + '"] > .tools [data-toggle]')].find((b) => b.checkVisibility());
 		if (event.detail === 0) shown?.focus();
 	});
 	document.addEventListener('click', (event) => {

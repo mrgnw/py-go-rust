@@ -97,9 +97,11 @@
 								{@render columns(block.cols, (col) => col.parts.slice(0, k), true, true, false)}
 								<div
 									data-collapse
-									class="relative border-y border-neutral-200 pt-6 pr-3 pb-3 pl-2 dark:border-neutral-800"
+									class="border-y border-neutral-200 pt-1 pr-3 pb-3 pl-2 dark:border-neutral-800"
 								>
-									{@render toggle(true)}
+									<div class="flex justify-end">
+										{@render toggle(true)}
+									</div>
 									<Pivot cols={block.cols} lists={block.cols.map((col) => col.parts[k].parts)} />
 								</div>
 								{@render columns(block.cols, (col) => col.parts.slice(k + 1), true, false, true)}
@@ -143,9 +145,7 @@
 		type="button"
 		data-toggle
 		aria-expanded={expanded}
-		class="toggle absolute right-3 z-10 cursor-pointer {expanded
-			? 'top-1'
-			: 'bottom-0'} rounded px-1.5 font-mono text-[0.7rem] leading-[1.2rem] text-neutral-500 dark:text-neutral-400"
+		class="toggle cursor-pointer rounded px-1.5 font-mono text-[0.7rem] leading-[1.2rem] text-neutral-500 dark:text-neutral-400"
 		>{expanded ? 'columns' : 'pivot'}</button
 	>
 {/snippet}
@@ -161,16 +161,18 @@
 		>
 			{#if linked}
 				<div
-					class="tools absolute top-0 right-3 z-10 items-center gap-2 rounded bg-neutral-50/90 pl-1 font-mono text-[0.7rem] select-none dark:bg-neutral-900/90"
+					class="tools flex flex-wrap items-start justify-end gap-x-2 pr-2 pl-1 font-mono text-[0.7rem] leading-[1.2rem] select-none"
 				>
 					{#if part.label}
 						<span class="text-neutral-400 dark:text-neutral-500">{part.label}</span>
 					{/if}
 					<button type="button" class="copy-part" aria-label="Copy part">Copy</button>
+					{#if part.parts.length}
+						{@render toggle(false)}
+					{/if}
 				</div>
 			{/if}
 			{#if part.parts.length}
-				{@render toggle(false)}
 				{@render parts(part.parts, true)}
 			{:else}
 				{@html part.html}
@@ -192,7 +194,7 @@
 
 {#snippet label(text: string, copy: boolean)}
 	<div
-		class="flex items-center justify-between border-b border-neutral-200 px-3 py-1 font-mono text-xs text-neutral-500 dark:border-neutral-800 dark:text-neutral-400"
+		class="flex items-center justify-between gap-3 border-b border-neutral-200 px-3 py-1 font-mono text-xs text-neutral-500 dark:border-neutral-800 dark:text-neutral-400"
 	>
 		{text}
 		{#if copy}
@@ -264,35 +266,55 @@
 	.part {
 		position: relative;
 		scroll-margin-block: 4rem;
-		--tools: none;
+		--tools: hidden;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
 		font-size: 0.8rem;
 		line-height: 1.5;
 		padding-top: calc(var(--pad-top, 0) * 1lh);
 		padding-bottom: calc(var(--pad-bottom, 0) * 1lh);
 	}
-	.tools {
-		display: var(--tools);
+	.part > :not(.tools) {
+		grid-column: 1;
 	}
-	.part .part > .tools {
-		right: 7.75rem;
+	.tools {
+		grid-column: 2;
+		grid-row: 1;
+		max-width: 10rem;
+		visibility: var(--tools);
+	}
+	.tools ~ :global(pre.shiki) {
+		padding-right: 0;
+	}
+	.tools :global(.copy-part) {
+		padding-block: 0;
+		padding-inline: 0.375rem;
+		font-size: inherit;
+		line-height: inherit;
+	}
+	.tools .toggle {
+		visibility: visible;
+		opacity: 0;
+	}
+	.part:global([data-lit]) > .tools .toggle,
+	.tools .toggle:focus {
+		opacity: 1;
+	}
+	@media print {
+		.tools {
+			display: none;
+		}
 	}
 	.part[data-group],
 	[data-collapse] {
 		cursor: pointer;
-	}
-	.part > .toggle {
-		opacity: 0;
-	}
-	.part:global([data-lit]) > .toggle,
-	.toggle:focus {
-		opacity: 1;
 	}
 	.langs .part :global(pre.shiki) {
 		padding-top: 0;
 		padding-bottom: 0;
 	}
 	.part:global([data-lit]) {
-		--tools: flex;
+		--tools: visible;
 		background: light-dark(
 			color-mix(in oklab, var(--color-amber-200) 35%, transparent),
 			color-mix(in oklab, var(--color-amber-300) 12%, transparent)

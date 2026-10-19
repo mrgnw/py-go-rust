@@ -28,7 +28,7 @@
 		>
 			{#if step.label}
 				<div
-					class="absolute top-0 right-3 font-mono text-[0.7rem] leading-[1.2rem] text-neutral-400 select-none dark:text-neutral-500"
+					class="px-3 text-right font-mono text-[0.7rem] leading-[1.2rem] text-neutral-400 select-none dark:text-neutral-500"
 				>
 					{step.label}
 				</div>
