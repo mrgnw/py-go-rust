@@ -1,6 +1,6 @@
 # pygorst — parts spec
 
-Status: design agreed. Flat parts and hover-link are built; nesting, pivot and expand are not. Read PLAN.md for context. The goal is to compare
+Status: design agreed. Parts (two levels), the build checks and hover-link are built; pivot and expand are not. Read PLAN.md for context. The goal is to compare
 the same idea across Python, Rust and Go at finer grain than a whole snippet:
 one `else if` against another `else if`, one print against its output.
 
@@ -94,6 +94,16 @@ first interactive view lands.
 
 ## Current state
 
+- `src/lib/content/langs.ts`: each column is a tree, `Col.parts: Part[]`, where
+  `Part { path, label?, html, pad, parts }`. A leaf has `html` and empty
+  `parts`; a group has `parts` and no lines of its own. `path` (`2`, `2.1`) is
+  the same in every column, so `cols.map((c) => c.parts[2].parts[1])` is one
+  part across languages. `checkShape()` fails the build on mismatched trees.
+  Not built yet: label agreement check, `null` for empty parts (they are leaves
+  with empty `html`), per-part output.
+- Hover-link: `LangPage.svelte` puts `data-part={path}` on every `.part`; a
+  `mouseover` handler in the layout's inline script sets `data-lit` on the
+  hovered part and its ancestors in every column of the row.
 - `src/lib/content/langs.ts`: `codeRow()` builds the shared Output column;
   `pivot()` derives `Step[]` for `/lab` by splitting fences at output lines
   only. `unwrapMain()` strips Go's `func main() {}` wrapper so bodies line up;
@@ -103,12 +113,10 @@ first interactive view lands.
 
 ## Next
 
-1. Author markers on three sections that stress different things: If-else
-   (branches straddle braces), Interfaces (Rust has blank lines between items,
-   Python does not), Error handling (structurally different, expect `null`s).
-2. Parse markers into the tree, add the build checks, make sure the errors
-   point at the right place.
-3. Hover-link in columns. Then revisit pivot and expand against real parts.
+Steps 1-3 (markers on sections, tree and build checks, hover-link) are done.
+
+1. Pivot and expand, reading the part tree (`Part.parts`, `Part.path`).
+2. Label agreement check (Build rules) when a section first needs it.
 
 Open: parts like `} else if n == 0 {` are honest but ugly stacked. Keep, or
 let an author mark scaffolding lines. Decide after seeing step 3.
