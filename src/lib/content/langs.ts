@@ -23,13 +23,12 @@ export type Block =
 			steps?: Step[];
 	  };
 
-// output: each column carries its own; `odd` marks a value no other column in the row prints
+// output: each column carries its own, with `<span class="diff">` around tokens another column lacks
 export interface Col {
 	label: string;
 	html: string;
 	lang?: string;
-	output?: Col;
-	odd?: boolean;
+	output?: string;
 }
 
 // lab: the same row pivoted, one step per output with each language's line(s) stacked
@@ -105,32 +104,82 @@ function highlight(code: string, info: string): Col {
 }
 
 const OUTPUT = /[ \t]+(?:#|\/\/) => (.*)$/;
+const TOKEN = /[A-Za-z0-9_.]+|\S/gu;
+const WORD = /^[A-Za-z0-9_.]+$/;
+
+// 'Ada' and "Ada", True and true are the same value printed by different languages.
+function sameValue(text: string): string {
+	return text.replaceAll("'", '"').replace(/\b(True|False)\b/g, (m) => m.toLowerCase());
+}
+
+function escapeHtml(text: string): string {
+	return text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+}
+
+function tally(line: string): Map<string, number> {
+	const counts = new Map<string, number>();
+	for (const token of line.match(TOKEN) ?? []) {
+		const key = sameValue(token);
+		counts.set(key, (counts.get(key) ?? 0) + 1);
+	}
+	return counts;
+}
+
+// A token is marked when some other column lacks it on the same line. Punctuation is marked only
+// next to a marked word in the same unspaced run: Rust's `Some(4)` yes, Python's `[1, 2]` commas no.
+function diffLine(line: string, others: string[]): string {
+	const theirs = others.map(tally);
+	const keep = new Map(
+		[...tally(line).keys()].map((key) => [key, Math.min(...theirs.map((c) => c.get(key) ?? 0))])
+	);
+	const markRun = (run: string) => {
+		const tokens = run.match(TOKEN) ?? [];
+		const unmatched = tokens.map((token) => {
+			const key = sameValue(token);
+			const left = keep.get(key) ?? 0;
+			keep.set(key, left - 1);
+			return left <= 0;
+		});
+		const loud = tokens.some((token, i) => unmatched[i] && WORD.test(token));
+		return tokens
+			.map((token, i) =>
+				loud && unmatched[i] ? `<span class="diff">${escapeHtml(token)}</span>` : escapeHtml(token)
+			)
+			.join('');
+	};
+	return line
+		.split(/(\s+)/)
+		.map((run, i) => (i % 2 ? run : markRun(run)))
+		.join('');
+}
 
 // When every column prints the same thing, show it once in a leading Output column.
 function codeRow(fences: { text: string; info: string }[]): Block {
 	const outputs = fences.map((f) =>
 		f.text.split('\n').flatMap((line) => line.match(OUTPUT)?.[1] ?? [])
 	);
-	// 'Ada' and "Ada", True and true are the same value printed by different languages.
-	const sameValue = (lines: string[]) =>
-		lines
-			.join('\n')
-			.replaceAll("'", '"')
-			.replace(/\b(True|False)\b/g, (m) => m.toLowerCase());
-	const values = outputs.map(sameValue);
+	const values = outputs.map((lines) => sameValue(lines.join('\n')));
 	const shared = fences.length > 1 && outputs[0].length > 0 && values.every((v) => v === values[0]);
 	const strip = (text: string) =>
 		text
 			.split('\n')
 			.map((line) => line.replace(OUTPUT, ''))
 			.join('\n');
+	const outputHtml = (i: number) => {
+		const others = outputs.filter((lines, k) => k !== i && lines.length);
+		const body = outputs[i].map((line, k) =>
+			others.length
+				? diffLine(
+						line,
+						others.map((lines) => lines[k] ?? '')
+					)
+				: escapeHtml(line)
+		);
+		return `<pre class="shiki"><code>${body.join('\n')}</code></pre>`;
+	};
 	const cols = fences.map((f, i) =>
 		outputs[i].length
-			? {
-					...highlight(strip(f.text), f.info),
-					output: highlight(outputs[i].join('\n'), 'text Output'),
-					odd: fences.length > 1 && values.every((v, k) => k === i || v !== values[i])
-				}
+			? { ...highlight(strip(f.text), f.info), output: outputHtml(i) }
 			: highlight(f.text, f.info)
 	);
 	return shared ? { kind: 'code', cols, steps: pivot(fences, outputs[0]) } : { kind: 'code', cols };

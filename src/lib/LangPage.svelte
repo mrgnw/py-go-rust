@@ -82,7 +82,7 @@
 									{@render label(col.label)}
 									<div>{@html col.html}</div>
 									{#if col.output}
-										{@render output(col.output.html, col.odd)}
+										{@render output(col.output)}
 									{/if}
 								</div>
 							{/each}
@@ -94,9 +94,8 @@
 	</div>
 </section>
 
-{#snippet output(html: string, odd?: boolean)}
+{#snippet output(html: string)}
 	<div
-		class:odd
 		class="out flex border-t border-neutral-200 bg-neutral-100 text-neutral-800 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200"
 	>
 		<span class="px-3 py-1.5 font-mono text-xs text-neutral-400 select-none dark:text-neutral-500">
@@ -156,18 +155,17 @@
 		padding: 0.375rem 0.75rem 0.375rem 0;
 		font-weight: 600;
 	}
-	/* an output no other column prints takes its language's color; matching outputs stay neutral */
-	.langs :global(.out.odd pre.shiki),
-	.langs :global(.out.odd pre.shiki span) {
-		color: var(--odd) !important;
+	/* output tokens another column lacks take their language's color; matches stay neutral */
+	.langs :global(.out .diff) {
+		color: var(--odd);
 	}
-	[data-lang='python'] .out.odd {
+	[data-lang='python'] .out {
 		--odd: light-dark(var(--color-blue-600), var(--color-blue-300));
 	}
-	[data-lang='rust'] .out.odd {
+	[data-lang='rust'] .out {
 		--odd: light-dark(var(--color-orange-600), var(--color-orange-300));
 	}
-	[data-lang='go'] .out.odd {
+	[data-lang='go'] .out {
 		--odd: light-dark(var(--color-teal-600), var(--color-teal-300));
 	}
 	.langs :global(.prose code::before),
