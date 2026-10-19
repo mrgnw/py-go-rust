@@ -6,7 +6,7 @@
 </script>
 
 <svelte:head>
-	<title>{data.page.title} · py · rs · go</title>
+	<title>{data.page.title} · pygors</title>
 	<meta
 		name="description"
 		content="{data.page.title}: side-by-side Python, Rust and Go cheatsheet."

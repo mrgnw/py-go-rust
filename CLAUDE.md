@@ -11,6 +11,8 @@ git: main-only
 - dev: 5237 (`pnpm dev`)
 - preview: 5238 (`pnpm preview`, runs the built worker)
 
+A fresh worktree needs one `pnpm build` before `pnpm check`: `wrangler types --check` reads the built worker.
+
 ## Content
 
 Sections live in `src/lib/content/langs/NN-name.md`, rendered in filename order. Format the loader depends on:

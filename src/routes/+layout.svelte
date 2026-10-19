@@ -181,7 +181,7 @@
 <nav
 	class="sticky top-0 z-10 flex gap-1 overflow-x-auto border-b border-neutral-200 bg-white/90 px-4 py-2 text-sm backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/90"
 >
-	<a href="/" class="px-2 py-1 font-semibold whitespace-nowrap">py · rs · go</a>
+	<a href="/" class="px-2 py-1 font-semibold whitespace-nowrap">pygors</a>
 	{#each data.nav as item (item.href)}
 		<a
 			href={item.href}

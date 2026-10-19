@@ -14,7 +14,7 @@ Read `CLAUDE.md`, `PLAN.md` and, for 5, `SPEC.md`. Then:
 - Prerendered site, `csr = false`. No hydration. Client behaviour is the one `inlineScript` string in `src/routes/+layout.svelte` (copy button, language picker, section tracker). Add to it, don't add a second script or turn on hydration. State goes on `<html>` as `data-*` plus localStorage, styled from `src/routes/layout.css`.
 - No `$effect`. Svelte 5 runes and snippets. Tabs, prettier config in repo. No comments unless the task says so.
 - Rendering: `src/lib/content/langs.ts` turns markdown into `Block`s; `src/lib/LangPage.svelte` renders them. Each code row is one bordered block, columns in a CSS grid with subgrid rows `label / code / output`. Column `data-lang` drives the picker's hide rules.
-- Work in a worktree on a branch from `origin/main`. Verify with `pnpm check && pnpm build`. Visual check: `pnpm cfb` uploads a preview at `https://<branch>-pygorst.xces.workers.dev`; use that instead of starting a dev server (5237 is taken by the main checkout's pitchfork daemon). Merge through a PR, rebased, `gh pr merge --rebase`. `pnpm ship` only from main.
+- Work in a worktree on a branch from `origin/main`. Verify with `pnpm check && pnpm build`. Visual check: `pnpm cfb` uploads a preview at `https://<branch>-pygors.xces.workers.dev`; use that instead of starting a dev server (5237 is taken by the main checkout's pitchfork daemon). Merge through a PR, rebased, `gh pr merge --rebase`. `pnpm ship` only from main.
 - Commit per concern, push after each commit, Co-Authored-By trailer.
 - Done: move the todo to `todos/done/MMDD-name.md` with `branch:` or `pull-request:` in its frontmatter, tick or add the PLAN.md line.
 
