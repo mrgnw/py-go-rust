@@ -281,8 +281,7 @@
 	});
 	document.addEventListener('click', (event) => {
 		const button = event.target.closest('[data-pick]');
-		if (button && !dragged) toggleLang(button.dataset.pick);
-		dragged = false;
+		if (button && !(dragged && event.detail)) toggleLang(button.dataset.pick);
 		if (event.target.closest('[data-sidebar-toggle]')) toggleSidebar();
 		if (event.target.closest('[data-help]')) byId('help').showModal();
 	});
