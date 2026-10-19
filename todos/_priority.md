@@ -1,6 +1,6 @@
 # Priority
 
-1. [copy-button-placement](copy-button-placement.md) — small, independent
+1. [copy-button-placement](done/1018-copy-button-placement.md) — small, independent
 2. [granular-output-diff](granular-output-diff.md) — decided, independent
 3. [command-palette](command-palette.md)
 4. [keyboard-shortcuts](keyboard-shortcuts.md) — same file as 3, do after 3 lands or in the same worktree

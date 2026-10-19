@@ -1,5 +1,6 @@
 ---
 title: Copy button on the label line, per part later
+pull-request: 2
 ---
 
 # Copy button placement
@@ -17,3 +18,7 @@ Today: one absolutely positioned `Copy` button in the top right of every snippet
 - No hydration, no component state. Delegated click handler, `data-copy` gate for clipboard support stays.
 - Copied feedback: current `Copied` text swap for 1.5 s is fine; keep it.
 - Print: `.copy` already hidden under `@media print`; keep that for the new buttons.
+
+## Status
+
+Steps 1 and 2 done. Step 3 (per-part copy) is still open until the parts parser lands.
