@@ -5,7 +5,7 @@
 3. [command-palette](done/1018-command-palette.md) — done, PR #4
 4. [keyboard-shortcuts](done/1018-keyboard-shortcuts.md) — done, PR #4
 5. [parts-hover-link](done/1018-parts-hover-link.md) — done, PR #5
-6. [drag-reorder-languages](drag-reorder-languages.md) — maybe
+6. [drag-reorder-languages](done/1019-drag-reorder-languages.md) — done, PR #20
 
 ## Context every agent needs
 

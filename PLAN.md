@@ -41,6 +41,7 @@ Renderer: `src/lib/content/langs.ts` parses the markdown with marked, highlights
 - [x] Per-part copy: a small `Copy` button beside each part's caption on hover or when keyboard-active, copying only that part (nested parts included); hidden on single-part columns.
 - [x] Collapsible sections sidebar: `Sections` toggle beside the page title or `b`; `data-sidebar="collapsed"` on `<html>` plus localStorage, set before first paint; the grid column goes away at `lg`, below it the stacked list hides.
 - [x] Pivot and expand: `/lab` pivots every marked row part by part (output on top, `py` / `rs` / `go` gutter). In columns, tapping a group (If-else's branches) swaps in its parts pivoted inline; tap again for columns. Prerendered both ways, toggled by the inline script; still no hydration.
+- [x] Drag to reorder languages: drag a picker chip (mouse or touch) or Shift+Left/Right on a focused chip; `data-order` on `<html>` plus `--order-*` vars drive CSS `order` on columns, pivot lines and chips, saved in localStorage and set before first paint. `1 2 3` stay fixed to Python / Rust / Go. No reset action yet.
 - [ ] Parts, next: `---` groups on more sections so more rows expand.
 
 Handoff tasks for parallel agents: `todos/_priority.md`.
