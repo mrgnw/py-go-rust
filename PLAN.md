@@ -25,7 +25,7 @@ Renderer: `src/lib/content/langs.ts` parses the markdown with marked, highlights
 
 ## Next
 
-- [ ] Publish, later: content first. Until then `pnpm dev` locally and `wrangler versions upload` for a workers.dev preview. When ready, pick the domain, add a `custom_domain` route to `wrangler.jsonc`, `pnpm ship` from main.
+- [x] Live at https://pygorst.xces.workers.dev since 2026-10-18 (`pnpm ship` from main). Branch previews: `pnpm cfb` gives `<branch>-pygorst.xces.workers.dev`; push-to-preview needs the GitHub repo connected under the Worker's Builds settings in the dashboard. Custom domain still open: add a `custom_domain` route to `wrangler.jsonc`.
 - [x] Per-section pages: `/`, `/compare`, `/python`, `/rust`, `/go` via `src/routes/[[slug]]`, nav in the layout.
 - [x] Sticky side table of contents from 64rem up, grouped on the Patterns page, current section highlighted by a small inline scroll listener (no hydration).
 - [x] Copy button per snippet: one inline script in `+layout.svelte`, hidden when `navigator.clipboard` is missing.
