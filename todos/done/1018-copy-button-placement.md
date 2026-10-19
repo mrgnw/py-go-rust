@@ -21,4 +21,4 @@ Today: one absolutely positioned `Copy` button in the top right of every snippet
 
 ## Status
 
-Steps 1 and 2 done. Step 3 (per-part copy) is still open until the parts parser lands.
+Steps 1 to 3 done: per-part copy button sits beside the part caption (`.copy-part` in `LangPage.svelte`), hidden when a column has one part.
