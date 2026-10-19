@@ -52,3 +52,19 @@ body:not(:has([data-compare])) .picker {
 		display: none !important;
 	}
 }
+
+#palette::backdrop {
+	@apply bg-black/40;
+}
+
+#palette-list a {
+	@apply flex items-baseline justify-between gap-4 rounded-md px-3 py-2;
+}
+
+#palette-list a span {
+	@apply truncate text-xs text-neutral-400 dark:text-neutral-500;
+}
+
+#palette-list [aria-selected='true'] a {
+	@apply bg-neutral-100 dark:bg-neutral-800;
+}

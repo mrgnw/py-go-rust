@@ -12,6 +12,8 @@
 		['go', 'go']
 	];
 
+	const sectionsJson = $derived(JSON.stringify(data.sections).replaceAll('<', '\\u003c'));
+
 	const inlineScript = `<script>
 	if (navigator.clipboard) document.documentElement.dataset.copy = '';
 	const html = document.documentElement;
@@ -37,6 +39,71 @@
 		update();
 	};
 	document.addEventListener('DOMContentLoaded', () => { syncPicker(); trackSections(); });
+	const fields = 'input, textarea, select, [contenteditable]';
+	const byId = (id) => document.getElementById(id);
+	let entries;
+	let selected = 0;
+	const select = (i) => {
+		const items = [...byId('palette-list').children];
+		if (!items.length) return;
+		selected = (i + items.length) % items.length;
+		items.forEach((li, k) => li.setAttribute('aria-selected', String(k === selected)));
+		byId('palette-input').setAttribute('aria-activedescendant', items[selected].id);
+		items[selected].scrollIntoView({ block: 'nearest' });
+	};
+	const search = () => {
+		entries ??= JSON.parse(byId('sections').textContent).map((e) => ({ ...e, text: [e.page, e.group, e.title].join(' ').toLowerCase() }));
+		const terms = byId('palette-input').value.toLowerCase().split(' ').filter(Boolean);
+		const hits = entries.filter((e) => terms.every((t) => e.text.includes(t))).slice(0, 12);
+		byId('palette-list').replaceChildren(...hits.map((e, k) => {
+			const li = document.createElement('li');
+			const a = document.createElement('a');
+			const context = document.createElement('span');
+			li.id = 'palette-option-' + k;
+			li.setAttribute('role', 'option');
+			a.href = e.href;
+			a.append(e.title);
+			context.textContent = [e.page, e.group].filter(Boolean).join(' › ');
+			a.append(context);
+			li.append(a);
+			return li;
+		}));
+		select(0);
+	};
+	const openPalette = () => {
+		byId('palette').showModal();
+		byId('palette-input').value = '';
+		search();
+	};
+	const paletteKey = (event) => {
+		const keys = {
+			ArrowDown: () => select(selected + 1),
+			ArrowUp: () => select(selected - 1),
+			Enter: () => byId('palette-list').children[selected]?.firstChild.click(),
+			Escape: () => byId('palette').close()
+		};
+		if (!keys[event.key]) return;
+		event.preventDefault();
+		keys[event.key]();
+	};
+	document.addEventListener('keydown', (event) => {
+		const target = event.target;
+		if ((event.metaKey || event.ctrlKey) && !event.altKey && event.key === 'k') {
+			if (target.closest(fields) && target.id !== 'palette-input') return;
+			event.preventDefault();
+			byId('palette').open ? byId('palette').close() : openPalette();
+			return;
+		}
+		if (target.id === 'palette-input') paletteKey(event);
+	});
+	document.addEventListener('input', (event) => {
+		if (event.target.id === 'palette-input') search();
+	});
+	document.addEventListener('click', (event) => {
+		if (event.target.closest('[data-palette]')) openPalette();
+		if (event.target.localName === 'dialog') event.target.close();
+		if (event.target.closest('#palette-list a')) byId('palette').close();
+	});
 	document.addEventListener('click', (event) => {
 		const button = event.target.closest('[data-pick]');
 		if (!button) return;
@@ -65,6 +132,7 @@
 <svelte:head>
 	<link rel="icon" href={favicon} />
 	{@html inlineScript}
+	{@html '<script type="application/json" id="sections">' + sectionsJson + '<\/script>'}
 </svelte:head>
 
 <nav
@@ -79,18 +147,45 @@
 			>{item.title}</a
 		>
 	{/each}
-	<div class="picker ml-auto flex gap-1 font-mono text-xs" role="group" aria-label="Show languages">
-		{#each PICK as [lang, short] (lang)}
-			<button
-				type="button"
-				data-pick={lang}
-				aria-pressed="true"
-				class="cursor-pointer rounded-md px-2 py-1 text-neutral-500 hover:bg-neutral-100 aria-[pressed=false]:line-through aria-[pressed=false]:opacity-40 dark:text-neutral-400 dark:hover:bg-neutral-800"
-				>{short}</button
-			>
-		{/each}
+	<div class="ml-auto flex gap-1 font-mono text-xs">
+		<div class="picker flex gap-1" role="group" aria-label="Show languages">
+			{#each PICK as [lang, short] (lang)}
+				<button
+					type="button"
+					data-pick={lang}
+					aria-pressed="true"
+					class="cursor-pointer rounded-md px-2 py-1 text-neutral-500 hover:bg-neutral-100 aria-[pressed=false]:line-through aria-[pressed=false]:opacity-40 dark:text-neutral-400 dark:hover:bg-neutral-800"
+					>{short}</button
+				>
+			{/each}
+		</div>
+		<button
+			type="button"
+			data-palette
+			aria-label="Search sections"
+			class="cursor-pointer rounded-md px-2 py-1 whitespace-nowrap text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
+			>search <kbd>⌘K</kbd></button
+		>
 	</div>
 </nav>
+
+<dialog
+	id="palette"
+	aria-label="Search sections"
+	class="mx-auto mt-[12vh] mb-auto w-[min(36rem,calc(100vw-2rem))] rounded-lg border border-neutral-200 bg-white p-0 text-neutral-900 shadow-xl dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
+>
+	<input
+		id="palette-input"
+		type="search"
+		role="combobox"
+		aria-controls="palette-list"
+		aria-expanded="true"
+		placeholder="Jump to a section"
+		autocomplete="off"
+		class="w-full border-b border-neutral-200 bg-transparent px-4 py-3 outline-none dark:border-neutral-800"
+	/>
+	<ul id="palette-list" role="listbox" class="max-h-[60vh] overflow-y-auto p-1 text-sm"></ul>
+</dialog>
 
 <main class="mx-auto max-w-7xl px-4 py-8">
 	{@render children()}
