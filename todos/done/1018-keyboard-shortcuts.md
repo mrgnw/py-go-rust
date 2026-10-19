@@ -5,12 +5,12 @@ pull-request: 4
 
 # Keyboard shortcuts
 
-| Key | Action |
-|-|-|
-| `1` `2` `3` | toggle Python / Rust / Go, same as clicking the picker |
-| `j` / `k` | next / previous section (the `h2`/`h3` targets the sidebar links point at) |
-| `n` / `p` | next / previous code row (`.cols` blocks) |
-| `?` | show the shortcut list |
+| Key         | Action                                                                     |
+| ----------- | -------------------------------------------------------------------------- |
+| `1` `2` `3` | toggle Python / Rust / Go, same as clicking the picker                     |
+| `j` / `k`   | next / previous section (the `h2`/`h3` targets the sidebar links point at) |
+| `n` / `p`   | next / previous code row (`.cols` blocks)                                  |
+| `?`         | show the shortcut list                                                     |
 
 Scroll with `scrollIntoView({ block: 'start' })`; the headings already have `scroll-mt-14` so the sticky nav does not cover them.
 

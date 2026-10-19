@@ -1,110 +1,293 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>pygorst · output colors</title>
-<style>
-	:root { font-family: ui-sans-serif, system-ui, sans-serif; }
-	body { margin: 0; display: grid; grid-template-columns: 1fr 1fr; min-height: 100vh; }
-	.scheme { padding: 2rem; }
-	.light { color-scheme: light; background: #fff; color: #171717; }
-	.dark { color-scheme: dark; background: #0a0a0a; color: #f5f5f5; }
-	h1 { font-size: 1.1rem; margin: 0 0 1.5rem; }
-	h2 { font-size: 0.95rem; margin: 2rem 0 0.5rem; }
-	p { font-size: 0.85rem; color: light-dark(#525252, #a3a3a3); margin: 0 0 0.75rem; }
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>pygorst · output colors</title>
+		<style>
+			:root {
+				font-family: ui-sans-serif, system-ui, sans-serif;
+			}
+			body {
+				margin: 0;
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				min-height: 100vh;
+			}
+			.scheme {
+				padding: 2rem;
+			}
+			.light {
+				color-scheme: light;
+				background: #fff;
+				color: #171717;
+			}
+			.dark {
+				color-scheme: dark;
+				background: #0a0a0a;
+				color: #f5f5f5;
+			}
+			h1 {
+				font-size: 1.1rem;
+				margin: 0 0 1.5rem;
+			}
+			h2 {
+				font-size: 0.95rem;
+				margin: 2rem 0 0.5rem;
+			}
+			p {
+				font-size: 0.85rem;
+				color: light-dark(#525252, #a3a3a3);
+				margin: 0 0 0.75rem;
+			}
 
-	.block { border: 1px solid light-dark(#e5e5e5, #262626); background: light-dark(#fafafa, #171717); border-radius: 0.5rem; overflow: hidden; }
-	.cols { display: flex; margin-left: -1px; }
-	.col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; border-left: 1px solid light-dark(#e5e5e5, #262626); }
-	.label { border-bottom: 1px solid light-dark(#e5e5e5, #262626); padding: 0.25rem 0.75rem; font: 0.75rem ui-monospace, SFMono-Regular, Menlo, monospace; color: light-dark(#737373, #a3a3a3); }
-	pre { margin: 0; padding: 0.75rem; font: 0.8rem/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; flex: 1; }
-	.out { display: flex; border-top: 1px solid light-dark(#e5e5e5, #262626); background: light-dark(#f5f5f5, #0a0a0a); font: 600 0.8rem/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; padding: 0.375rem 0.75rem; gap: 0.75rem; }
-	.out span:first-child { color: light-dark(#a3a3a3, #737373); font-weight: 400; }
-	.out.match { color: light-dark(#262626, #e5e5e5); }
-	.out.python { color: light-dark(#2563eb, #93c5fd); }
-	.out.rust { color: light-dark(#ea580c, #fdba74); }
-	.out.go { color: light-dark(#0d9488, #5eead4); }
-	.out.python.alt { color: light-dark(#ca8a04, #fde047); }
-	.out.go.alt { color: light-dark(#0891b2, #67e8f9); }
+			.block {
+				border: 1px solid light-dark(#e5e5e5, #262626);
+				background: light-dark(#fafafa, #171717);
+				border-radius: 0.5rem;
+				overflow: hidden;
+			}
+			.cols {
+				display: flex;
+				margin-left: -1px;
+			}
+			.col {
+				flex: 1 1 0;
+				min-width: 0;
+				display: flex;
+				flex-direction: column;
+				border-left: 1px solid light-dark(#e5e5e5, #262626);
+			}
+			.label {
+				border-bottom: 1px solid light-dark(#e5e5e5, #262626);
+				padding: 0.25rem 0.75rem;
+				font:
+					0.75rem ui-monospace,
+					SFMono-Regular,
+					Menlo,
+					monospace;
+				color: light-dark(#737373, #a3a3a3);
+			}
+			pre {
+				margin: 0;
+				padding: 0.75rem;
+				font:
+					0.8rem/1.5 ui-monospace,
+					SFMono-Regular,
+					Menlo,
+					monospace;
+				flex: 1;
+			}
+			.out {
+				display: flex;
+				border-top: 1px solid light-dark(#e5e5e5, #262626);
+				background: light-dark(#f5f5f5, #0a0a0a);
+				font:
+					600 0.8rem/1.5 ui-monospace,
+					SFMono-Regular,
+					Menlo,
+					monospace;
+				padding: 0.375rem 0.75rem;
+				gap: 0.75rem;
+			}
+			.out span:first-child {
+				color: light-dark(#a3a3a3, #737373);
+				font-weight: 400;
+			}
+			.out.match {
+				color: light-dark(#262626, #e5e5e5);
+			}
+			.out.python {
+				color: light-dark(#2563eb, #93c5fd);
+			}
+			.out.rust {
+				color: light-dark(#ea580c, #fdba74);
+			}
+			.out.go {
+				color: light-dark(#0d9488, #5eead4);
+			}
+			.out.python.alt {
+				color: light-dark(#ca8a04, #fde047);
+			}
+			.out.go.alt {
+				color: light-dark(#0891b2, #67e8f9);
+			}
 
-	.swatches { display: flex; gap: 0.75rem; }
-	.swatch { flex: 1; border-radius: 0.5rem; padding: 0.75rem; font: 600 0.9rem ui-monospace, monospace; background: light-dark(#f5f5f5, #0a0a0a); border: 1px solid light-dark(#e5e5e5, #262626); }
-	.swatch small { display: block; font-weight: 400; font-size: 0.7rem; color: light-dark(#737373, #a3a3a3); margin-top: 0.25rem; }
-</style>
-</head>
-<body>
-<section class="scheme light"><h1>Light</h1><div data-fill></div></section>
-<section class="scheme dark"><h1>Dark</h1><div data-fill></div></section>
+			.swatches {
+				display: flex;
+				gap: 0.75rem;
+			}
+			.swatch {
+				flex: 1;
+				border-radius: 0.5rem;
+				padding: 0.75rem;
+				font:
+					600 0.9rem ui-monospace,
+					monospace;
+				background: light-dark(#f5f5f5, #0a0a0a);
+				border: 1px solid light-dark(#e5e5e5, #262626);
+			}
+			.swatch small {
+				display: block;
+				font-weight: 400;
+				font-size: 0.7rem;
+				color: light-dark(#737373, #a3a3a3);
+				margin-top: 0.25rem;
+			}
+		</style>
+	</head>
+	<body>
+		<section class="scheme light">
+			<h1>Light</h1>
+			<div data-fill></div>
+		</section>
+		<section class="scheme dark">
+			<h1>Dark</h1>
+			<div data-fill></div>
+		</section>
 
-<template id="content">
-	<h2>Option A: blue · orange · teal</h2>
-	<div class="swatches">
-		<div class="swatch out python">Python <small>blue-600 / blue-300</small></div>
-		<div class="swatch out rust">Rust <small>orange-600 / orange-300</small></div>
-		<div class="swatch out go">Go <small>teal-600 / teal-300</small></div>
-		<div class="swatch out match">matches <small>neutral-800 / neutral-200</small></div>
-	</div>
+		<template id="content">
+			<h2>Option A: blue · orange · teal</h2>
+			<div class="swatches">
+				<div class="swatch out python">Python <small>blue-600 / blue-300</small></div>
+				<div class="swatch out rust">Rust <small>orange-600 / orange-300</small></div>
+				<div class="swatch out go">Go <small>teal-600 / teal-300</small></div>
+				<div class="swatch out match">matches <small>neutral-800 / neutral-200</small></div>
+			</div>
 
-	<h2>Variables &amp; constants: Go is the odd one out</h2>
-	<div class="block"><div class="cols">
-		<div class="col"><div class="label">Python</div><pre>total = 0
+			<h2>Variables &amp; constants: Go is the odd one out</h2>
+			<div class="block">
+				<div class="cols">
+					<div class="col">
+						<div class="label">Python</div>
+						<pre>
+total = 0
 total += count
 total *= 2
 MAX_RETRIES = 3
-print(total, MAX_RETRIES)</pre><div class="out match"><span>›</span><span>2 3</span></div></div>
-		<div class="col"><div class="label">Rust</div><pre>let mut total = 0;
+print(total, MAX_RETRIES)</pre>
+						<div class="out match"><span>›</span><span>2 3</span></div>
+					</div>
+					<div class="col">
+						<div class="label">Rust</div>
+						<pre>
+let mut total = 0;
 total += count;
 let total = total * 2;
 const MAX_RETRIES: u32 = 3;
-println!("{total} {MAX_RETRIES}");</pre><div class="out match"><span>›</span><span>2 3</span></div></div>
-		<div class="col"><div class="label">Go</div><pre>total := 0
+println!("{total} {MAX_RETRIES}");</pre>
+						<div class="out match"><span>›</span><span>2 3</span></div>
+					</div>
+					<div class="col">
+						<div class="label">Go</div>
+						<pre>
+total := 0
 total += count
 total *= 2
 const MaxRetries = 3
 var zero int
-fmt.Println(total, MaxRetries, zero)</pre><div class="out go"><span>›</span><span>2 3 0</span></div></div>
-	</div></div>
+fmt.Println(total, MaxRetries, zero)</pre>
+						<div class="out go"><span>›</span><span>2 3 0</span></div>
+					</div>
+				</div>
+			</div>
 
-	<h2>Two sum: all three differ</h2>
-	<div class="block"><div class="cols">
-		<div class="col"><div class="label">Python</div><pre>print(two_sum([2, 7, 11, 15], 9))</pre><div class="out python"><span>›</span><span>(0, 1)</span></div></div>
-		<div class="col"><div class="label">Rust</div><pre>println!("{:?}", two_sum(&amp;[2, 7, 11, 15], 9));</pre><div class="out rust"><span>›</span><span>Some((0, 1))</span></div></div>
-		<div class="col"><div class="label">Go</div><pre>fmt.Println(twoSum([]int{2, 7, 11, 15}, 9))</pre><div class="out go"><span>›</span><span>0 1 true</span></div></div>
-	</div></div>
+			<h2>Two sum: all three differ</h2>
+			<div class="block">
+				<div class="cols">
+					<div class="col">
+						<div class="label">Python</div>
+						<pre>print(two_sum([2, 7, 11, 15], 9))</pre>
+						<div class="out python"><span>›</span><span>(0, 1)</span></div>
+					</div>
+					<div class="col">
+						<div class="label">Rust</div>
+						<pre>println!("{:?}", two_sum(&amp;[2, 7, 11, 15], 9));</pre>
+						<div class="out rust"><span>›</span><span>Some((0, 1))</span></div>
+					</div>
+					<div class="col">
+						<div class="label">Go</div>
+						<pre>fmt.Println(twoSum([]int{2, 7, 11, 15}, 9))</pre>
+						<div class="out go"><span>›</span><span>0 1 true</span></div>
+					</div>
+				</div>
+			</div>
 
-	<h2>Methods: everyone agrees</h2>
-	<div class="block"><div class="cols">
-		<div class="col"><div class="label">Python</div><pre>print(r.area())</pre><div class="out match"><span>›</span><span>24</span></div></div>
-		<div class="col"><div class="label">Rust</div><pre>println!("{}", r.area());</pre><div class="out match"><span>›</span><span>24</span></div></div>
-		<div class="col"><div class="label">Go</div><pre>fmt.Println(r.Area())</pre><div class="out match"><span>›</span><span>24</span></div></div>
-	</div></div>
+			<h2>Methods: everyone agrees</h2>
+			<div class="block">
+				<div class="cols">
+					<div class="col">
+						<div class="label">Python</div>
+						<pre>print(r.area())</pre>
+						<div class="out match"><span>›</span><span>24</span></div>
+					</div>
+					<div class="col">
+						<div class="label">Rust</div>
+						<pre>println!("{}", r.area());</pre>
+						<div class="out match"><span>›</span><span>24</span></div>
+					</div>
+					<div class="col">
+						<div class="label">Go</div>
+						<pre>fmt.Println(r.Area())</pre>
+						<div class="out match"><span>›</span><span>24</span></div>
+					</div>
+				</div>
+			</div>
 
-	<h2>Option B: brand colors, yellow · orange · cyan</h2>
-	<div class="swatches">
-		<div class="swatch out python alt">Python <small>yellow-600 / yellow-300</small></div>
-		<div class="swatch out rust">Rust <small>orange-600 / orange-300</small></div>
-		<div class="swatch out go alt">Go <small>cyan-600 / cyan-300</small></div>
-		<div class="swatch out match">matches <small>neutral-800 / neutral-200</small></div>
-	</div>
+			<h2>Option B: brand colors, yellow · orange · cyan</h2>
+			<div class="swatches">
+				<div class="swatch out python alt">Python <small>yellow-600 / yellow-300</small></div>
+				<div class="swatch out rust">Rust <small>orange-600 / orange-300</small></div>
+				<div class="swatch out go alt">Go <small>cyan-600 / cyan-300</small></div>
+				<div class="swatch out match">matches <small>neutral-800 / neutral-200</small></div>
+			</div>
 
-	<h2>Two sum, option B</h2>
-	<div class="block"><div class="cols">
-		<div class="col"><div class="label">Python</div><pre>print(two_sum([2, 7, 11, 15], 9))</pre><div class="out python alt"><span>›</span><span>(0, 1)</span></div></div>
-		<div class="col"><div class="label">Rust</div><pre>println!("{:?}", two_sum(&amp;[2, 7, 11, 15], 9));</pre><div class="out rust"><span>›</span><span>Some((0, 1))</span></div></div>
-		<div class="col"><div class="label">Go</div><pre>fmt.Println(twoSum([]int{2, 7, 11, 15}, 9))</pre><div class="out go alt"><span>›</span><span>0 1 true</span></div></div>
-	</div></div>
+			<h2>Two sum, option B</h2>
+			<div class="block">
+				<div class="cols">
+					<div class="col">
+						<div class="label">Python</div>
+						<pre>print(two_sum([2, 7, 11, 15], 9))</pre>
+						<div class="out python alt"><span>›</span><span>(0, 1)</span></div>
+					</div>
+					<div class="col">
+						<div class="label">Rust</div>
+						<pre>println!("{:?}", two_sum(&amp;[2, 7, 11, 15], 9));</pre>
+						<div class="out rust"><span>›</span><span>Some((0, 1))</span></div>
+					</div>
+					<div class="col">
+						<div class="label">Go</div>
+						<pre>fmt.Println(twoSum([]int{2, 7, 11, 15}, 9))</pre>
+						<div class="out go alt"><span>›</span><span>0 1 true</span></div>
+					</div>
+				</div>
+			</div>
 
-	<h2>Variables &amp; constants, option B</h2>
-	<div class="block"><div class="cols">
-		<div class="col"><div class="label">Python</div><pre>print(total, MAX_RETRIES)</pre><div class="out match"><span>›</span><span>2 3</span></div></div>
-		<div class="col"><div class="label">Rust</div><pre>println!("{total} {MAX_RETRIES}");</pre><div class="out match"><span>›</span><span>2 3</span></div></div>
-		<div class="col"><div class="label">Go</div><pre>fmt.Println(total, MaxRetries, zero)</pre><div class="out go alt"><span>›</span><span>2 3 0</span></div></div>
-	</div></div>
-</template>
-<script>
-	const t = document.getElementById('content');
-	for (const el of document.querySelectorAll('[data-fill]')) el.append(t.content.cloneNode(true));
-</script>
-</body>
+			<h2>Variables &amp; constants, option B</h2>
+			<div class="block">
+				<div class="cols">
+					<div class="col">
+						<div class="label">Python</div>
+						<pre>print(total, MAX_RETRIES)</pre>
+						<div class="out match"><span>›</span><span>2 3</span></div>
+					</div>
+					<div class="col">
+						<div class="label">Rust</div>
+						<pre>println!("{total} {MAX_RETRIES}");</pre>
+						<div class="out match"><span>›</span><span>2 3</span></div>
+					</div>
+					<div class="col">
+						<div class="label">Go</div>
+						<pre>fmt.Println(total, MaxRetries, zero)</pre>
+						<div class="out go alt"><span>›</span><span>2 3 0</span></div>
+					</div>
+				</div>
+			</div>
+		</template>
+		<script>
+			const t = document.getElementById('content');
+			for (const el of document.querySelectorAll('[data-fill]'))
+				el.append(t.content.cloneNode(true));
+		</script>
+	</body>
 </html>

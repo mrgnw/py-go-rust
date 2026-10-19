@@ -41,7 +41,9 @@ function lackedTokens(tokens: string[], keep: Map<string, number>): boolean[] {
 // unspaced run (Rust's `Some(4)` yes, Python's `[1, 2]` commas no). A bracket pair is then colored
 // as a pair, so `Some((0, 1))` colors both outer parens even though `))` has no word beside it.
 function paintFlags(tokens: { text: string; run: number }[], lacked: boolean[]): boolean[] {
-	const loudRuns = new Set(tokens.filter((t, i) => lacked[i] && WORD.test(t.text)).map((t) => t.run));
+	const loudRuns = new Set(
+		tokens.filter((t, i) => lacked[i] && WORD.test(t.text)).map((t) => t.run)
+	);
 	const painted = tokens.map((t, i) => lacked[i] && (WORD.test(t.text) || loudRuns.has(t.run)));
 	const open: number[] = [];
 	tokens.forEach((t, i) => {
