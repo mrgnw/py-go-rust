@@ -1,5 +1,6 @@
 import { marked, type Token } from 'marked';
 import { createHighlighter, type ShikiTransformer } from 'shiki';
+import { diffLine, escapeHtml, OUTPUT, sameValue } from './diff';
 
 const LANGS = ['python', 'rust', 'go', 'sh', 'toml', 'text'] as const;
 type Lang = (typeof LANGS)[number];
@@ -137,56 +138,6 @@ function highlight(code: string, info: string): Col {
 			pad: p.pad
 		}))
 	};
-}
-
-const OUTPUT = /[ \t]+(?:#|\/\/) => (.*)$/;
-const TOKEN = /[A-Za-z0-9_.]+|\S/gu;
-const WORD = /^[A-Za-z0-9_.]+$/;
-
-// 'Ada' and "Ada", True and true are the same value printed by different languages.
-function sameValue(text: string): string {
-	return text.replaceAll("'", '"').replace(/\b(True|False)\b/g, (m) => m.toLowerCase());
-}
-
-function escapeHtml(text: string): string {
-	return text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
-}
-
-function tally(line: string): Map<string, number> {
-	const counts = new Map<string, number>();
-	for (const token of line.match(TOKEN) ?? []) {
-		const key = sameValue(token);
-		counts.set(key, (counts.get(key) ?? 0) + 1);
-	}
-	return counts;
-}
-
-// A token is marked when some other column lacks it on the same line. Punctuation is marked only
-// next to a marked word in the same unspaced run: Rust's `Some(4)` yes, Python's `[1, 2]` commas no.
-function diffLine(line: string, others: string[]): string {
-	const theirs = others.map(tally);
-	const keep = new Map(
-		[...tally(line).keys()].map((key) => [key, Math.min(...theirs.map((c) => c.get(key) ?? 0))])
-	);
-	const markRun = (run: string) => {
-		const tokens = run.match(TOKEN) ?? [];
-		const unmatched = tokens.map((token) => {
-			const key = sameValue(token);
-			const left = keep.get(key) ?? 0;
-			keep.set(key, left - 1);
-			return left <= 0;
-		});
-		const loud = tokens.some((token, i) => unmatched[i] && WORD.test(token));
-		return tokens
-			.map((token, i) =>
-				loud && unmatched[i] ? `<span class="diff">${escapeHtml(token)}</span>` : escapeHtml(token)
-			)
-			.join('');
-	};
-	return line
-		.split(/(\s+)/)
-		.map((run, i) => (i % 2 ? run : markRun(run)))
-		.join('');
 }
 
 // When every column prints the same thing, show it once in a leading Output column.
