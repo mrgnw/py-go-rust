@@ -34,7 +34,8 @@ Renderer: `src/lib/content/langs.ts` parses the markdown with marked, highlights
 - [x] Granular output diff: only the tokens another column lacks on the same line take the language color (`8080` stays neutral, the extra `true`s light up). Punctuation is colored only when glued to a colored word.
 - [x] Compare sections for the four index rows that had none: decorator, `with`, `uv` / `cargo` / `go mod`, `ruff` / `clippy` / `go vet`. Code snippets executed, commands run once.
 - [x] Language picker: `py` / `rs` / `go` toggles in the nav hide a language's columns on any page that has more than one. Inline script plus `data-hide` on `<html>`, persisted in localStorage; no hydration.
-- [ ] Parts: compare at finer grain than a whole snippet, with the languages linked part by part. Design in SPEC.md, pivot prototype at `/lab`. Markers are comments (`# --`, `// --`), so authoring can land before the parser. Next step is markers on three sections, then the parser.
+- [x] Parts: compare at finer grain than a whole snippet, with the languages linked part by part. Design in SPEC.md, pivot prototype at `/lab`. Markers (`# --`, `// --`) are parsed into flat parts on If-else, Interfaces and Error handling; hovering a part tints the same part in every column (CSS `:has()`, no JS).
+- [ ] Parts, next: markers on more sections, nesting (`---` is still flat), then pivot and expand against real parts (SPEC.md "Views").
 
 Handoff tasks for parallel agents: `todos/_priority.md`.
 

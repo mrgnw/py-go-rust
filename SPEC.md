@@ -1,6 +1,6 @@
 # pygorst — parts spec
 
-Status: design agreed, not built. Read PLAN.md for context. The goal is to compare
+Status: design agreed. Flat parts and hover-link are built; nesting, pivot and expand are not. Read PLAN.md for context. The goal is to compare
 the same idea across Python, Rust and Go at finer grain than a whole snippet:
 one `else if` against another `else if`, one print against its output.
 
