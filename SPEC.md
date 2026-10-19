@@ -1,6 +1,6 @@
 # pygorst — parts spec
 
-Status: design agreed. Parts (two levels), the build checks and hover-link are built; pivot and expand are not. Read PLAN.md for context. The goal is to compare
+Status: design agreed. Parts (two levels), the build checks, hover-link, pivot and expand are built. Read PLAN.md for context. The goal is to compare
 the same idea across Python, Rust and Go at finer grain than a whole snippet:
 one `else if` against another `else if`, one print against its output.
 
@@ -77,9 +77,11 @@ Fail the build, naming the section and language, when:
 
 ## Views
 
-All read the same frozen tree. Client JS is allowed now (hydrate; still
-prerendered); flip `csr = false` in `src/routes/+layout.server.ts` when the
-first interactive view lands.
+All read the same frozen tree. Still no hydration (`csr = false`): every view
+is prerendered markup, and the one inline script in the layout only toggles
+attributes. Expand prerenders both layouts and swaps `hidden`, so it never
+needed client-side Svelte. Flip `csr` only for a view that has to build markup
+in the browser.
 
 1. **Columns** (default, unchanged): whole snippets side by side in one block,
    an output strip under each column, colored by language when that output is
@@ -104,19 +106,29 @@ first interactive view lands.
 - Hover-link: `LangPage.svelte` puts `data-part={path}` on every `.part`; a
   `mouseover` handler in the layout's inline script sets `data-lit` on the
   hovered part and its ancestors in every column of the row.
-- `src/lib/content/langs.ts`: `codeRow()` builds the shared Output column;
-  `pivot()` derives `Step[]` for `/lab` by splitting fences at output lines
-  only. `unwrapMain()` strips Go's `func main() {}` wrapper so bodies line up;
-  that hack goes away once parts are authored.
-- `src/routes/lab/`: pivot prototype over the 9 compare sections whose outputs
-  match. Not in the nav, `noindex`.
+- Each leaf carries its own `output` (its `=>` lines). The column's output
+  strip is still built per fence in `codeRow()`.
+- Pivot: `src/lib/Pivot.svelte` renders any list of parts across columns, one
+  box per leaf: the output on top when every language prints the same value
+  (else under each language's lines), then each language's lines with a
+  `py` / `rs` / `go` gutter label. Languages with an empty part are skipped.
+  `/lab` uses it on the first row of every Patterns section with parts. Not in
+  the nav, `noindex`.
+- Expand: every group (top-level part with children) in a row prerenders a
+  hidden `[data-split]` view: columns for the parts before it, `Pivot` for its
+  children, columns for the parts after it plus the output strips. Tapping the
+  group, or its `pivot` button, swaps the views; tapping the pivot, or its
+  `columns` button, swaps back. Keyboard activation moves focus to the other
+  button. The language picker's hide rules apply in every view.
 
 ## Next
 
-Steps 1-3 (markers on sections, tree and build checks, hover-link) are done.
+Steps 1-4 (markers, tree and build checks, hover-link, pivot and expand) are done.
 
-1. Pivot and expand, reading the part tree (`Part.parts`, `Part.path`).
-2. Label agreement check (Build rules) when a section first needs it.
+1. Label agreement check (Build rules) when a section first needs it.
+2. More groups (`---` markers): only If-else has one, so only it expands.
+3. Keyboard stepping (`.` / `,`) treats the split view's column blocks as
+   separate rows and skips the pivot.
 
 Open: parts like `} else if n == 0 {` are honest but ugly stacked. Keep, or
 let an author mark scaffolding lines. Decide after seeing step 3.

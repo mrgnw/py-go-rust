@@ -40,7 +40,8 @@ Renderer: `src/lib/content/langs.ts` parses the markdown with marked, highlights
 - [x] Nested parts: `---` markers are children of the enclosing `--` part (If-else branches). Hover tints the child and, lighter, its parent, via `data-lit` set by the inline script.
 - [x] Per-part copy: a small `Copy` button beside each part's caption on hover or when keyboard-active, copying only that part (nested parts included); hidden on single-part columns.
 - [x] Collapsible sections sidebar: `Sections` toggle beside the page title or `b`; `data-sidebar="collapsed"` on `<html>` plus localStorage, set before first paint; the grid column goes away at `lg`, below it the stacked list hides.
-- [ ] Parts, next: markers on more sections, then pivot and expand against the part tree (SPEC.md "Views").
+- [x] Pivot and expand: `/lab` pivots every marked row part by part (output on top, `py` / `rs` / `go` gutter). In columns, tapping a group (If-else's branches) swaps in its parts pivoted inline; tap again for columns. Prerendered both ways, toggled by the inline script; still no hydration.
+- [ ] Parts, next: `---` groups on more sections so more rows expand.
 
 Handoff tasks for parallel agents: `todos/_priority.md`.
 
@@ -53,7 +54,7 @@ Handoff tasks for parallel agents: `todos/_priority.md`.
 
 ## Constraints
 
-- Client JS only for features that need it. Pages stay prerendered; `csr = false` today, flips when the first interactive view (SPEC.md) lands.
+- Client JS only for features that need it. Pages stay prerendered with `csr = false`; interactive views prerender every state and the inline script toggles them.
 - Dark mode is CSS only (`color-scheme: light dark` + shiki `light-dark()`); don't add a toggle that needs state.
 - Snippets must be correct for Python 3.15 + uv, Rust stable 2024 edition, Go 1.25. Only comments that show output.
 - git: main-only. Ports 5237 (dev) and 5238 (preview).
