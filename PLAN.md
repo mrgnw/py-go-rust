@@ -35,6 +35,8 @@ Renderer: `src/lib/content/langs.ts` parses the markdown with marked, highlights
 - [x] Language picker: `py` / `rs` / `go` toggles in the nav hide a language's columns on any page that has more than one. Inline script plus `data-hide` on `<html>`, persisted in localStorage; no hydration.
 - [ ] Parts: compare at finer grain than a whole snippet, with the languages linked part by part. Design in SPEC.md, pivot prototype at `/lab`. Markers are comments (`# --`, `// --`), so authoring can land before the parser. Next step is markers on three sections, then the parser.
 
+Handoff tasks for parallel agents: `todos/_priority.md`.
+
 ## Ideas, not committed to
 
 - Execute the Python, Rust and Go section snippets with `analysis/run_snippets.py` (used for compare and algorithms). Their Go fences omit `func main`, so the runner needs a wrap rule first.
