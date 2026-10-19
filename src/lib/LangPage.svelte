@@ -85,7 +85,7 @@
 											<div class="part" data-part={col.parts.length > 1 ? k : undefined}>
 												{#if part.label}
 													<div
-														class="caption px-3 pt-1.5 font-mono text-[0.7rem] text-neutral-400 select-none dark:text-neutral-500"
+														class="caption absolute top-0 right-3 font-mono text-[0.7rem] text-neutral-400 select-none dark:text-neutral-500"
 													>
 														{part.label}
 													</div>
@@ -181,10 +181,25 @@
 	[data-lang='go'] .out {
 		--odd: light-dark(var(--color-teal-600), var(--color-teal-300));
 	}
-	.part + .part {
-		border-top: 1px solid light-dark(var(--color-neutral-200), var(--color-neutral-800));
+	/* parts are invisible until hovered: no rules, no gaps. The hovered index tints itself in every
+	   column and shows its caption. One rule per index, up to MAX_PARTS in langs.ts. */
+	.part {
+		position: relative;
+		--caption: none;
 	}
-	/* one rule per part index, up to MAX_PARTS in langs.ts */
+	.caption {
+		display: var(--caption);
+	}
+	.part :global(pre.shiki) {
+		padding-top: 0;
+		padding-bottom: 0;
+	}
+	.part:first-child :global(pre.shiki) {
+		padding-top: 0.75rem;
+	}
+	.part:last-child :global(pre.shiki) {
+		padding-bottom: 0.75rem;
+	}
 	.cols:has([data-part='0']:hover) [data-part='0'],
 	.cols:has([data-part='1']:hover) [data-part='1'],
 	.cols:has([data-part='2']:hover) [data-part='2'],
@@ -193,17 +208,11 @@
 	.cols:has([data-part='5']:hover) [data-part='5'],
 	.cols:has([data-part='6']:hover) [data-part='6'],
 	.cols:has([data-part='7']:hover) [data-part='7'] {
+		--caption: block;
 		background: light-dark(
 			color-mix(in oklab, var(--color-amber-200) 35%, transparent),
 			color-mix(in oklab, var(--color-amber-300) 12%, transparent)
 		);
-	}
-	.part:has(+ .part) :global(pre.shiki) {
-		padding-bottom: 0.375rem;
-	}
-	.part + .part :global(pre.shiki),
-	.caption + :global(pre.shiki) {
-		padding-top: 0.375rem;
 	}
 	.langs :global(.prose code::before),
 	.langs :global(.prose code::after) {
