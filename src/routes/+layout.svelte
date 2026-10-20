@@ -80,10 +80,12 @@
 		const links = [...toc.querySelectorAll('li a[href^="#"]')];
 		const heads = links.map((a) => document.getElementById(decodeURIComponent(a.hash.slice(1))));
 		let queued = false;
+		const now = document.querySelector('[data-section-now]');
 		const update = () => {
 			queued = false;
 			const i = Math.max(0, heads.findLastIndex((h) => h && h.getBoundingClientRect().top <= 96));
 			links.forEach((a, k) => a.toggleAttribute('aria-current', k === i));
+			now.textContent = links[i].textContent;
 			if (toc.scrollHeight > toc.clientHeight) links[i].scrollIntoView({ block: 'nearest' });
 		};
 		addEventListener('scroll', () => { if (!queued) { queued = true; requestAnimationFrame(update); } }, { passive: true });
@@ -282,6 +284,8 @@
 		const button = event.target.closest('[data-pick]');
 		if (button && !(dragged && event.detail)) toggleLang(button.dataset.pick);
 		if (event.target.closest('[data-sidebar-toggle]')) toggleSidebar();
+		const toc = byId('sections-nav');
+		if (event.target.closest('#sections-nav a') && toc.matches(':popover-open')) toc.hidePopover();
 		if (event.target.closest('[data-help]')) byId('help').showModal();
 	});
 	document.addEventListener('click', async (event) => {
@@ -308,46 +312,78 @@
 	{@html '<script type="application/json" id="sections">' + sectionsJson + '<\/script>'}
 </svelte:head>
 
-<nav
-	class="sticky top-0 z-10 flex gap-1 overflow-x-auto border-b border-neutral-200 bg-white/90 px-4 py-2 text-sm backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/90"
+<header
+	class="sticky top-0 z-10 border-b border-neutral-200 bg-white/90 backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/90"
 >
-	<a href="/" class="px-2 py-1 font-semibold whitespace-nowrap">pygors</a>
-	{#each data.nav as item (item.href)}
-		<a
-			href={item.href}
-			aria-current={page.url.pathname === item.href ? 'page' : undefined}
-			class="rounded-md px-3 py-1 whitespace-nowrap text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 aria-[current=page]:bg-neutral-100 aria-[current=page]:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-50 dark:aria-[current=page]:bg-neutral-800 dark:aria-[current=page]:text-neutral-50"
-			>{item.title}</a
+	<nav class="flex gap-1 overflow-x-auto px-4 py-2 text-sm">
+		<button
+			type="button"
+			data-sidebar-toggle
+			aria-expanded="true"
+			aria-controls="sections-nav"
+			aria-keyshortcuts="b"
+			aria-label="Sections sidebar"
+			title="Sections sidebar (b)"
+			class="hidden cursor-pointer items-center rounded-md px-2 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 lg:inline-flex dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-50"
 		>
-	{/each}
-	<div class="ml-auto flex gap-1 font-mono text-xs">
-		<div class="picker flex gap-1" role="group" aria-label="Show languages">
-			{#each PICK as [lang, short] (lang)}
-				<button
-					type="button"
-					data-pick={lang}
-					aria-pressed="true"
-					class="cursor-pointer rounded-md px-2 py-1 text-neutral-500 hover:bg-neutral-100 aria-[pressed=false]:line-through aria-[pressed=false]:opacity-40 dark:text-neutral-400 dark:hover:bg-neutral-800"
-					>{short}</button
-				>
-			{/each}
+			<svg
+				viewBox="0 0 16 16"
+				width="16"
+				height="16"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="1.25"
+				aria-hidden="true"
+				><rect x="1.5" y="2.5" width="13" height="11" rx="2" /><path d="M6 2.5v11" /></svg
+			>
+		</button>
+		<a href="/" class="px-2 py-1 font-semibold whitespace-nowrap">pygors</a>
+		{#each data.nav as item (item.href)}
+			<a
+				href={item.href}
+				aria-current={page.url.pathname === item.href ? 'page' : undefined}
+				class="rounded-md px-3 py-1 whitespace-nowrap text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 aria-[current=page]:bg-neutral-100 aria-[current=page]:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-50 dark:aria-[current=page]:bg-neutral-800 dark:aria-[current=page]:text-neutral-50"
+				>{item.title}</a
+			>
+		{/each}
+		<div class="ml-auto flex gap-1 font-mono text-xs">
+			<div class="picker flex gap-1" role="group" aria-label="Show languages">
+				{#each PICK as [lang, short] (lang)}
+					<button
+						type="button"
+						data-pick={lang}
+						aria-pressed="true"
+						class="cursor-pointer rounded-md px-2 py-1 text-neutral-500 hover:bg-neutral-100 aria-[pressed=false]:line-through aria-[pressed=false]:opacity-40 dark:text-neutral-400 dark:hover:bg-neutral-800"
+						>{short}</button
+					>
+				{/each}
+			</div>
+			<button
+				type="button"
+				data-palette
+				aria-label="Search sections"
+				class="cursor-pointer rounded-md px-2 py-1 whitespace-nowrap text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
+				>search <kbd>⌘K</kbd></button
+			>
+			<button
+				type="button"
+				data-help
+				aria-label="Keyboard shortcuts"
+				class="cursor-pointer rounded-md px-2 py-1 text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
+				><kbd>?</kbd></button
+			>
 		</div>
-		<button
-			type="button"
-			data-palette
-			aria-label="Search sections"
-			class="cursor-pointer rounded-md px-2 py-1 whitespace-nowrap text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
-			>search <kbd>⌘K</kbd></button
+	</nav>
+	<button
+		type="button"
+		popovertarget="sections-nav"
+		class="section-now flex w-full cursor-pointer items-center gap-2 border-t border-neutral-200 px-6 py-2 text-left text-sm text-neutral-500 lg:hidden dark:border-neutral-800 dark:text-neutral-400"
+	>
+		<span data-section-now class="truncate"></span><span aria-hidden="true" class="ml-auto text-xs"
+			>▾</span
 		>
-		<button
-			type="button"
-			data-help
-			aria-label="Keyboard shortcuts"
-			class="cursor-pointer rounded-md px-2 py-1 text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
-			><kbd>?</kbd></button
-		>
-	</div>
-</nav>
+	</button>
+</header>
 
 <dialog
 	id="help"

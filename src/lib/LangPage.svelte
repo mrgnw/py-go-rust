@@ -21,26 +21,9 @@
 </script>
 
 <section class="langs pb-16" data-compare={compares || undefined}>
-	<div class="mb-2 flex items-center gap-3">
-		{#if toc.length}
-			<button
-				type="button"
-				data-sidebar-toggle
-				aria-expanded="true"
-				aria-controls="sections-nav"
-				aria-keyshortcuts="b"
-				class="sidebar-toggle cursor-pointer rounded-md px-2 py-1 font-mono text-xs text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
-				>Sections</button
-			>
-		{/if}
-		<h1 class="text-3xl font-bold">{page.title}</h1>
-	</div>
+	<h1 class="mb-2 text-3xl font-bold">{page.title}</h1>
 	<div class="sidebar-grid lg:grid lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-x-10">
-		<nav
-			id="sections-nav"
-			aria-label="Sections"
-			class="mb-8 lg:sticky lg:top-16 lg:mb-0 lg:max-h-[calc(100dvh-5rem)] lg:w-52 lg:self-start lg:overflow-y-auto lg:overflow-x-hidden"
-		>
+		<nav id="sections-nav" aria-label="Sections" popover class="sections-nav">
 			{#each toc as group, i (group.title ?? i)}
 				{#if group.title}
 					<a
@@ -50,7 +33,7 @@
 						{group.title}
 					</a>
 				{/if}
-				<ul class="flex flex-wrap gap-x-3 gap-y-1 text-sm lg:flex-col lg:gap-x-0">
+				<ul class="flex flex-col gap-y-2 text-sm lg:gap-y-1">
 					{#each group.sections as h2 (h2.id)}
 						<li>
 							<a
@@ -68,7 +51,7 @@
 				{#if block.kind === 'group'}
 					<h2
 						id={block.id}
-						class="mt-16 mb-6 scroll-mt-14 border-b border-neutral-200 pb-2 text-2xl font-bold first:mt-0 dark:border-neutral-800"
+						class="mt-16 mb-6 scroll-mt-14 border-b border-neutral-200 pb-2 text-2xl font-bold first:mt-0 max-lg:scroll-mt-24 dark:border-neutral-800"
 					>
 						<a href="#{block.id}">{block.title}</a>
 					</h2>
@@ -76,7 +59,7 @@
 					<svelte:element
 						this={grouped ? 'h3' : 'h2'}
 						id={block.id}
-						class="mt-10 mb-3 scroll-mt-14 text-xl font-semibold first:mt-0"
+						class="mt-10 mb-3 scroll-mt-14 text-xl font-semibold first:mt-0 max-lg:scroll-mt-24"
 					>
 						<a href="#{block.id}">{block.title}</a>
 					</svelte:element>
