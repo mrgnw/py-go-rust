@@ -82,8 +82,34 @@ html[data-sidebar='collapsed'] #sections-nav {
 }
 
 @media (min-width: 64rem) {
+	.sidebar-grid {
+		transition:
+			grid-template-columns 0.25s ease,
+			column-gap 0.25s ease;
+	}
+
+	#sections-nav {
+		transition:
+			opacity 0.2s ease,
+			visibility 0.25s;
+	}
+
+	html[data-sidebar='collapsed'] #sections-nav {
+		display: block;
+		opacity: 0;
+		visibility: hidden;
+	}
+
 	html[data-sidebar='collapsed'] .sidebar-grid {
-		grid-template-columns: minmax(0, 1fr);
+		grid-template-columns: 0fr minmax(0, 1fr);
+		column-gap: 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.sidebar-grid,
+	#sections-nav {
+		transition: none !important;
 	}
 }
 

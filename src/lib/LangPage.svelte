@@ -21,8 +21,7 @@
 </script>
 
 <section class="langs pb-16" data-compare={compares || undefined}>
-	<div class="mb-2 flex items-center justify-between gap-4">
-		<h1 class="text-3xl font-bold">{page.title}</h1>
+	<div class="mb-2 flex items-center gap-3">
 		{#if toc.length}
 			<button
 				type="button"
@@ -34,12 +33,13 @@
 				>Sections</button
 			>
 		{/if}
+		<h1 class="text-3xl font-bold">{page.title}</h1>
 	</div>
-	<div class="sidebar-grid lg:grid lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-10">
+	<div class="sidebar-grid lg:grid lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-x-10">
 		<nav
 			id="sections-nav"
 			aria-label="Sections"
-			class="mb-8 lg:sticky lg:top-16 lg:mb-0 lg:max-h-[calc(100dvh-5rem)] lg:self-start lg:overflow-y-auto"
+			class="mb-8 lg:sticky lg:top-16 lg:mb-0 lg:max-h-[calc(100dvh-5rem)] lg:w-52 lg:self-start lg:overflow-y-auto lg:overflow-x-hidden"
 		>
 			{#each toc as group, i (group.title ?? i)}
 				{#if group.title}
