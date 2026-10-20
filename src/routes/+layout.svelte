@@ -186,12 +186,12 @@
 		if (!links.length) return;
 		const i = links.findIndex((a) => a.hasAttribute('aria-current'));
 		const next = links[Math.min(links.length - 1, Math.max(0, i + step))];
-		document.getElementById(decodeURIComponent(next.hash.slice(1))).scrollIntoView({ block: 'start' });
+		document.getElementById(decodeURIComponent(next.hash.slice(1))).scrollIntoView({ block: 'start', behavior: 'instant' });
 	};
 	const stepRow = (step) => {
 		const rows = [...document.querySelectorAll('.cols')].filter((r) => r.offsetHeight);
 		const top = (r) => r.getBoundingClientRect().top;
-		(step > 0 ? rows.find((r) => top(r) > 60) : rows.findLast((r) => top(r) < 52))?.scrollIntoView({ block: 'start' });
+		(step > 0 ? rows.find((r) => top(r) > 60) : rows.findLast((r) => top(r) < 52))?.scrollIntoView({ block: 'start', behavior: 'instant' });
 	};
 	const stops = () => [...document.querySelectorAll('.cols')].filter((row) => row.offsetHeight).flatMap((row) => [...new Set([...row.querySelectorAll('.snippet > [data-part]')].filter((e) => e.checkVisibility()).map((e) => e.dataset.part))].map((path) => ({ row, path })));
 	const stepPart = (step) => {
