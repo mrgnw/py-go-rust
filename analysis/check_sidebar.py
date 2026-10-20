@@ -58,6 +58,22 @@ with sync_playwright() as p:
 	page.click('#sections-nav li:nth-child(2) a')
 	page.wait_for_timeout(300)
 	check('mobile: picking a section closes list', not page.is_visible('#sections-nav'))
+	page.close()
+
+	for motion, smooth in (('no-preference', True), ('reduce', False)):
+		page = browser.new_page(viewport={'width': 1280, 'height': 800}, reduced_motion=motion)
+		page.goto(BASE)
+		page.click('#sections-nav li:nth-child(4) a')
+		page.wait_for_timeout(50)
+		mid = page.evaluate('scrollY')
+		page.wait_for_timeout(1000)
+		end = page.evaluate('scrollY')
+		check(f'{motion}: link scroll smooth = {smooth} ({mid} -> {end})', (0 < mid < end) == smooth and end > 0)
+		check(f'{motion}: hash updated', page.evaluate('location.hash') != '')
+		page.keyboard.press('j')
+		page.wait_for_timeout(20)
+		check(f'{motion}: j jumps instantly', page.evaluate('scrollY') > end)
+		page.close()
 	browser.close()
 
 sys.exit(1 if failures else 0)
