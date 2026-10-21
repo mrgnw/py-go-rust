@@ -1,4 +1,5 @@
 # Sections sidebar: desktop toggle keeps content put on wide screens, mobile sticky bar names the section and opens the list.
+# Motion: smooth scroll, part tint, dialog fade and language view transitions (scoped to main), all off under reduced motion.
 # Needs the dev server (`pnpm dev`, port 5237). Screenshots land in /tmp/pygorst-sidebar-*.png.
 # uv run analysis/check_sidebar.py
 # /// script
@@ -68,11 +69,37 @@ with sync_playwright() as p:
 		mid = page.evaluate('scrollY')
 		page.wait_for_timeout(1000)
 		end = page.evaluate('scrollY')
-		check(f'{motion}: link scroll smooth = {smooth} ({mid} -> {end})', (0 < mid < end) == smooth and end > 0)
+		check(
+			f'{motion}: link scroll smooth = {smooth} ({mid} -> {end})', (0 < mid < end) == smooth and end > 0
+		)
 		check(f'{motion}: hash updated', page.evaluate('location.hash') != '')
 		page.keyboard.press('j')
 		page.wait_for_timeout(20)
 		check(f'{motion}: j jumps instantly', page.evaluate('scrollY') > end)
+		check(
+			f'{motion}: part tint fades = {smooth}',
+			(page.eval_on_selector('.part', 'e => getComputedStyle(e).transitionDuration') != '0s') == smooth,
+		)
+		page.keyboard.press('?')
+		page.wait_for_timeout(30)
+		opacity = float(page.eval_on_selector('#help', 'e => getComputedStyle(e).opacity'))
+		check(f'{motion}: dialog fades in = {smooth} (opacity {opacity} at 30ms)', (opacity < 1) == smooth)
+		page.keyboard.press('Escape')
+		page.goto(BASE + 'compare')
+		page.evaluate(
+			'window.vt = 0; const main = document.querySelector("main"); const s = main.startViewTransition?.bind(main); if (s) main.startViewTransition = (f) => (vt++, s(f)); 0;'
+		)
+		page.keyboard.press('2')
+		page.wait_for_timeout(400)
+		check(
+			f'{motion}: language toggle view transition = {smooth} (vt={page.evaluate("window.vt")})',
+			(page.evaluate('vt') == 1) == smooth,
+		)
+		check(
+			f'{motion}: language toggle applied',
+			'rust' in page.evaluate('document.documentElement.dataset.hide'),
+		)
+		page.evaluate('localStorage.clear()')
 		page.close()
 	browser.close()
 

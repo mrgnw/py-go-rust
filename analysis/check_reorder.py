@@ -31,6 +31,17 @@ STATE = """() => ({
 problems: list[str] = []
 
 
+SETTLED = """async () => {
+	await document.querySelector('main').activeViewTransition?.finished;
+	await new Promise((done) => requestAnimationFrame(done));
+}"""
+
+
+def state(page):
+	page.evaluate(SETTLED)
+	return page.evaluate(STATE)
+
+
 def expect(label, actual, wanted):
 	print(f'{"ok  " if actual == wanted else "FAIL"} {label}: {actual!r}')
 	if actual != wanted:
@@ -71,37 +82,37 @@ def mouse(browser):
 	page.mouse.move(x + 3, y)
 	page.mouse.move(gx + 4, y, steps=8)
 	page.mouse.up()
-	state = page.evaluate(STATE)
+	now = state(page)
 	expect(
 		'mouse drag py past go',
-		(state['order'], state['stored'], state['chips'], state['cols']),
+		(now['order'], now['stored'], now['chips'], now['cols']),
 		('rust go python', 'rust go python', 'rust go python', 'rust go python'),
 	)
 	page.locator('[data-pick="rust"]').focus()
 	page.keyboard.press('Enter')
-	expect('Enter toggles after a drag', page.evaluate(STATE)['chips'], 'rust-off go python')
+	expect('Enter toggles after a drag', state(page)['chips'], 'rust-off go python')
 	page.keyboard.press('Enter')
 	x, y = chip_center(page, 'go')
 	page.mouse.click(x + 2, y)
-	expect('short click toggles', page.evaluate(STATE)['chips'], 'rust go-off python')
+	expect('short click toggles', state(page)['chips'], 'rust go-off python')
 	page.locator('[data-pick="python"]').focus()
 	page.keyboard.press('Shift+ArrowLeft')
-	state = page.evaluate(STATE)
+	now = state(page)
 	expect(
 		'Shift+Left keeps focus and moves',
-		(state['order'], state['focus'], state['chips']),
+		(now['order'], now['focus'], now['chips']),
 		('rust python go', 'python', 'rust python go-off'),
 	)
 	page.keyboard.press('Shift+ArrowLeft')
 	page.keyboard.press('Shift+ArrowLeft')
-	expect('Shift+Left stops at the edge', page.evaluate(STATE)['order'], 'python rust go')
+	expect('Shift+Left stops at the edge', state(page)['order'], 'python rust go')
 	page.keyboard.press('1')
-	expect('1 still toggles python', page.evaluate(STATE)['chips'], 'python-off rust go-off')
+	expect('1 still toggles python', state(page)['chips'], 'python-off rust go-off')
 	page.reload()
-	state = page.evaluate(STATE)
+	now = state(page)
 	expect(
 		'reload keeps order and hide',
-		(state['order'], state['chips']),
+		(now['order'], now['chips']),
 		('python rust go', 'python-off rust go-off'),
 	)
 	context.close()
@@ -122,13 +133,13 @@ def touch(browser):
 		touch_event('touchMove', (x + (px - 4 - x) * i / 8, y))
 	touch_event('touchEnd')
 	page.wait_for_timeout(400)
-	state = page.evaluate(STATE)
-	expect('touch drag go to front', (state['order'], state['chips']), ('go python rust', 'go python rust'))
+	now = state(page)
+	expect('touch drag go to front', (now['order'], now['chips']), ('go python rust', 'go python rust'))
 	x, y = chip_center(page, 'rust')
 	touch_event('touchStart', (x, y))
 	touch_event('touchEnd')
 	page.wait_for_timeout(400)
-	expect('tap toggles', page.evaluate(STATE)['chips'], 'go python rust-off')
+	expect('tap toggles', state(page)['chips'], 'go python rust-off')
 	context.close()
 
 
