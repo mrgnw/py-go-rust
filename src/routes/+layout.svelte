@@ -54,12 +54,17 @@
 		localStorage.setItem('order', html.dataset.order);
 		sortChips();
 	};
-	const moveLang = (lang, step) => {
+	const transition = (change) => {
+		const main = document.querySelector('main');
+		if (!main.startViewTransition || matchMedia('(prefers-reduced-motion: reduce)').matches) return change();
+		main.startViewTransition(change);
+	};
+	const moveLang = (lang, step) => transition(() => {
 		const to = currentOrder().indexOf(lang) + step;
 		if (to < 0 || to >= LANGS.length) return;
 		place(lang, to);
 		saveOrder();
-	};
+	});
 	const syncSidebar = () => {
 		const toggle = document.querySelector('[data-sidebar-toggle]');
 		if (toggle) toggle.setAttribute('aria-expanded', String(html.dataset.sidebar !== 'collapsed'));
@@ -174,13 +179,13 @@
 		if (event.target.localName === 'dialog') event.target.close();
 		if (event.target.closest('#palette-list a')) byId('palette').close();
 	});
-	const toggleLang = (name) => {
+	const toggleLang = (name) => transition(() => {
 		const hidden = new Set(html.dataset.hide.split(' ').filter(Boolean));
 		hidden.has(name) ? hidden.delete(name) : hidden.add(name);
 		html.dataset.hide = [...hidden].join(' ');
 		localStorage.setItem('hide', html.dataset.hide);
 		syncPicker();
-	};
+	});
 	const stepSection = (step) => {
 		const links = [...document.querySelectorAll('nav[aria-label="Sections"] li a[href^="#"]')];
 		if (!links.length) return;
