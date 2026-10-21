@@ -11,6 +11,16 @@ from playwright.sync_api import sync_playwright
 
 BASE = 'http://localhost:5237/'
 CONTENT_LEFT = "() => document.querySelector('.sidebar-grid > div').getBoundingClientRect().left"
+FRAMES = """() => {
+	window.frameTimes = [];
+	let last = performance.now();
+	const tick = (now) => {
+		window.frameTimes.push(now - last);
+		last = now;
+		if (window.frameTimes.length < 30) requestAnimationFrame(tick);
+	};
+	requestAnimationFrame(tick);
+}"""
 failures = []
 
 
@@ -30,6 +40,16 @@ with sync_playwright() as p:
 		page.reload()
 		open_left = page.evaluate(CONTENT_LEFT)
 		page.screenshot(path=f'/tmp/pygorst-sidebar-{width}-open.png')
+		page.evaluate(FRAMES)
+		page.click('[data-sidebar-toggle]')
+		page.wait_for_timeout(400)
+		long_frames = page.evaluate('window.frameTimes.slice(1).filter((t) => t > 34).length')
+		check(f'{width}: toggle animates with at most one long frame ({long_frames})', long_frames <= 1)
+		page.evaluate(FRAMES)
+		page.click('[data-sidebar-toggle]')
+		page.wait_for_timeout(120)
+		page.screenshot(path=f'/tmp/pygorst-sidebar-{width}-mid.png')
+		page.wait_for_timeout(400)
 		page.click('[data-sidebar-toggle]')
 		page.wait_for_timeout(400)
 		closed_left = page.evaluate(CONTENT_LEFT)
