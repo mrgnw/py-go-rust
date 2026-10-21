@@ -69,11 +69,11 @@
 		const toggle = document.querySelector('[data-sidebar-toggle]');
 		if (toggle) toggle.setAttribute('aria-expanded', String(html.dataset.sidebar !== 'collapsed'));
 	};
-	const toggleSidebar = () => {
+	const toggleSidebar = () => transition(() => {
 		html.dataset.sidebar = html.dataset.sidebar === 'collapsed' ? '' : 'collapsed';
 		localStorage.setItem('sidebar', html.dataset.sidebar);
 		syncSidebar();
-	};
+	});
 	const syncPicker = () => {
 		const hidden = html.dataset.hide.split(' ');
 		for (const b of document.querySelectorAll('[data-pick]'))

@@ -87,14 +87,16 @@ body:not(:has(#sections-nav)) :is([data-sidebar-toggle], .section-now) {
 }
 
 @media (min-width: 64rem) {
+	.sidebar-grid > div {
+		grid-column: -2;
+	}
+
 	html[data-sidebar='collapsed'] .sections-nav {
-		opacity: 0;
-		visibility: hidden;
+		display: none;
 	}
 
 	html[data-sidebar='collapsed'] .sidebar-grid {
-		grid-template-columns: 0 minmax(0, 1fr);
-		column-gap: 0;
+		grid-template-columns: minmax(0, 1fr);
 	}
 }
 
@@ -216,16 +218,23 @@ body:not(:has([data-compare])) .picker {
 	}
 
 	@media (min-width: 64rem) {
-		.sidebar-grid {
-			transition:
-				grid-template-columns 0.25s ease,
-				column-gap 0.25s ease;
+		.sections-nav {
+			view-transition-name: sections;
 		}
 
-		.sections-nav {
-			transition:
-				opacity 0.2s ease,
-				visibility 0.25s;
+		.sidebar-grid > div {
+			view-transition-name: content;
+		}
+
+		::view-transition-old(content) {
+			display: none;
+		}
+
+		::view-transition-new(content) {
+			height: 100%;
+			object-fit: none;
+			object-position: left top;
+			animation: none;
 		}
 	}
 }
