@@ -5,12 +5,6 @@ html {
 	color-scheme: light dark;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-	html {
-		scroll-behavior: smooth;
-	}
-}
-
 body {
 	@apply bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100;
 }
@@ -93,18 +87,6 @@ body:not(:has(#sections-nav)) :is([data-sidebar-toggle], .section-now) {
 }
 
 @media (min-width: 64rem) {
-	.sidebar-grid {
-		transition:
-			grid-template-columns 0.25s ease,
-			column-gap 0.25s ease;
-	}
-
-	.sections-nav {
-		transition:
-			opacity 0.2s ease,
-			visibility 0.25s;
-	}
-
 	html[data-sidebar='collapsed'] .sections-nav {
 		opacity: 0;
 		visibility: hidden;
@@ -122,13 +104,6 @@ body:not(:has(#sections-nav)) :is([data-sidebar-toggle], .section-now) {
 		grid-template-columns: 13rem minmax(0, 1fr);
 		column-gap: 2.5rem;
 		margin-left: -15.5rem;
-	}
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.sidebar-grid,
-	.sections-nav {
-		transition: none !important;
 	}
 }
 
@@ -166,4 +141,91 @@ body:not(:has([data-compare])) .picker {
 
 #help::backdrop {
 	@apply bg-black/40;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	@view-transition {
+		navigation: auto;
+	}
+
+	html {
+		scroll-behavior: smooth;
+	}
+
+	.part {
+		transition: background-color 0.1s ease;
+	}
+
+	dialog {
+		opacity: 0;
+		scale: 0.98;
+		transition:
+			opacity 0.15s ease,
+			scale 0.15s ease,
+			display 0.15s allow-discrete,
+			overlay 0.15s allow-discrete;
+	}
+
+	dialog[open] {
+		opacity: 1;
+		scale: 1;
+	}
+
+	dialog::backdrop {
+		opacity: 0;
+		transition:
+			opacity 0.15s ease,
+			display 0.15s allow-discrete,
+			overlay 0.15s allow-discrete;
+	}
+
+	dialog[open]::backdrop {
+		opacity: 1;
+	}
+
+	@starting-style {
+		dialog[open],
+		dialog[open]::backdrop {
+			opacity: 0;
+			scale: 0.98;
+		}
+	}
+
+	@media (max-width: 63.99rem) {
+		.sections-nav {
+			opacity: 0;
+			translate: 0 -0.25rem;
+			transition:
+				opacity 0.15s ease,
+				translate 0.15s ease,
+				display 0.15s allow-discrete,
+				overlay 0.15s allow-discrete;
+		}
+
+		.sections-nav:popover-open {
+			opacity: 1;
+			translate: 0;
+		}
+
+		@starting-style {
+			.sections-nav:popover-open {
+				opacity: 0;
+				translate: 0 -0.25rem;
+			}
+		}
+	}
+
+	@media (min-width: 64rem) {
+		.sidebar-grid {
+			transition:
+				grid-template-columns 0.25s ease,
+				column-gap 0.25s ease;
+		}
+
+		.sections-nav {
+			transition:
+				opacity 0.2s ease,
+				visibility 0.25s;
+		}
+	}
 }
