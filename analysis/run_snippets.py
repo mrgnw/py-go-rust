@@ -2,6 +2,7 @@
 # A section's fences of one language run as one program, so a second row can use the first row's names.
 # Every `=>` line must be printed, in order; other output (loop bodies, map iteration) is allowed.
 # Fences that define tests run under pytest, `rustc --test` and `go test`.
+# Toolchains are the targets, not whatever is on PATH: Python 3.15 via uv, Go 1.25.0 via GOTOOLCHAIN, stable Rust.
 # Snippets using crates build in a cargo project cached in ~/.cache/pygorst-snippets.
 # uv run analysis/run_snippets.py src/lib/content/langs/15-algorithms.md
 import os
@@ -39,6 +40,8 @@ OUTPUT = re.compile(r'[ \t]+(?:#|//) => (.*)$', re.MULTILINE)
 LINK = re.compile(r'^\[(.*)\]\((.*\.md)\)$')
 TESTS = {'python': r'^def test_', 'rust': r'#\[test\]', 'go': r'^func Test'}
 RUST_MAIN = 'fn main() -> Result<(), Box<dyn std::error::Error>> {\n'
+PYTHON = ['uv', 'run', '--no-project', '--python', '3.15']
+GO = 'go1.25.0'
 
 
 def sh(cmd: list[str], cwd: pathlib.Path, **env: str) -> subprocess.CompletedProcess:
@@ -77,11 +80,9 @@ def cargo_project() -> pathlib.Path:
 def run_python(code: str, d: pathlib.Path, test: bool) -> subprocess.CompletedProcess:
 	if test:
 		(d / 'test_main.py').write_text(code)
-		return sh(
-			['uv', 'run', '--no-project', '--with', 'pytest', 'pytest', '-q', '-p', 'no:cacheprovider'], d
-		)
+		return sh([*PYTHON, '--with', 'pytest', 'pytest', '-q', '-p', 'no:cacheprovider'], d)
 	(d / 'main.py').write_text(code)
-	return sh([sys.argv[2] if len(sys.argv) > 2 else 'python3', '-I', 'main.py'], d)
+	return sh([*PYTHON, 'python', '-I', 'main.py'], d)
 
 
 def run_rust(code: str, d: pathlib.Path, test: bool) -> subprocess.CompletedProcess:
@@ -103,9 +104,9 @@ def run_go(code: str, d: pathlib.Path, test: bool) -> subprocess.CompletedProces
 	(d / 'go.mod').write_text('module x\n\ngo 1.25\n')
 	if test:
 		(d / 'x_test.go').write_text(go_source(code, 'x'))
-		return sh(['go', 'test', '.'], d)
+		return sh(['go', 'test', '.'], d, GOTOOLCHAIN=GO)
 	(d / 'main.go').write_text(go_source(code, 'main'))
-	return sh(['go', 'run', '.'], d)
+	return sh(['go', 'run', '.'], d, GOTOOLCHAIN=GO)
 
 
 RUNNERS = {'python': run_python, 'rust': run_rust, 'go': run_go}
