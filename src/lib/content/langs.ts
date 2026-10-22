@@ -18,7 +18,7 @@ export type Block =
 	| { kind: 'group'; id: string; title: string }
 	| { kind: 'h2'; id: string; title: string }
 	| { kind: 'html'; html: string }
-	| { kind: 'code'; cols: Col[] };
+	| { kind: 'code'; cols: Col[]; linked: boolean };
 
 // A part is the same idea in every column of a row, found at the same path (`1`, `1.0`).
 // A leaf has html; a group has parts and no lines of its own. pad: blank lines the author left above
@@ -182,32 +182,46 @@ function checkShape(section: string, cols: Col[], lists: Part[][], under = ''): 
 		);
 }
 
+type Printed = { path: string; lines: string[] };
+
+// Every leaf that prints, in order, with its `=>` lines.
+function printed(parts: Part[]): Printed[] {
+	return parts.flatMap((part) => {
+		if (part.parts.length) return printed(part.parts);
+		return part.output === undefined ? [] : [{ path: part.path, lines: part.output.split('\n') }];
+	});
+}
+
+// Output line k of a part is diffed against line k of the same part in the other columns, so a part
+// that prints more lines in one language doesn't shift the comparison for the parts after it.
+// In a linked row each line carries its part's path, so hovering either side lights the other.
 function codeRow(fences: { text: string; info: string }[], section: string): Block {
-	const outputs = fences.map((f) =>
-		f.text.split('\n').flatMap((line) => line.match(OUTPUT)?.[1] ?? [])
-	);
-	const outputHtml = (i: number) => {
-		const others = outputs.filter((lines, k) => k !== i && lines.length);
-		const body = outputs[i].map((line, k) =>
-			others.length
-				? diffLine(
-						line,
-						others.map((lines) => lines[k] ?? '')
-					)
-				: escapeHtml(line)
-		);
-		return `<pre class="shiki"><code>${body.join('\n')}</code></pre>`;
-	};
-	const cols = fences.map((f, i) => ({
-		...highlight(f.text, f.info, section),
-		output: outputs[i].length ? outputHtml(i) : undefined
-	}));
+	const cols: Col[] = fences.map((f) => highlight(f.text, f.info, section));
 	checkShape(
 		section,
 		cols,
 		cols.map((c) => c.parts)
 	);
-	return { kind: 'code', cols };
+	const linked = cols[0].parts.length > 1 || cols[0].parts[0].parts.length > 0;
+	const prints = cols.map((c) => printed(c.parts));
+	const linesOf = (col: Printed[], path: string) => col.find((p) => p.path === path)?.lines ?? [];
+	const outputHtml = (i: number) => {
+		const others = prints.filter((col, k) => k !== i && col.length);
+		const body = prints[i].flatMap(({ path, lines }) =>
+			lines.map((line, k) => {
+				const html = others.length
+					? diffLine(
+							line,
+							others.map((col) => linesOf(col, path)[k] ?? '')
+						)
+					: escapeHtml(line);
+				return linked ? `<span data-part="${path}">${html}</span>` : `<span>${html}</span>`;
+			})
+		);
+		return `<pre class="shiki"><code>${body.join('')}</code></pre>`;
+	};
+	for (const [i, col] of cols.entries()) if (prints[i].length) col.output = outputHtml(i);
+	return { kind: 'code', cols, linked };
 }
 
 // A heading that is only a link to a `.md` file (`### [Sets](compare/sets.md)`) takes its body from

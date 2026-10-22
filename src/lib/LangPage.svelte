@@ -68,12 +68,10 @@
 						{@html block.html}
 					</div>
 				{:else if block.kind === 'code'}
-					{@const linked =
-						block.cols[0].parts.length > 1 || block.cols[0].parts[0].parts.length > 0}
 					<div
 						class="row my-3 overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900"
 					>
-						{@render columns(block.cols, (col) => col.parts, linked, true, true)}
+						{@render columns(block.cols, (col) => col.parts, block.linked, true, true)}
 						{#each block.cols[0].parts.filter((part) => part.parts.length) as group (group.path)}
 							{@const k = Number(group.path)}
 							<div data-split={group.path} hidden>
@@ -226,8 +224,13 @@
 		}
 	}
 	.langs :global(.out pre.shiki) {
+		flex: 1;
 		padding: 0.375rem 0.75rem 0.375rem 0;
 		font-weight: 600;
+	}
+	.langs :global(.out code > span) {
+		display: block;
+		min-height: 1lh;
 	}
 	/* output tokens another column lacks take their language's color; matches stay neutral */
 	.langs :global(.out .diff) {
@@ -299,6 +302,7 @@
 		padding-top: 0;
 		padding-bottom: 0;
 	}
+	.langs :global(.out [data-lit]),
 	.part:global([data-lit]) {
 		--tools: visible;
 		background: light-dark(

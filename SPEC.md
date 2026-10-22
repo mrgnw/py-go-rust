@@ -106,8 +106,11 @@ in the browser.
 - Hover-link: `LangPage.svelte` puts `data-part={path}` on every `.part`; a
   `mouseover` handler in the layout's inline script sets `data-lit` on the
   hovered part and its ancestors in every column of the row.
-- Each leaf carries its own `output` (its `=>` lines). The column's output
-  strip is still built per fence in `codeRow()`.
+- Each leaf carries its own `output` (its `=>` lines). `codeRow()` builds the
+  column's output strip from the leaves: in a linked row each strip line has
+  its leaf's `data-part`, so hovering a part lights its output and hovering an
+  output line lights its part. Line k of a part is diffed against line k of
+  the same part in the other columns.
 - Pivot: `src/lib/Pivot.svelte` renders any list of parts across columns, one
   box per leaf: the output on top when every language prints the same value
   (else under each language's lines), then each language's lines with a
