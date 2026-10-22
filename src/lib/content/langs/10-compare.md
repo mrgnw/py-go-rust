@@ -1695,13 +1695,13 @@ Python: one file is one module. Rust: `mod geometry;` loads `geometry.rs`, items
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('name')
+parser.add_argument('name', nargs='?', default='world')
 parser.add_argument('--count', type=int, default=1)
 # -- parse
 args = parser.parse_args()
 # -- use
 for _ in range(args.count):
-	print(f'hi {args.name}')
+	print(f'hi {args.name}')  # => hi world
 ```
 
 ```rust
@@ -1712,7 +1712,7 @@ let name = args.next().unwrap_or_else(|| "world".to_string());
 let count: usize = args.next().and_then(|s| s.parse().ok()).unwrap_or(1);
 // -- use
 for _ in 0..count {
-    println!("hi {name}");
+    println!("hi {name}"); // => hi world
 }
 ```
 
@@ -1721,10 +1721,10 @@ for _ in 0..count {
 count := flag.Int("count", 1, "repeat count")
 // -- parse
 flag.Parse()
-name := flag.Arg(0)
+name := cmp.Or(flag.Arg(0), "world")
 // -- use
 for range *count {
-	fmt.Println("hi", name)
+	fmt.Println("hi", name) // => hi world
 }
 ```
 
