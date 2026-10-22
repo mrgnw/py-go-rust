@@ -1,7 +1,7 @@
 # Run each section's python/rust/go fences and check its `=>` comments against stdout.
 # A section's fences of one language run as one program, so a second row can use the first row's names.
-# Every `=>` line must be printed, in order; other output (loop bodies, map iteration) is allowed.
-# Fences that define tests run under pytest, `rustc --test` and `go test`.
+# stdout must be exactly the `=>` lines, in order; a run of `=>~` lines may come in any order.
+# Fences that define tests run under pytest, `rustc --test` and `go test`, and pass on exit code.
 # Toolchains are the targets, not whatever is on PATH: Python 3.15 via uv, Go 1.25.0 via GOTOOLCHAIN, stable Rust.
 # Snippets using crates build in a cargo project cached in ~/.cache/pygorst-snippets.
 # Requests to https://example.com go to a local server instead, so HTTP snippets run offline.
@@ -39,7 +39,7 @@ GO_IMPORTS = {
 CRATES = re.compile(r'\b(?:serde|serde_json|reqwest|tokio|chrono)::')
 CARGO = pathlib.Path.home() / '.cache' / 'pygorst-snippets'
 FENCE = re.compile(r'^```(python|rust|go)[^\n]*\n(.*?)^```', re.MULTILINE | re.DOTALL)
-OUTPUT = re.compile(r'[ \t]+(?:#|//) => (.*)$', re.MULTILINE)
+OUTPUT = re.compile(r'(?:^|[ \t])(?:#|//) =>(~?) (.*)$', re.MULTILINE)
 LINK = re.compile(r'^\[(.*)\]\((.*\.md)\)$')
 TESTS = {'python': r'^def test_', 'rust': r'#\[test\]', 'go': r'^func Test'}
 RUST_MAIN = 'fn main() -> Result<(), Box<dyn std::error::Error>> {\n'
@@ -128,9 +128,18 @@ def sections(path: pathlib.Path) -> list[tuple[str, str]]:
 	return out
 
 
-def printed_in_order(expected: list[str], got: list[str]) -> bool:
-	lines = iter(got)
-	return all(line in lines for line in expected)
+def printed(expected: list[tuple[str, str]], got: list[str]) -> bool:
+	if len(expected) != len(got):
+		return False
+	i = 0
+	while i < len(expected):
+		j = i + 1
+		while expected[i][0] and j < len(expected) and expected[j][0]:
+			j += 1
+		if sorted(text for _, text in expected[i:j]) != sorted(got[i:j]):
+			return False
+		i = j
+	return True
 
 
 class Page(http.server.BaseHTTPRequestHandler):
@@ -164,15 +173,15 @@ def main() -> None:
 			runs += 1
 			d = work / re.sub(r'\W+', '-', title) / lang
 			d.mkdir(parents=True)
-			expected = [line.rstrip() for line in OUTPUT.findall(code)]
+			expected = [(any_order, text.rstrip()) for any_order, text in OUTPUT.findall(code)]
 			test = bool(re.search(TESTS[lang], code, re.MULTILINE))
 			result = RUNNERS[lang](code.replace('https://example.com', example), d, test)
 			got = [line.rstrip() for line in result.stdout.splitlines()]
-			if result.returncode == 0 and printed_in_order(expected, got):
+			if result.returncode == 0 and (test or printed(expected, got)):
 				continue
 			failures += 1
 			print(f'--- {title} / {lang} (rc={result.returncode})')
-			print(f'expected {expected}\ngot      {got}')
+			print(f'expected {[text for _, text in expected]}\ngot      {got}')
 			if result.stderr:
 				print(result.stderr.strip()[-800:])
 	print(f'{sys.argv[1]}: {runs} programs, {"all ok" if failures == 0 else f"{failures} failing"}')
