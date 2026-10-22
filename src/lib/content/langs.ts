@@ -1,4 +1,4 @@
-import { marked, type Token } from 'marked';
+import { marked, type Token, type Tokens } from 'marked';
 import { createHighlighter, type ShikiTransformer } from 'shiki';
 import { diffLine, escapeHtml, OUTPUT } from './diff';
 
@@ -51,6 +51,13 @@ const sources = import.meta.glob('./langs/*.md', {
 	import: 'default',
 	eager: true
 }) as Record<string, string>;
+
+const sectionFiles = import.meta.glob('./langs/*/*.md', {
+	query: '?raw',
+	import: 'default',
+	eager: true
+}) as Record<string, string>;
+const linked = new Set<string>();
 
 const highlighter = await createHighlighter({
 	langs: [...LANGS],
@@ -201,6 +208,25 @@ function codeRow(fences: { text: string; info: string }[], section: string): Blo
 	return { kind: 'code', cols };
 }
 
+// A heading that is only a link to a `.md` file (`### [Sets](compare/sets.md)`) takes its body from
+// that file: the page keeps the title and the order, the file holds the section.
+function expand(tokens: Token[], slug: string): Token[] {
+	return tokens.flatMap((token) => {
+		const link =
+			token.type === 'heading' && token.tokens?.length === 1 ? token.tokens[0] : undefined;
+		if (link?.type !== 'link' || !link.href.endsWith('.md')) return [token];
+		const path = `./langs/${link.href}`;
+		if (!(path in sectionFiles)) throw new Error(`langs: ${slug}: no section file ${link.href}`);
+		if (linked.has(path)) throw new Error(`langs: ${slug}: ${link.href} is linked twice`);
+		linked.add(path);
+		const body = marked.lexer(sectionFiles[path]) as Token[];
+		const heading = body.find((t): t is Tokens.Heading => t.type === 'heading');
+		if (heading)
+			throw new Error(`langs: ${link.href}: section files have no headings ("${heading.text}")`);
+		return [{ ...token, text: link.text }, ...body];
+	});
+}
+
 function toBlocks(md: string, slug: string): Block[] {
 	const blocks: Block[] = [];
 	let fences: { text: string; info: string }[] = [];
@@ -209,7 +235,7 @@ function toBlocks(md: string, slug: string): Block[] {
 		if (fences.length) blocks.push(codeRow(fences, section));
 		fences = [];
 	};
-	const tokens = marked.lexer(md) as Token[];
+	const tokens = expand(marked.lexer(md) as Token[], slug);
 	// With `###` present, `##` headings are groups (component-party style) and `###` are the sections.
 	const grouped = tokens.some((t) => t.type === 'heading' && t.depth === 3);
 	const sectionDepth = grouped ? 3 : 2;
@@ -246,3 +272,6 @@ export const langPages: LangPage[] = Object.keys(sources)
 		if (!h1 || h1.kind !== 'h1') throw new Error(`langs: ${path} has no # title`);
 		return { slug, title: h1.title, blocks };
 	});
+
+const orphans = Object.keys(sectionFiles).filter((path) => !linked.has(path));
+if (orphans.length) throw new Error(`langs: no page links ${orphans.join(', ')}`);
