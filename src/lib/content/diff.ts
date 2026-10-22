@@ -1,4 +1,7 @@
-export const OUTPUT = /[ \t]+(?:#|\/\/) => (.*)$/;
+// `x  # => 3` after code, or a line of its own (`# => 3`) for output a line prints more than once.
+// `=>~` lines may print in any order (map iteration); they render like any other output.
+export const OUTPUT = /(?:^|[ \t]+)(?:#|\/\/) =>~? (.*)$/;
+export const OUTPUT_ONLY = /^[ \t]*(?:#|\/\/) =>~? /;
 const TOKEN = /[A-Za-z0-9_.]+|\S/gu;
 const WORD = /^[A-Za-z0-9_.]+$/;
 const OPENERS = new Set(['(', '[', '{']);

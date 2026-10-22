@@ -1,6 +1,6 @@
 import { marked, type Token, type Tokens } from 'marked';
 import { createHighlighter, type ShikiTransformer } from 'shiki';
-import { diffLine, escapeHtml, OUTPUT } from './diff';
+import { diffLine, escapeHtml, OUTPUT, OUTPUT_ONLY } from './diff';
 
 const LANGS = ['python', 'rust', 'go', 'sh', 'toml', 'text'] as const;
 type Lang = (typeof LANGS)[number];
@@ -126,7 +126,9 @@ function leaf(
 	lang: string
 ): { html: string; output?: string; pad: [number, number] } {
 	const outputs = raw.flatMap((line) => line.match(OUTPUT)?.[1] ?? []);
-	const lines = raw.map((line) => line.replace(OUTPUT, ''));
+	const lines = raw
+		.filter((line) => !OUTPUT_ONLY.test(line))
+		.map((line) => line.replace(OUTPUT, ''));
 	const first = lines.findIndex((line) => !blank(line));
 	if (first < 0) return { html: '', pad: [lines.length, 0] };
 	const last = lines.findLastIndex((line) => !blank(line));
