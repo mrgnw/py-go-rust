@@ -12,7 +12,7 @@ let mut counts = HashMap::new();
 for w in "a b a c b a".split(' ') {
     *counts.entry(w).or_insert(0) += 1;
 }
-let top = counts.iter().max_by_key(|(_, &n)| n).unwrap();
+let top = counts.iter().max_by_key(|&(_, &n)| n).unwrap();
 println!("{top:?}"); // => ("a", 3)
 ```
 
