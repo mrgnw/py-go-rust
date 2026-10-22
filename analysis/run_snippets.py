@@ -4,13 +4,16 @@
 # Fences that define tests run under pytest, `rustc --test` and `go test`.
 # Toolchains are the targets, not whatever is on PATH: Python 3.15 via uv, Go 1.25.0 via GOTOOLCHAIN, stable Rust.
 # Snippets using crates build in a cargo project cached in ~/.cache/pygorst-snippets.
+# Requests to https://example.com go to a local server instead, so HTTP snippets run offline.
 # uv run analysis/run_snippets.py src/lib/content/langs/15-algorithms.md
+import http.server
 import os
 import pathlib
 import re
 import subprocess
 import sys
 import tempfile
+import threading
 
 GO_IMPORTS = {
 	'fmt': 'fmt',
@@ -130,7 +133,26 @@ def printed_in_order(expected: list[str], got: list[str]) -> bool:
 	return all(line in lines for line in expected)
 
 
+class Page(http.server.BaseHTTPRequestHandler):
+	def do_GET(self) -> None:
+		body = b'<html>example</html>'
+		self.send_response(200)
+		self.send_header('Content-Length', str(len(body)))
+		self.end_headers()
+		self.wfile.write(body)
+
+	def log_message(self, *args: object) -> None:
+		pass
+
+
+def serve_example() -> str:
+	server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), Page)
+	threading.Thread(target=server.serve_forever, daemon=True).start()
+	return f'http://127.0.0.1:{server.server_port}'
+
+
 def main() -> None:
+	example = serve_example()
 	path = pathlib.Path(sys.argv[1])
 	work = pathlib.Path(tempfile.mkdtemp(prefix='pygorst-run-'))
 	failures = runs = 0
@@ -143,7 +165,8 @@ def main() -> None:
 			d = work / re.sub(r'\W+', '-', title) / lang
 			d.mkdir(parents=True)
 			expected = [line.rstrip() for line in OUTPUT.findall(code)]
-			result = RUNNERS[lang](code, d, bool(re.search(TESTS[lang], code, re.MULTILINE)))
+			test = bool(re.search(TESTS[lang], code, re.MULTILINE))
+			result = RUNNERS[lang](code.replace('https://example.com', example), d, test)
 			got = [line.rstrip() for line in result.stdout.splitlines()]
 			if result.returncode == 0 and printed_in_order(expected, got):
 				continue
