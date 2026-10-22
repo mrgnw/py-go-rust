@@ -283,6 +283,9 @@ print(ages.get('dan', 0))  # => 0
 # -- iterate
 for k, v in ages.items():
 	print(k, v)
+# => ann 30
+# => bob 25
+# => cy 41
 # -- contains
 print('ann' in ages)  # => True
 # -- delete
@@ -301,6 +304,9 @@ println!("{}", ages.get("dan").copied().unwrap_or(0)); // => 0
 for (k, v) in &ages {
     println!("{k} {v}");
 }
+// =>~ bob 25
+// =>~ cy 41
+// =>~ ann 30
 // -- contains
 println!("{}", ages.contains_key("ann")); // => true
 // -- delete
@@ -318,6 +324,9 @@ fmt.Println(ages["dan"]) // => 0
 for k, v := range ages {
 	fmt.Println(k, v)
 }
+// =>~ cy 41
+// =>~ ann 30
+// =>~ bob 25
 // -- contains
 _, ok := ages["ann"]
 fmt.Println(ok) // => true
@@ -589,9 +598,14 @@ In Rust `if` is an expression, so it is the ternary. Go has no ternary; a tagles
 # -- range
 for i in range(3):
 	print(i)
+# => 0
+# => 1
+# => 2
 # -- enumerate
 for i, x in enumerate(['a', 'b']):
 	print(i, x)
+# => 0 a
+# => 1 b
 # -- while
 n = 3
 while n > 0:
@@ -603,10 +617,15 @@ while n > 0:
 for i in 0..3 {
     println!("{i}");
 }
+// => 0
+// => 1
+// => 2
 // -- enumerate
 for (i, x) in ["a", "b"].iter().enumerate() {
     println!("{i} {x}");
 }
+// => 0 a
+// => 1 b
 // -- while
 let mut n = 3;
 while n > 0 {
@@ -619,10 +638,15 @@ while n > 0 {
 for i := range 3 {
 	fmt.Println(i)
 }
+// => 0
+// => 1
+// => 2
 // -- enumerate
 for i, x := range []string{"a", "b"} {
 	fmt.Println(i, x)
 }
+// => 0 a
+// => 1 b
 // -- while
 n := 3
 for n > 0 {
@@ -1210,6 +1234,9 @@ class Resource:
 # -- use
 with Resource():
 	print('use')
+# => open
+# => use
+# => close
 ```
 
 ```rust
@@ -1236,6 +1263,9 @@ impl Drop for Resource {
     let _r = Resource::open();
     println!("use");
 }
+// => open
+// => use
+// => close
 ```
 
 ```go
@@ -1257,9 +1287,12 @@ func main() {
 	defer r.Close()
 	fmt.Println("use")
 }
+// => open
+// => use
+// => close
 ```
 
-All three print `open`, `use`, `close`. Python runs `__exit__` when the block ends, even on an exception. Rust runs `drop` when the owner goes out of scope, so there is nothing to forget; `let _r` keeps the value alive, `let _ =` drops it on the spot. Go's `defer` runs when the function returns, not when the block ends, so a loop that opens files should wrap its body in a function.
+Python runs `__exit__` when the block ends, even on an exception. Rust runs `drop` when the owner goes out of scope, so there is nothing to forget; `let _r` keeps the value alive, `let _ =` drops it on the spot. Go's `defer` runs when the function returns, not when the block ends, so a loop that opens files should wrap its body in a function.
 
 
 ## Data & I/O
@@ -1279,6 +1312,8 @@ text = path.read_text()
 # -- lines
 for line in text.splitlines():
 	print(line)
+# => one
+# => two
 ```
 
 ```rust
@@ -1294,6 +1329,8 @@ let text = fs::read_to_string(path)?;
 for line in text.lines() {
     println!("{line}");
 }
+// => one
+// => two
 ```
 
 ```go
@@ -1312,6 +1349,8 @@ if err != nil {
 for _, line := range strings.Split(strings.TrimSpace(string(data)), "\n") {
 	fmt.Println(line)
 }
+// => one
+// => two
 ```
 
 For big files stream instead: `open()` iteration, `BufReader::lines`, `bufio.Scanner`.
@@ -1543,6 +1582,9 @@ threading.Thread(target=producer).start()
 # -- consume
 while (x := q.get()) is not None:
 	print(x)
+# => 0
+# => 1
+# => 4
 ```
 
 ```rust
@@ -1560,6 +1602,9 @@ thread::spawn(move || {
 for x in rx {
     println!("{x}");
 }
+// => 0
+// => 1
+// => 4
 ```
 
 ```go
@@ -1576,6 +1621,9 @@ go func() {
 for x := range ch {
 	fmt.Println(x)
 }
+// => 0
+// => 1
+// => 4
 ```
 
 The Rust loop ends when every sender is dropped; the Go loop ends when the sender closes the channel. Python needs a sentinel (`None`). `make(chan int, 10)` buffers; unbuffered sends block until received.
