@@ -25,7 +25,7 @@ Pages live in `src/lib/content/langs/NN-name.md`, rendered in filename order. Fo
 - `=> ` outputs never render as comments. Each column renders them as an output strip under its code. A word that another printing column lacks on the same output line is colored by language (Python blue, Rust orange, Go teal), along with the punctuation glued to it (`Some(4)`); everything shared stays neutral. Quote style and `True`/`true` spelling count as the same value.
 - Comment lines that are only dashes plus an optional label (`# --`, `// --- fallback`) are part markers (SPEC.md). The loader drops the marker lines and keeps every other line, blank lines included, so the code reads as written; parts are invisible until a hover tints the same part in every column and shows its label. Two dashes open a part, three open a child inside it (the If-else branches); text before the first child marker is the first child. Hovering a child tints it and, lighter, its parent. Every column in a row needs the same tree: the same number of parts at each level, or the build fails naming the section. Leave a marker with nothing under it where a language has no equivalent. At most 2 levels and 8 parts per level.
 
-Execute a page's snippets (linked sections included), or one section file's, and diff outputs against the `=>` comments:
+Execute a page's snippets (linked sections included), or one section file's, and check that every `=>` line is printed, in order:
 
 ```sh
 uv run analysis/run_snippets.py src/lib/content/langs/15-algorithms.md
