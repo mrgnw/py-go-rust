@@ -77,38 +77,6 @@ html {
 	@apply relative z-10 cursor-grabbing bg-neutral-100 shadow-md dark:bg-neutral-800;
 }
 
-body:not(:has(#sections-nav)) :is([data-sidebar-toggle], .section-now) {
-	display: none;
-}
-
-.sections-nav {
-	@apply max-lg:inset-x-4 max-lg:top-24 max-lg:bottom-auto max-lg:m-0 max-lg:max-h-[70dvh] max-lg:w-auto max-lg:rounded-lg max-lg:border max-lg:border-neutral-200 max-lg:bg-white max-lg:p-4 max-lg:text-inherit max-lg:shadow-xl max-lg:dark:border-neutral-800 max-lg:dark:bg-neutral-900;
-	@apply lg:sticky lg:inset-auto lg:top-16 lg:m-0 lg:block lg:h-auto lg:max-h-[calc(100dvh-5rem)] lg:w-52 lg:self-start lg:overflow-x-hidden lg:overflow-y-auto lg:border-0 lg:bg-transparent lg:p-0 lg:text-inherit;
-}
-
-@media (min-width: 64rem) {
-	.sidebar-grid > div {
-		grid-column: -2;
-	}
-
-	html[data-sidebar='collapsed'] .sections-nav {
-		display: none;
-	}
-
-	html[data-sidebar='collapsed'] .sidebar-grid {
-		grid-template-columns: minmax(0, 1fr);
-	}
-}
-
-@media (min-width: 111rem) {
-	.sidebar-grid,
-	html[data-sidebar='collapsed'] .sidebar-grid {
-		grid-template-columns: 13rem minmax(0, 1fr);
-		column-gap: 2.5rem;
-		margin-left: -15.5rem;
-	}
-}
-
 body:not(:has([data-compare])) .picker {
 	display: none;
 }
@@ -190,51 +158,6 @@ body:not(:has([data-compare])) .picker {
 		dialog[open]::backdrop {
 			opacity: 0;
 			scale: 0.98;
-		}
-	}
-
-	@media (max-width: 63.99rem) {
-		.sections-nav {
-			opacity: 0;
-			translate: 0 -0.25rem;
-			transition:
-				opacity 0.15s ease,
-				translate 0.15s ease,
-				display 0.15s allow-discrete,
-				overlay 0.15s allow-discrete;
-		}
-
-		.sections-nav:popover-open {
-			opacity: 1;
-			translate: 0;
-		}
-
-		@starting-style {
-			.sections-nav:popover-open {
-				opacity: 0;
-				translate: 0 -0.25rem;
-			}
-		}
-	}
-
-	@media (min-width: 64rem) {
-		.sections-nav {
-			view-transition-name: sections;
-		}
-
-		.sidebar-grid > div {
-			view-transition-name: content;
-		}
-
-		::view-transition-old(content) {
-			display: none;
-		}
-
-		::view-transition-new(content) {
-			height: 100%;
-			object-fit: none;
-			object-position: left top;
-			animation: none;
 		}
 	}
 }
