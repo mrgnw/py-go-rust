@@ -174,7 +174,7 @@ def cd(path):
 		os.chdir(old)
 
 with cd(tempfile.gettempdir()):
-	print(os.getcwd())
+	print(os.getcwd() == os.path.realpath(tempfile.gettempdir()))  # => True
 ```
 
 ```python ExitStack
@@ -297,6 +297,8 @@ with ThreadPoolExecutor(max_workers=8) as pool:
 	futs = {pool.submit(size, u): u for u in urls}
 	for f in as_completed(futs):
 		print(futs[f], f.result())
+	# =>~ https://a.example 17
+	# =>~ https://bb.example 18
 ```
 
 ```python ProcessPoolExecutor
@@ -333,7 +335,7 @@ from pathlib import Path
 for f in Path('data').rglob('*.txt'):
 	with f.open() as fh:
 		for line in fh:
-			print(f.name, line.rstrip())
+			print(f.name, line.rstrip())  # => in.txt hi
 
 Path('data/in.txt').copy('data/out.txt')
 ```
@@ -437,10 +439,10 @@ uv run --with py-spy py-spy record -o prof.svg -- python main.py
 import numpy as np
 
 a = np.arange(1_000_000)
-(a * a).sum()  # => 333332833333500000
+print((a * a).sum())  # => 333332833333500000
 ```
 
-```rust src/lib.rs
+```rust src/lib.rs !norun
 use pyo3::prelude::*;
 
 #[pyfunction]
@@ -460,7 +462,7 @@ maturin init --bindings pyo3 fastlib
 maturin develop --release
 ```
 
-```python
+```python !norun
 import fastlib
 
 fastlib.fib(40)  # => 102334155

@@ -122,7 +122,7 @@ Layout: `main.py` + `pyproject.toml` / `src/main.rs` + `Cargo.toml` / `main.go` 
 
 ```python
 def main() -> None:
-	print('hello, world')
+	print('hello, world')  # => hello, world
 
 
 if __name__ == '__main__':
@@ -131,7 +131,7 @@ if __name__ == '__main__':
 
 ```rust
 fn main() {
-    println!("hello, world");
+    println!("hello, world"); // => hello, world
 }
 ```
 
@@ -141,7 +141,7 @@ package main
 import "fmt"
 
 func main() {
-	fmt.Println("hello, world")
+	fmt.Println("hello, world") // => hello, world
 }
 ```
 

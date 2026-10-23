@@ -44,7 +44,7 @@ GO_IMPORTS = {
 CRATES = re.compile(r'\b(?:serde|serde_json|reqwest|tokio|chrono)::')
 CARGO = pathlib.Path.home() / '.cache' / 'pygorst-snippets'
 FENCE = re.compile(r'^```(python|rust|go)([^\n]*)\n(.*?)^```', re.MULTILINE | re.DOTALL)
-FAILS = re.compile(r'(?:#|//) (?:(error\[E\d+\])|compile error: (.*)|(panic: .*))$', re.MULTILINE)
+FAILS = re.compile(r'(?:#|//) (?:(error\[E\d+\]).*|compile error: (.*)|(panic: .*))$', re.MULTILINE)
 OUTPUT = re.compile(r'(?:^|[ \t])(?:#|//) =>(~?) (.*)$', re.MULTILINE)
 LINK = re.compile(r'^\[(.*)\]\((.*\.md)\)$')
 TESTS = {'python': r'^def test_', 'rust': r'#\[test\]', 'go': r'^func Test'}
