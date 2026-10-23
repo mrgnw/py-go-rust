@@ -1,3 +1,7 @@
+---
+branch: extract-sidebar-svelte-component
+---
+
 # Replace the sections sidebar with the shared `section-nav` component
 
 The sidebar has been extracted to https://github.com/mrgnw/section-nav (private; `~/dev/section-nav`, SPEC.md there is the API). pygorst becomes its first SvelteKit consumer. Goal: one implementation, so everything the layout does for the sidebar today is deleted here.

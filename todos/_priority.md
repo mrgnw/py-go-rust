@@ -6,12 +6,13 @@
 4. [keyboard-shortcuts](done/1018-keyboard-shortcuts.md) — done, PR #4
 5. [parts-hover-link](done/1018-parts-hover-link.md) — done, PR #5
 6. [drag-reorder-languages](done/1019-drag-reorder-languages.md) — done, PR #20
+7. [section-nav](done/1023-section-nav.md) — done, branch extract-sidebar-svelte-component
 
 ## Context every agent needs
 
 Read `CLAUDE.md`, `PLAN.md` and, for 5, `SPEC.md`. Then:
 
-- Prerendered site, `csr = false`. No hydration. Client behaviour is the one `inlineScript` string in `src/routes/+layout.svelte` (copy button, language picker, section tracker). Add to it, don't add a second script or turn on hydration. State goes on `<html>` as `data-*` plus localStorage, styled from `src/routes/layout.css`.
+- Prerendered site. Hydration is on only for the `section-nav` sidebar. Client behaviour is the one `inlineScript` string in `src/routes/+layout.svelte` (copy button, language picker). Add to it, don't add a second script. State goes on `<html>` as `data-*` plus localStorage, styled from `src/routes/layout.css`.
 - No `$effect`. Svelte 5 runes and snippets. Tabs, prettier config in repo. No comments unless the task says so.
 - Rendering: `src/lib/content/langs.ts` turns markdown into `Block`s; `src/lib/LangPage.svelte` renders them. Each code row is one bordered block, columns in a CSS grid with subgrid rows `label / code / output`. Column `data-lang` drives the picker's hide rules.
 - Work in a worktree on a branch from `origin/main`. Verify with `pnpm check && pnpm build`. Visual check: `pnpm cfb` uploads a preview at `https://<branch>-pygors.xces.workers.dev`; use that instead of starting a dev server (5237 is taken by the main checkout's pitchfork daemon). Merge through a PR, rebased, `gh pr merge --rebase`. `pnpm ship` only from main.
