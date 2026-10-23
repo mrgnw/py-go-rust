@@ -1,6 +1,7 @@
 import { marked, type Token, type Tokens } from 'marked';
-import { createHighlighter, type ShikiTransformer } from 'shiki';
+import { createHighlighter, type DecorationItem, type ShikiTransformer } from 'shiki';
 import { diffLine, escapeHtml, OUTPUT, OUTPUT_ONLY } from './diff';
+import captured from './vars.json';
 
 const LANGS = ['python', 'rust', 'go', 'sh', 'toml', 'text'] as const;
 type Lang = (typeof LANGS)[number];
@@ -83,12 +84,59 @@ const lineCopy: ShikiTransformer = {
 	}
 };
 
-function toHtml(code: string, lang: string): string {
+// analysis/capture_vars.py: per fence, every occurrence of a local as [row, UTF-16 column, name, value at
+// that line, 1 if the line sets it]. Keyed by an FNV-1a hash of the fence text.
+type Occurrence = [row: number, col: number, name: string, value: string, sets: number];
+const vars = captured as unknown as Record<string, Occurrence[]>;
+const uncaptured: string[] = [];
+
+function fenceKey(text: string): string {
+	let h = 0x811c9dc5;
+	for (const byte of new TextEncoder().encode(text)) h = Math.imul(h ^ byte, 0x01000193) >>> 0;
+	return h.toString(16).padStart(8, '0');
+}
+
+// Columns pair a name by its key, so `max_retries` and `maxRetries` light together.
+const varKey = (name: string) => name.toLowerCase().replaceAll('_', '');
+
+interface Marks {
+	decorations: DecorationItem[];
+	sets: Map<number, string[]>;
+}
+
+// Each occurrence on a kept line becomes a `data-var` span carrying its value; a line that sets names lists
+// their keys in `data-sets`.
+function varMarks(lines: Line[], occurrences: Occurrence[]): Marks {
+	const index = new Map(lines.map((line, i) => [line.row, i]));
+	const marks: Marks = { decorations: [], sets: new Map() };
+	for (const [row, col, name, value, sets] of occurrences) {
+		const line = index.get(row);
+		if (line === undefined || lines[line].text.slice(col, col + name.length) !== name) continue;
+		const key = varKey(name);
+		marks.decorations.push({
+			start: { line, character: col },
+			end: { line, character: col + name.length },
+			properties: value ? { 'data-var': key, 'data-val': value } : { 'data-var': key }
+		});
+		if (sets && value) marks.sets.set(line, [...(marks.sets.get(line) ?? []), key]);
+	}
+	return marks;
+}
+
+const setsAttribute = (sets: Map<number, string[]>): ShikiTransformer => ({
+	line(node, line) {
+		const keys = sets.get(line - 1);
+		if (keys) node.properties['data-sets'] = [...new Set(keys)].join(' ');
+	}
+});
+
+function toHtml(code: string, lang: string, marks?: Marks): string {
 	return highlighter.codeToHtml(code, {
 		lang,
 		themes: { light: 'github-light', dark: 'github-dark' },
 		defaultColor: 'light-dark()',
-		transformers: lang === 'sh' ? [lineCopy] : []
+		decorations: marks?.decorations,
+		transformers: lang === 'sh' ? [lineCopy] : marks ? [setsAttribute(marks.sets)] : []
 	});
 }
 
@@ -105,16 +153,22 @@ const MARKER = /^[ \t]*(?:#|\/\/) (-{2,})(?: (.*))?$/;
 const MAX_DEPTH = 2;
 const MAX_PARTS = 8;
 
-const markerDepth = (line: string) => (line.match(MARKER)?.[1].length ?? 1) - 1;
-const blank = (line: string) => !line.trim();
+// row: the line's index in its fence, which is how captured variables find it.
+interface Line {
+	text: string;
+	row: number;
+}
+
+const markerDepth = (line: Line) => (line.text.match(MARKER)?.[1].length ?? 1) - 1;
+const blank = (line: Line) => !line.text.trim();
 
 // Split at markers of exactly `depth`; deeper markers stay with their lines for the next level.
 // Blank text before the first marker joins the first part instead of becoming one.
-function chunks(lines: string[], depth: number): { label?: string; lines: string[] }[] {
-	const out: { label?: string; lines: string[] }[] = [{ lines: [] }];
+function chunks(lines: Line[], depth: number): { label?: string; lines: Line[] }[] {
+	const out: { label?: string; lines: Line[] }[] = [{ lines: [] }];
 	for (const line of lines) {
 		if (markerDepth(line) === depth)
-			out.push({ label: line.match(MARKER)?.[2]?.trim() || undefined, lines: [] });
+			out.push({ label: line.text.match(MARKER)?.[2]?.trim() || undefined, lines: [] });
 		else out[out.length - 1].lines.push(line);
 	}
 	if (out.length > 1 && out[0].lines.every(blank)) out[1].lines.unshift(...out.shift()!.lines);
@@ -122,30 +176,39 @@ function chunks(lines: string[], depth: number): { label?: string; lines: string
 }
 
 function leaf(
-	raw: string[],
-	lang: string
+	raw: Line[],
+	lang: string,
+	occurrences?: Occurrence[]
 ): { html: string; output?: string; pad: [number, number] } {
-	const outputs = raw.flatMap((line) => line.match(OUTPUT)?.[1] ?? []);
+	const outputs = raw.flatMap((line) => line.text.match(OUTPUT)?.[1] ?? []);
 	const lines = raw
-		.filter((line) => !OUTPUT_ONLY.test(line))
-		.map((line) => line.replace(OUTPUT, ''));
+		.filter((line) => !OUTPUT_ONLY.test(line.text))
+		.map((line) => ({ ...line, text: line.text.replace(OUTPUT, '') }));
 	const first = lines.findIndex((line) => !blank(line));
 	if (first < 0) return { html: '', pad: [lines.length, 0] };
 	const last = lines.findLastIndex((line) => !blank(line));
+	const kept = lines.slice(first, last + 1);
+	const code = kept.map((line) => line.text).join('\n');
 	return {
-		html: toHtml(lines.slice(first, last + 1).join('\n'), lang),
+		html: toHtml(code, lang, occurrences && varMarks(kept, occurrences)),
 		output: outputs.length ? outputs.join('\n') : undefined,
 		pad: [first, lines.length - 1 - last]
 	};
 }
 
 // Marker lines vanish; every other line, blank ones included, lands in exactly one leaf.
-function toParts(lines: string[], lang: string, depth = 1, prefix = ''): Part[] {
+function toParts(
+	lines: Line[],
+	lang: string,
+	occurrences?: Occurrence[],
+	depth = 1,
+	prefix = ''
+): Part[] {
 	return chunks(lines, depth).map((chunk, k) => {
 		const path = prefix + k;
-		if (!chunk.lines.some((line) => MARKER.test(line)))
-			return { path, label: chunk.label, parts: [], ...leaf(chunk.lines, lang) };
-		const parts = toParts(chunk.lines, lang, depth + 1, `${path}.`);
+		if (!chunk.lines.some((line) => MARKER.test(line.text)))
+			return { path, label: chunk.label, parts: [], ...leaf(chunk.lines, lang, occurrences) };
+		const parts = toParts(chunk.lines, lang, occurrences, depth + 1, `${path}.`);
 		return { path, label: chunk.label, html: '', pad: [0, 0], parts };
 	});
 }
@@ -154,13 +217,15 @@ function highlight(code: string, info: string, section: string): Col {
 	const [lang, ...rest] = info.trim().split(/\s+/);
 	if (!LANGS.includes(lang as Lang)) throw new Error(`langs: unsupported fence language "${info}"`);
 	const label = rest.join(' ') || LABELS[lang as Lang];
-	const lines = code.split('\n');
+	const lines = code.split('\n').map((text, row) => ({ text, row }));
 	const depths = lines.map(markerDepth).filter((d) => d > 0);
 	if (depths.some((d) => d > MAX_DEPTH))
 		throw new Error(`langs: ${section}: ${label} has a marker deeper than ${MAX_DEPTH} levels`);
 	if (depths[0] > 1)
 		throw new Error(`langs: ${section}: ${label} has a depth-2 marker without a depth-1 parent`);
-	return { label, lang: pickLang(lang, label), parts: toParts(lines, lang) };
+	const occurrences = PICKABLE.includes(lang) ? vars[fenceKey(code)] : undefined;
+	if (PICKABLE.includes(lang) && !occurrences) uncaptured.push(`${section} (${lang})`);
+	return { label, lang: pickLang(lang, label), parts: toParts(lines, lang, occurrences) };
 }
 
 // Every column needs the same tree: the same number of parts under each path, at most MAX_PARTS.
@@ -288,6 +353,11 @@ export const langPages: LangPage[] = Object.keys(sources)
 		if (!h1 || h1.kind !== 'h1') throw new Error(`langs: ${path} has no # title`);
 		return { slug, title: h1.title, blocks };
 	});
+
+if (uncaptured.length)
+	console.warn(
+		`langs: no captured variables for ${uncaptured.length} fences, run \`uv run analysis/capture_vars.py\`:\n  ${uncaptured.join('\n  ')}`
+	);
 
 const orphans = Object.keys(sectionFiles).filter((path) => !linked.has(path));
 if (orphans.length) throw new Error(`langs: no page links ${orphans.join(', ')}`);

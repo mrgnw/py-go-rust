@@ -10,3 +10,4 @@ bun.lockb
 
 src/lib/content/langs/**/*.md
 worker-configuration.d.ts
+src/lib/content/vars.json
