@@ -29,7 +29,6 @@
 	if (navigator.clipboard) document.documentElement.dataset.copy = '';
 	const html = document.documentElement;
 	html.dataset.hide = localStorage.getItem('hide') ?? '';
-	html.dataset.sidebar = localStorage.getItem('sidebar') ?? '';
 	const LANGS = ['python', 'rust', 'go'];
 	const showOrder = (order) => {
 		html.dataset.order = order.join(' ');
@@ -65,38 +64,12 @@
 		place(lang, to);
 		saveOrder();
 	});
-	const syncSidebar = () => {
-		const toggle = document.querySelector('[data-sidebar-toggle]');
-		if (toggle) toggle.setAttribute('aria-expanded', String(html.dataset.sidebar !== 'collapsed'));
-	};
-	const toggleSidebar = () => transition(() => {
-		html.dataset.sidebar = html.dataset.sidebar === 'collapsed' ? '' : 'collapsed';
-		localStorage.setItem('sidebar', html.dataset.sidebar);
-		syncSidebar();
-	});
 	const syncPicker = () => {
 		const hidden = html.dataset.hide.split(' ');
 		for (const b of document.querySelectorAll('[data-pick]'))
 			b.setAttribute('aria-pressed', String(!hidden.includes(b.dataset.pick)));
 	};
-	const trackSections = () => {
-		const toc = document.querySelector('nav[aria-label="Sections"]');
-		if (!toc) return;
-		const links = [...toc.querySelectorAll('li a[href^="#"]')];
-		const heads = links.map((a) => document.getElementById(decodeURIComponent(a.hash.slice(1))));
-		let queued = false;
-		const now = document.querySelector('[data-section-now]');
-		const update = () => {
-			queued = false;
-			const i = Math.max(0, heads.findLastIndex((h) => h && h.getBoundingClientRect().top <= 96));
-			links.forEach((a, k) => a.toggleAttribute('aria-current', k === i));
-			now.textContent = links[i].textContent;
-			if (toc.scrollHeight > toc.clientHeight) links[i].scrollIntoView({ block: 'nearest' });
-		};
-		addEventListener('scroll', () => { if (!queued) { queued = true; requestAnimationFrame(update); } }, { passive: true });
-		update();
-	};
-	document.addEventListener('DOMContentLoaded', () => { sortChips(); syncPicker(); syncSidebar(); trackSections(); });
+	document.addEventListener('DOMContentLoaded', () => { sortChips(); syncPicker(); });
 	const light = (part) => {
 		for (const lit of document.querySelectorAll('[data-lit]')) lit.removeAttribute('data-lit');
 		if (!part) return;
@@ -186,13 +159,6 @@
 		localStorage.setItem('hide', html.dataset.hide);
 		syncPicker();
 	});
-	const stepSection = (step) => {
-		const links = [...document.querySelectorAll('nav[aria-label="Sections"] li a[href^="#"]')];
-		if (!links.length) return;
-		const i = links.findIndex((a) => a.hasAttribute('aria-current'));
-		const next = links[Math.min(links.length - 1, Math.max(0, i + step))];
-		document.getElementById(decodeURIComponent(next.hash.slice(1))).scrollIntoView({ block: 'start', behavior: 'instant' });
-	};
 	const stepRow = (step) => {
 		const rows = [...document.querySelectorAll('.cols')].filter((r) => r.offsetHeight);
 		const top = (r) => r.getBoundingClientRect().top;
@@ -217,9 +183,6 @@
 			1: lang('python'),
 			2: lang('rust'),
 			3: lang('go'),
-			b: toggleSidebar,
-			j: () => stepSection(1),
-			k: () => stepSection(-1),
 			n: () => stepRow(1),
 			p: () => stepRow(-1),
 			'.': () => stepPart(1),
@@ -288,9 +251,6 @@
 	document.addEventListener('click', (event) => {
 		const button = event.target.closest('[data-pick]');
 		if (button && !(dragged && event.detail)) toggleLang(button.dataset.pick);
-		if (event.target.closest('[data-sidebar-toggle]')) toggleSidebar();
-		const toc = byId('sections-nav');
-		if (event.target.closest('#sections-nav a') && toc.matches(':popover-open')) toc.hidePopover();
 		if (event.target.closest('[data-help]')) byId('help').showModal();
 	});
 	document.addEventListener('click', async (event) => {
@@ -321,27 +281,6 @@
 	class="sticky top-0 z-10 border-b border-neutral-200 bg-white/90 backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/90"
 >
 	<nav class="flex gap-1 overflow-x-auto px-4 py-2 text-sm">
-		<button
-			type="button"
-			data-sidebar-toggle
-			aria-expanded="true"
-			aria-controls="sections-nav"
-			aria-keyshortcuts="b"
-			aria-label="Sections sidebar"
-			title="Sections sidebar (b)"
-			class="hidden cursor-pointer items-center rounded-md px-2 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 lg:inline-flex dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-50"
-		>
-			<svg
-				viewBox="0 0 16 16"
-				width="16"
-				height="16"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="1.25"
-				aria-hidden="true"
-				><rect x="1.5" y="2.5" width="13" height="11" rx="2" /><path d="M6 2.5v11" /></svg
-			>
-		</button>
 		<a href="/" class="px-2 py-1 font-semibold whitespace-nowrap">pygors</a>
 		{#each data.nav as item (item.href)}
 			<a
@@ -379,15 +318,6 @@
 			>
 		</div>
 	</nav>
-	<button
-		type="button"
-		popovertarget="sections-nav"
-		class="section-now flex w-full cursor-pointer items-center gap-2 border-t border-neutral-200 px-6 py-2 text-left text-sm text-neutral-500 lg:hidden dark:border-neutral-800 dark:text-neutral-400"
-	>
-		<span data-section-now class="truncate"></span><span aria-hidden="true" class="ml-auto text-xs"
-			>▾</span
-		>
-	</button>
 </header>
 
 <dialog
