@@ -1,6 +1,6 @@
 # pygorst
 
-Python / Rust / Go side-by-side cheatsheet. Static SvelteKit site, prerendered, hosted on Cloudflare Workers. Client JS only where a feature needs it (none yet).
+Python / Rust / Go side-by-side cheatsheet. Static SvelteKit site (adapter-static), served as Cloudflare Workers static assets with no Worker script; unknown URLs get the prerendered `/404` page. Client JS only where a feature needs it (none yet).
 
 PLAN.md: goals and status. SPEC.md: the parts model (finer-grained cross-language linking), agreed but not built; read it before touching the loader or `/lab`.
 
@@ -9,9 +9,7 @@ git: main-only
 ## Ports
 
 - dev: 5237 (`pnpm dev`)
-- preview: 5238 (`pnpm preview`, runs the built worker)
-
-`pnpm check` needs a build first: `wrangler types --check` reads the built worker.
+- preview: 5238 (`pnpm preview`, serves `build/` with wrangler; build first)
 
 ## Content
 
