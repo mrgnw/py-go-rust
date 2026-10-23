@@ -20,6 +20,7 @@
 		['n p', 'Next / previous code row'],
 		['. ,', 'Next / previous part (Esc clears)'],
 		['b', 'Show / hide the sections sidebar'],
+		['v', 'Variable values on hover: on / off'],
 		['?', 'This list']
 	];
 
@@ -29,6 +30,7 @@
 	if (navigator.clipboard) document.documentElement.dataset.copy = '';
 	const html = document.documentElement;
 	html.dataset.hide = localStorage.getItem('hide') ?? '';
+	html.dataset.vars = localStorage.getItem('vars') ?? 'on';
 	const LANGS = ['python', 'rust', 'go'];
 	const showOrder = (order) => {
 		html.dataset.order = order.join(' ');
@@ -68,6 +70,7 @@
 		const hidden = html.dataset.hide.split(' ');
 		for (const b of document.querySelectorAll('[data-pick]'))
 			b.setAttribute('aria-pressed', String(!hidden.includes(b.dataset.pick)));
+		document.querySelector('[data-vars-toggle]')?.setAttribute('aria-pressed', String(html.dataset.vars === 'on'));
 	};
 	document.addEventListener('DOMContentLoaded', () => { sortChips(); syncPicker(); });
 	const light = (part) => {
@@ -140,8 +143,14 @@
 	};
 	let pinned = null;
 	let shown = null;
+	const toggleVars = () => {
+		html.dataset.vars = html.dataset.vars === 'on' ? 'off' : 'on';
+		localStorage.setItem('vars', html.dataset.vars);
+		pin(null);
+		syncPicker();
+	};
 	document.addEventListener('mouseover', (event) => {
-		if (pinned || event.target.closest('.part > .val')) return;
+		if (html.dataset.vars === 'off' || pinned || event.target.closest('.part > .val')) return;
 		const target = event.target.closest('.snippet [data-var]') ?? event.target.closest('.snippet .line[data-sets]');
 		if (target === shown) return;
 		shown = target;
@@ -153,6 +162,8 @@
 		token ? showVar(token) : clearVars();
 	};
 	document.addEventListener('click', (event) => {
+		if (event.target.closest('[data-vars-toggle]')) return toggleVars();
+		if (html.dataset.vars === 'off') return;
 		const token = event.target.closest('.snippet [data-var]');
 		if (token || pinned) pin(token && token !== pinned ? token : null);
 	});
@@ -255,6 +266,7 @@
 			1: lang('python'),
 			2: lang('rust'),
 			3: lang('go'),
+			v: toggleVars,
 			n: () => stepRow(1),
 			p: () => stepRow(-1),
 			'.': () => stepPart(1),
@@ -272,7 +284,7 @@
 	document.addEventListener('click', (event) => {
 		const button = event.target.closest('button');
 		if ((button && !button.matches('[data-toggle]')) || !getSelection().isCollapsed) return;
-		if (event.target.closest('.snippet [data-var]')) return;
+		if (html.dataset.vars === 'on' && event.target.closest('.snippet [data-var]')) return;
 		const view = event.target.closest('[data-group], [data-collapse]');
 		if (!view) return;
 		const row = view.closest('.row');
@@ -378,6 +390,16 @@
 					>
 				{/each}
 			</div>
+			<button
+				type="button"
+				data-vars-toggle
+				aria-pressed="true"
+				aria-keyshortcuts="v"
+				aria-label="Variable values on hover"
+				title="Variable values on hover (v)"
+				class="ml-2 cursor-pointer rounded-md px-2 py-1 text-neutral-500 hover:bg-neutral-100 aria-[pressed=false]:line-through aria-[pressed=false]:opacity-40 dark:text-neutral-400 dark:hover:bg-neutral-800"
+				>x=</button
+			>
 			<button
 				type="button"
 				data-palette

@@ -1,5 +1,5 @@
 # Variable hover: hovering a name lights it in every column and shows each column's value at the end of its
-# line; hovering a line that sets names shows theirs; a click pins, Escape clears.
+# line; hovering a line that sets names shows theirs; a click pins, Escape clears; `v` or the x= button turns it off.
 # Needs a server on BASE (`pnpm preview`, port 5238). Screenshots land in /tmp/pygorst-vars-*.png.
 # uv run analysis/check_vars.py
 # /// script
@@ -68,6 +68,22 @@ with sync_playwright() as p:
 	check('click pins the value', vals(loops) == ['2 → 1 → 0'] * 3, vals(loops))
 	page.keyboard.press('Escape')
 	check('Escape clears', vals(loops) == [], vals(loops))
+
+	toggle = page.locator('[data-vars-toggle]')
+	page.keyboard.press('v')
+	python.locator('[data-var="f"]').first.hover()
+	check(
+		'v turns values off',
+		vals(basic) == [] and toggle.get_attribute('aria-pressed') == 'false',
+		vals(basic),
+	)
+	page.reload()
+	python.locator('[data-var="f"]').first.hover()
+	check('off survives a reload', vals(basic) == [] and toggle.get_attribute('aria-pressed') == 'false')
+	toggle.click()
+	python.locator('[data-var="f"]').first.hover()
+	check('the x= button turns values back on', vals(basic) == ['8.4'] * 3, vals(basic))
+	page.screenshot(path='/tmp/pygorst-vars-header.png', clip={'x': 900, 'y': 0, 'width': 500, 'height': 44})
 
 	print('errors', errors)
 	check('no page errors', not errors)
