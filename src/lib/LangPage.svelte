@@ -1,18 +1,19 @@
 <script lang="ts">
 	import type { Col, LangPage, Part } from './content/langs';
+	import SectionNav from 'section-nav';
 	import Pivot from './Pivot.svelte';
 
 	let { page }: { page: LangPage } = $props();
 	const grouped = $derived(page.blocks.some((b) => b.kind === 'group'));
-	const toc = $derived.by(() => {
-		const groups: { id?: string; title?: string; sections: { id: string; title: string }[] }[] = [];
-		for (const b of page.blocks) {
-			if (b.kind === 'group') groups.push({ id: b.id, title: b.title, sections: [] });
-			if (b.kind === 'h2')
-				(groups.at(-1) ?? groups[groups.push({ sections: [] }) - 1]).sections.push(b);
-		}
-		return groups;
-	});
+	const sections = $derived(
+		page.blocks.flatMap((b) =>
+			b.kind === 'group'
+				? [{ id: b.id, title: b.title, group: true }]
+				: b.kind === 'h2'
+					? [{ id: b.id, title: b.title }]
+					: []
+		)
+	);
 	const compares = $derived(
 		new Set(
 			page.blocks.flatMap((b) => (b.kind === 'code' ? b.cols.flatMap((c) => c.lang ?? []) : []))
@@ -22,30 +23,7 @@
 
 <section class="langs pb-16" data-compare={compares || undefined}>
 	<h1 class="mb-2 text-3xl font-bold">{page.title}</h1>
-	<div class="sidebar-grid lg:grid lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-x-10">
-		<nav id="sections-nav" aria-label="Sections" popover class="sections-nav">
-			{#each toc as group, i (group.title ?? i)}
-				{#if group.title}
-					<a
-						href="#{group.id}"
-						class="mt-4 mb-1 block text-xs font-semibold tracking-wide text-neutral-400 uppercase first:mt-0 hover:text-neutral-900 dark:text-neutral-500 dark:hover:text-neutral-50"
-					>
-						{group.title}
-					</a>
-				{/if}
-				<ul class="flex flex-col gap-y-2 text-sm lg:gap-y-1">
-					{#each group.sections as h2 (h2.id)}
-						<li>
-							<a
-								href="#{h2.id}"
-								class="text-neutral-500 hover:text-neutral-900 aria-[current]:font-medium aria-[current]:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-50 dark:aria-[current]:text-neutral-50"
-								>{h2.title}</a
-							>
-						</li>
-					{/each}
-				</ul>
-			{/each}
-		</nav>
+	<SectionNav {sections} --nav-top="4rem" --bar-top="45px">
 		<div class="min-w-0">
 			{#each page.blocks as block}
 				{#if block.kind === 'group'}
@@ -92,7 +70,7 @@
 				{/if}
 			{/each}
 		</div>
-	</div>
+	</SectionNav>
 </section>
 
 {#snippet columns(
