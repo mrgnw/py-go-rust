@@ -210,17 +210,17 @@
 		display: block;
 		min-height: 1lh;
 	}
-	/* output tokens another column lacks take their language's color; matches stay neutral */
+	/* --odd: the column's language color. Output tokens another column lacks take it; matches stay neutral */
 	.langs :global(.out .diff) {
 		color: var(--odd);
 	}
-	[data-lang='python'] .out {
+	[data-lang='python'] {
 		--odd: light-dark(var(--color-blue-600), var(--color-blue-300));
 	}
-	[data-lang='rust'] .out {
+	[data-lang='rust'] {
 		--odd: light-dark(var(--color-orange-600), var(--color-orange-300));
 	}
-	[data-lang='go'] .out {
+	[data-lang='go'] {
 		--odd: light-dark(var(--color-teal-600), var(--color-teal-300));
 	}
 	/* parts are invisible until hovered: no rules, no gaps. The layout script marks the hovered part
@@ -287,6 +287,42 @@
 			color-mix(in oklab, var(--color-amber-200) 35%, transparent),
 			color-mix(in oklab, var(--color-amber-300) 12%, transparent)
 		);
+	}
+	/* variables: hovering a name lights it in every column of the row, and each column shows the value at the
+	   right end of its line. Hovering a line that sets names shows theirs. The layout script adds .val. */
+	.part :global([data-var-lit]) {
+		border-radius: 3px;
+		background: light-dark(
+			color-mix(in oklab, var(--color-amber-400) 55%, transparent),
+			color-mix(in oklab, var(--color-amber-300) 30%, transparent)
+		);
+	}
+	.part :global([data-var-lit='at']) {
+		outline: 1.5px solid var(--odd);
+		outline-offset: 1px;
+	}
+	.part > :global(.val) {
+		position: absolute;
+		right: 0.75rem;
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		font-weight: 600;
+		line-height: 1.5;
+		white-space: pre;
+		color: var(--odd);
+		pointer-events: none;
+	}
+	.part > :global(.val span) {
+		font-weight: 400;
+		color: light-dark(var(--color-neutral-500), var(--color-neutral-400));
+	}
+	.part:has(> :global(.val)) {
+		--tools: hidden;
+	}
+	@media (hover: none) {
+		.part :global([data-var]) {
+			cursor: pointer;
+		}
 	}
 	.langs :global(.prose code::before),
 	.langs :global(.prose code::after) {

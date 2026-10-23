@@ -84,6 +84,78 @@
 		hovered = part;
 		light(part);
 	});
+	const sameVar = (token) => '[data-var="' + token.dataset.var + '"]';
+	const setsOn = (line) => line?.dataset.sets?.split(' ') ?? [];
+	const setsVar = (token) => setsOn(token.closest('.line')).includes(token.dataset.var);
+	const clearVars = () => {
+		for (const lit of document.querySelectorAll('[data-var-lit]')) lit.removeAttribute('data-var-lit');
+		for (const val of document.querySelectorAll('.part > .val')) val.remove();
+	};
+	const scopeIn = (col, from) => {
+		const path = from.closest('[data-part]')?.dataset.part;
+		return col.querySelector(path ? '.snippet [data-part="' + path + '"]' : '.snippet');
+	};
+	const showVal = (line, entries) => {
+		const val = document.createElement('span');
+		val.className = 'val';
+		entries.forEach(([name, value], i) => {
+			if (name) {
+				const label = document.createElement('span');
+				label.textContent = (i ? '   ' : '') + name + ' = ';
+				val.append(label);
+			}
+			val.append(value);
+		});
+		val.style.top = line.offsetTop + 'px';
+		line.closest('.part').append(val);
+	};
+	const showVar = (token) => {
+		clearVars();
+		if (!token) return;
+		const row = token.closest('.cols');
+		for (const same of row.querySelectorAll(sameVar(token))) same.setAttribute('data-var-lit', '');
+		const peers = (col) => [...(scopeIn(col, token)?.querySelectorAll(sameVar(token)) ?? [])].filter((t) => setsVar(t) === setsVar(token));
+		const nth = peers(token.closest('.col')).indexOf(token);
+		for (const col of row.querySelectorAll('.col')) {
+			const found = peers(col);
+			const match = col.contains(token) ? token : found[Math.min(nth, found.length - 1)];
+			if (!match?.dataset.val) continue;
+			match.setAttribute('data-var-lit', 'at');
+			showVal(match.closest('.line'), [[null, match.dataset.val]]);
+		}
+	};
+	const showSets = (line) => {
+		clearVars();
+		const keys = setsOn(line);
+		if (!keys.length) return;
+		const peers = (col) => [...(scopeIn(col, line)?.querySelectorAll('.line[data-sets]') ?? [])].filter((l) => setsOn(l).some((k) => keys.includes(k)));
+		const nth = peers(line.closest('.col')).indexOf(line);
+		for (const col of line.closest('.cols').querySelectorAll('.col')) {
+			const found = peers(col);
+			const target = col.contains(line) ? line : found[Math.min(nth, found.length - 1)];
+			if (!target) continue;
+			const tokens = setsOn(target).filter((k) => keys.includes(k)).map((k) => target.querySelector('[data-var="' + k + '"]'));
+			showVal(target, tokens.filter(Boolean).map((t) => [t.textContent, t.dataset.val]));
+		}
+	};
+	let pinned = null;
+	let shown = null;
+	document.addEventListener('mouseover', (event) => {
+		if (pinned || event.target.closest('.part > .val')) return;
+		const target = event.target.closest('.snippet [data-var]') ?? event.target.closest('.snippet .line[data-sets]');
+		if (target === shown) return;
+		shown = target;
+		target?.matches('[data-var]') ? showVar(target) : showSets(target);
+	});
+	const pin = (token) => {
+		pinned = token;
+		shown = token;
+		token ? showVar(token) : clearVars();
+	};
+	document.addEventListener('click', (event) => {
+		const token = event.target.closest('.snippet [data-var]');
+		if (token || pinned) pin(token && token !== pinned ? token : null);
+	});
 	const fields = 'input, textarea, select, [contenteditable]';
 	const byId = (id) => document.getElementById(id);
 	let entries;
@@ -187,7 +259,10 @@
 			p: () => stepRow(-1),
 			'.': () => stepPart(1),
 			',': () => stepPart(-1),
-			Escape: () => light(null),
+			Escape: () => {
+				light(null);
+				pin(null);
+			},
 			'?': () => byId('help').showModal()
 		};
 		if (!keys[event.key]) return;
@@ -197,6 +272,7 @@
 	document.addEventListener('click', (event) => {
 		const button = event.target.closest('button');
 		if ((button && !button.matches('[data-toggle]')) || !getSelection().isCollapsed) return;
+		if (event.target.closest('.snippet [data-var]')) return;
 		const view = event.target.closest('[data-group], [data-collapse]');
 		if (!view) return;
 		const row = view.closest('.row');
