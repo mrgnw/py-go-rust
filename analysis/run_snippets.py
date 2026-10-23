@@ -22,6 +22,8 @@ import threading
 
 GO_IMPORTS = {
 	'fmt': 'fmt',
+	'context': 'context',
+	'atomic': 'sync/atomic',
 	'slices': 'slices',
 	'strings': 'strings',
 	'math': 'math',
@@ -98,7 +100,7 @@ def go_lines(code: str, package: str) -> tuple[str, list[int | None]]:
 	for i, line in enumerate(lines):
 		if closer is None and re.match(r'(func|type) ', line):
 			decls.append(i)
-			closer = {'{': '}', '(': ')'}.get(line.rstrip()[-1:])
+			closer = {'{': '}', '(': ')'}.get(re.sub(r'\s*//.*$', '', line).rstrip()[-1:])
 		elif closer is not None:
 			decls.append(i)
 			closer = None if line == closer else closer
@@ -169,7 +171,7 @@ class Echo(ast.NodeTransformer):
 # prints its repr. Returns the code to run: unchanged when nothing echoes, or when it cannot be rewritten
 # (syntax newer than this Python, a `__future__` import or a script header, which must stay first).
 def echoed(code: str) -> str:
-	if 'from __future__' in code or '# /// script' in code:
+	if 'from __future__' in code:
 		return code
 	try:
 		tree = ast.parse(code)
@@ -187,16 +189,20 @@ def echoed(code: str) -> str:
 	return ECHO + ast.unparse(ast.fix_missing_locations(Echo(ends).visit(tree))) + '\n'
 
 
+# uv run with the packages the code needs: a PEP 723 header's dependencies, or a known import.
+def python_with(code: str) -> list[str]:
+	header = re.search(r'^# dependencies = \[(.*)\]$', code, re.MULTILINE)
+	named = re.findall(r"'([^']+)'", header[1]) if header else []
+	imported = set(re.findall(r'^(?:import|from) (\w+)', code, re.MULTILINE)) & PACKAGES
+	return [*PYTHON, *(arg for name in sorted({*named, *imported}) for arg in ('--with', name))]
+
+
 def run_python(code: str, d: pathlib.Path, test: bool) -> subprocess.CompletedProcess:
 	if test:
 		(d / 'test_main.py').write_text(code)
 		return sh([*PYTHON, '--with', 'pytest', 'pytest', '-q', '-p', 'no:cacheprovider'], d)
 	(d / 'main.py').write_text(echoed(code))
-	if '# /// script' in code:
-		return sh(['uv', 'run', '--quiet', '--python', '3.15', '--script', 'main.py'], d)
-	imported = set(re.findall(r'^(?:import|from) (\w+)', code, re.MULTILINE)) & PACKAGES
-	extra = [arg for name in sorted(imported) for arg in ('--with', name)]
-	return sh([*PYTHON, *extra, 'python', '-I', 'main.py'], d)
+	return sh([*python_with(code), 'python', '-I', 'main.py'], d)
 
 
 def run_rust(code: str, d: pathlib.Path, test: bool) -> subprocess.CompletedProcess:

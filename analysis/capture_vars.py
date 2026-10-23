@@ -307,7 +307,7 @@ def compiled_values(lang: str, code: str, d: pathlib.Path, stats: dict) -> list[
 def python_values(code: str, d: pathlib.Path, stats: dict) -> list[tuple[int, str, str]] | None:
 	(d / 'main.py').write_text(code)
 	(d / 'tracer.py').write_text(TRACER)
-	result = snippets.sh([*snippets.PYTHON, 'python', '-I', 'tracer.py'], d)
+	result = snippets.sh([*snippets.python_with(code), 'python', '-I', 'tracer.py'], d)
 	if result.returncode:
 		stats['programs failing with probes'] += 1
 		print(f'python probes failed in {d}: {result.stderr.strip()[-300:]}')
