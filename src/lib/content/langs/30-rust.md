@@ -149,20 +149,24 @@ println!("{}", len_of("hi") + len_of(owned));
 `Option<T>` replaces None-or-value: `Some(x)` or `None`, and the type checker forces you to handle both. `?` on an `Option` returns `None` early. `.unwrap()` panics (an uncaught exception): fine in tests and throwaway scripts, never in library code. Use `.expect("why this holds")` for true invariants.
 
 ```python
+users = {1: 'ann'}
 user = users.get(1)
 if user is not None:
-	print(user)
-shown = user.upper() if user else "anon"
+	print(user)  # => ann
+shown = user.upper() if user else 'anon'
+print(shown)  # => ANN
 ```
 
 ```rust
+use std::collections::HashMap;
+
 let users = HashMap::from([(1, "ann".to_string())]);
 let found = users.get(&1);
 if let Some(name) = found {
-    println!("{name}");
+    println!("{name}"); // => ann
 }
 let shown = found.map(|n| n.to_uppercase()).unwrap_or_else(|| "anon".into());
-// => "ANN"
+println!("{shown}"); // => ANN
 fn first_even(v: &[i32]) -> Option<i32> {
     let n = v.iter().copied().find(|n| n % 2 == 0)?;
     Some(n * 10)
@@ -194,7 +198,7 @@ enum ConfigError {
 }
 ```
 
-```rust App (anyhow)
+```rust App (anyhow) !norun
 use anyhow::{Context, Result};
 fn main() -> Result<()> {
     let text = std::fs::read_to_string("config.toml")
@@ -209,11 +213,13 @@ fn main() -> Result<()> {
 Enum variants can carry data, so an enum is a tagged union, roughly a Python `Union` plus `match`. `match` must be exhaustive: adding a variant breaks every match that forgot it, which is the point. `_` opts out. `Option` and `Result` are plain enums.
 
 ```python
+shape = ('rect', 2, 3)
 match shape:
-	case ("circle", r):
+	case ('circle', r):
 		area = 3.14 * r * r
-	case ("rect", w, h):
+	case ('rect', w, h):
 		area = w * h
+print(area)  # => 6
 ```
 
 ```rust
@@ -230,6 +236,7 @@ fn area(s: &Shape) -> f64 {
     }
 }
 let big = matches!(Shape::Circle(2.0), Shape::Circle(r) if r > 1.0);
+println!("{} {big}", area(&Shape::Rect { w: 2.0, h: 3.0 })); // => 6 true
 ```
 
 ## structs, impl, Default, derive
@@ -237,10 +244,14 @@ let big = matches!(Shape::Circle(2.0), Shape::Circle(r) if r > 1.0);
 A struct is a dataclass with no inheritance. Methods live in `impl` blocks: `&self` reads, `&mut self` mutates, `self` consumes. There is no `__init__`; `new` is a plain associated function by convention. `#[derive]` generates `__repr__`, `__eq__`, copy and defaults for you.
 
 ```python
+from dataclasses import dataclass
+
 @dataclass
 class Point:
 	x: float = 0.0
 	y: float = 0.0
+
+print(Point(3.0))  # => Point(x=3.0, y=0.0)
 ```
 
 ```rust
@@ -306,13 +317,15 @@ struct Id(u32);
 Iterators are lazy like Python generators: `map` and `filter` do nothing until a consumer (`collect`, `sum`, `count`, a `for` loop) pulls. `.iter()` yields `&T`, `.iter_mut()` yields `&mut T`, `.into_iter()` yields `T` and consumes the collection. `collect` cannot guess the target type, so annotate the variable or use the turbofish `::<Vec<_>>`. Closures `|x| x + 1` borrow what they capture; `move` takes ownership (required for threads and spawned tasks).
 
 ```python
+nums = [1, 2, 3, 4]
 evens = [x * x for x in nums if x % 2 == 0]
+print(evens)  # => [4, 16]
 ```
 
 ```rust
 let nums = vec![1, 2, 3, 4];
 let evens: Vec<i32> = nums.iter().filter(|x| *x % 2 == 0).map(|x| x * x).collect();
-// => [4, 16]
+println!("{evens:?}"); // => [4, 16]
 let total = nums.iter().sum::<i32>();
 let words = "a b c".split(' ').collect::<Vec<_>>();
 let mut v = nums.clone();
@@ -322,6 +335,10 @@ for x in v.iter_mut() {
 for x in nums {
     println!("{x}");
 }
+// => 1
+// => 2
+// => 3
+// => 4
 ```
 
 ```rust Closures
@@ -419,7 +436,7 @@ src/
   net/client.rs
 ```
 
-```rust main.rs
+```rust main.rs !norun
 mod config;
 mod net;
 use config::Config;
@@ -430,7 +447,7 @@ fn main() {
 }
 ```
 
-```rust config.rs
+```rust config.rs !norun
 pub struct Config {
     pub port: u16,
     secret: String,
@@ -481,7 +498,7 @@ cargo run -- notes.txt --count 3
 # => notes.txt x3
 ```
 
-```rust
+```rust !norun
 use clap::Parser;
 #[derive(Parser)]
 #[command(version, about)]

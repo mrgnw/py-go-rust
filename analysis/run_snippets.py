@@ -41,7 +41,19 @@ GO_IMPORTS = {
 	'flag': 'flag',
 	'testing': 'testing',
 }
-CRATES = re.compile(r'\b(?:serde|serde_json|reqwest|tokio|chrono)::')
+CRATES = re.compile(r'\b(?:serde|serde_json|reqwest|tokio|chrono|thiserror|anyhow|clap)::')
+# Crates the cached project carries, as `cargo add` arguments.
+CRATE_ARGS = {
+	'serde': ['serde', '-F', 'serde/derive'],
+	'serde_json': ['serde_json'],
+	'reqwest': ['reqwest'],
+	'tokio': ['tokio', '-F', 'tokio/full'],
+	'chrono': ['chrono'],
+	'thiserror': ['thiserror'],
+	'anyhow': ['anyhow'],
+	'clap': ['clap', '-F', 'clap/derive'],
+}
+RUST_HAS_MAIN = r'^(?:async )?fn main\('
 CARGO = pathlib.Path.home() / '.cache' / 'pygorst-snippets'
 FENCE = re.compile(r'^```(python|rust|go)([^\n]*)\n(.*?)^```', re.MULTILINE | re.DOTALL)
 FAILS = re.compile(r'(?:#|//) (?:(error\[E\d+\]).*|compile error: (.*)|(panic: .*))$', re.MULTILINE)
@@ -103,19 +115,11 @@ def go_source(code: str, package: str) -> str:
 
 def cargo_project() -> pathlib.Path:
 	if not (CARGO / 'Cargo.toml').exists():
-		crates = [
-			'serde',
-			'-F',
-			'serde/derive',
-			'serde_json',
-			'reqwest',
-			'tokio',
-			'-F',
-			'tokio/full',
-			'chrono',
-		]
 		subprocess.run(['cargo', 'new', '--quiet', '--name', 'snippet', str(CARGO)], check=True)
-		subprocess.run(['cargo', 'add', '--quiet', *crates], cwd=CARGO, check=True)
+	manifest = (CARGO / 'Cargo.toml').read_text()
+	missing = [arg for name, args in CRATE_ARGS.items() if f'\n{name} = ' not in manifest for arg in args]
+	if missing:
+		subprocess.run(['cargo', 'add', '--quiet', *missing], cwd=CARGO, check=True)
 	return CARGO
 
 
@@ -203,9 +207,10 @@ def run_rust(code: str, d: pathlib.Path, test: bool) -> subprocess.CompletedProc
 	if CRATES.search(code):
 		project = cargo_project()
 		head = '#[tokio::main]\nasync ' + RUST_MAIN if '.await' in code or 'tokio::' in code else RUST_MAIN
-		(project / 'src' / 'main.rs').write_text(head + code + '\nOk(())\n}\n')
+		whole = re.search(RUST_HAS_MAIN, code, re.MULTILINE)
+		(project / 'src' / 'main.rs').write_text(code if whole else head + code + '\nOk(())\n}\n')
 		return sh(['cargo', 'run', '--quiet'], project, RUSTFLAGS='-A warnings')
-	has_main = re.search(r'^fn main\(', code, re.MULTILINE)
+	has_main = re.search(RUST_HAS_MAIN, code, re.MULTILINE)
 	(d / 'main.rs').write_text(code if has_main else RUST_MAIN + code + '\nOk(())\n}\n')
 	build = sh(['rustc', '--edition', '2024', '-A', 'warnings', '-o', 'main', 'main.rs'], d)
 	return build if build.returncode else sh(['./main'], d)
@@ -270,7 +275,7 @@ def serve_example() -> str:
 
 WHOLE = {
 	'python': r"^if __name__ == '__main__':",
-	'rust': r'^fn main\(',
+	'rust': RUST_HAS_MAIN,
 	'go': r'^package main',
 }
 
