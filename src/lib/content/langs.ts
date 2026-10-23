@@ -216,7 +216,7 @@ function toParts(
 function highlight(code: string, info: string, section: string): Col {
 	const [lang, ...rest] = info.trim().split(/\s+/);
 	if (!LANGS.includes(lang as Lang)) throw new Error(`langs: unsupported fence language "${info}"`);
-	const label = rest.join(' ') || LABELS[lang as Lang];
+	const label = rest.filter((word) => !word.startsWith('!')).join(' ') || LABELS[lang as Lang];
 	const lines = code.split('\n').map((text, row) => ({ text, row }));
 	const depths = lines.map(markerDepth).filter((d) => d > 0);
 	if (depths.some((d) => d > MAX_DEPTH))

@@ -483,12 +483,14 @@ def fence_key(text: str) -> str:
 
 # One section's program in one language: each fence's occurrences, each with the value at its line. A line that
 # sets the name shows the values it set; any other line shows the latest values set before it.
-def program_vars(lang: str, codes: list[str], d: pathlib.Path, example: str, stats: dict) -> dict[str, list]:
+def program_vars(
+	lang: str, codes: list[str], d: pathlib.Path, example: str, stats: dict, run: bool = True
+) -> dict[str, list]:
 	names = set().union(*(defined_names(c, lang) for c in codes))
 	occs = [occurrences(c, lang, names) for c in codes]
 	code = ''.join(codes).replace('https://example.com', example)
 	sets: dict[tuple[int, int], dict[str, list[str]]] = {}
-	runnable = (
+	runnable = run and (
 		not re.search(TESTS[lang], code, re.MULTILINE) and RUNNERS[lang](code, d, False).returncode == 0
 	)
 	if runnable:
@@ -528,13 +530,13 @@ def main() -> None:
 	result: dict[str, list] = json.loads(OUT.read_text()) if OUT.exists() and sys.argv[1:] else {}
 	for page in pages:
 		for title, body in snippets.sections(page):
-			programs: dict[str, list[str]] = {}
-			for lang, code in FENCE.findall(body):
-				programs.setdefault(lang, []).append(code)
-			for lang, codes in programs.items():
-				d = work / re.sub(r'\W+', '-', f'{page.stem}-{title}') / lang
+			groups = [(lang, codes, True) for lang, codes in snippets.programs(body)]
+			grouped = {code for _, codes, _ in groups for code in codes}
+			groups += [(lang, [code], False) for lang, _, code in FENCE.findall(body) if code not in grouped]
+			for k, (lang, codes, run) in enumerate(groups):
+				d = work / re.sub(r'\W+', '-', f'{page.stem}-{title}') / f'{lang}-{k}'
 				d.mkdir(parents=True)
-				result |= program_vars(lang, codes, d, example, stats[lang])
+				result |= program_vars(lang, codes, d, example, stats[lang], run)
 	OUT.write_text(
 		'{\n'
 		+ ',\n'.join(f'\t"{k}": {json.dumps(v, ensure_ascii=False)}' for k, v in sorted(result.items()))

@@ -15,7 +15,7 @@ saved = json.loads(OUT.read_text())
 for title, body in snippets.sections(page):
 	if wanted not in title:
 		continue
-	for lang, code in snippets.FENCE.findall(body):
+	for lang, _, code in snippets.FENCE.findall(body):
 		lines = code.split('\n')
 		print(f'--- {title} / {lang}')
 		for row, col, name, value, sets in saved.get(fence_key(code.removesuffix('\n')), []):

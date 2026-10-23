@@ -36,6 +36,13 @@ uv run analysis/run_snippets.py src/lib/content/langs/15-algorithms.md
 uv run analysis/run_snippets.py src/lib/content/langs/algorithms/heap.md
 ```
 
+How the checker reads a section:
+
+- A section's fences of one language run as one program. A fence that is a whole program by itself (`if __name__ == '__main__':`, `fn main(`, `package main`) runs alone.
+- A fence whose comments name an error (`// error[E0382]: ...`, `// compile error: declared and not used`, `// panic: ...`) runs alone and must fail with that text.
+- `!norun` in the fence info string (` ```rust src/lib.rs !norun `) skips a fence that cannot run here. The site hides the flag.
+- A Python expression with its value as `=>` (`p.suffix  # => '.txt'`) prints its repr, like the interactive prompt, unless the expression printed output itself.
+
 ## Shipping
 
 `pnpm ship` from a clean, pushed main.
