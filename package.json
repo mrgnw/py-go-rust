@@ -9,7 +9,7 @@
 		"preview": "wrangler dev --port 5238",
 		"ship": "pnpm build && wrangler deploy",
 		"cfb": "pnpm build && wrangler versions upload --preview-alias $(git branch --show-current | sed 's/[^a-zA-Z0-9-]/-/g')",
-		"prepare": "svelte-kit sync || echo ''",
+		"prepare": "svelte-kit sync || echo ''; git config core.hooksPath .githooks",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check .",

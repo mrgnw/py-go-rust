@@ -1,0 +1,10 @@
+#!/bin/sh
+# Content pages in this commit: check the sections whose code changed since the last capture, then recapture
+# them and stage vars.json. Unchanged sections are skipped, so a one-section edit takes a few seconds.
+# Enabled by `pnpm install` (prepare sets core.hooksPath). Skip once with `git commit --no-verify`.
+set -e
+pages=$(git diff --cached --name-only --diff-filter=AM -- src/lib/content/langs | grep '\.md$' || true)
+[ -z "$pages" ] && exit 0
+uv run analysis/run_snippets.py --stale $pages
+uv run analysis/capture_vars.py $pages
+git add src/lib/content/vars.json

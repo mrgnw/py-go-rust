@@ -3,8 +3,9 @@
 # Python: sys.settrace in a wrapper. Rust and Go: tree-sitter finds binding statements and a print to stderr
 # goes after each; probes that break the build are dropped and the build retried.
 # Every program runs twice; a value that differs between runs (addresses, map order) is dropped.
-# Writes src/lib/content/vars.json, keyed by a hash of each fence's text; the loader skips fences it lacks.
-# uv run analysis/capture_vars.py
+# Writes src/lib/content/vars.json: per section and language (run_snippets.section_keys), each fence's
+# occurrences. Sections already in the file are skipped unless --all; the loader skips sections it lacks.
+# uv run analysis/capture_vars.py [page.md ...] [--all]
 # /// script
 # requires-python = '>=3.14'
 # dependencies = ['tree-sitter', 'tree-sitter-python', 'tree-sitter-rust', 'tree-sitter-go']
@@ -473,14 +474,6 @@ def shown(values: list[str]) -> str:
 	return ' → '.join(values)
 
 
-# FNV-1a over the fence's UTF-8 bytes; langs.ts computes the same key.
-def fence_key(text: str) -> str:
-	h = 0x811C9DC5
-	for byte in text.encode():
-		h = ((h ^ byte) * 0x01000193) & 0xFFFFFFFF
-	return f'{h:08x}'
-
-
 # One section's program in one language: each fence's occurrences, each with the value at its line. A line that
 # sets the name shows the values it set; any other line shows the latest values set before it.
 def program_vars(
@@ -517,26 +510,40 @@ def program_vars(
 			rows.append([row, col, name, shown(values), int(here is not None)])
 			stats['occurrences'] += 1
 			stats['occurrences with a value'] += bool(values)
-		out[fence_key(text.removesuffix('\n'))] = rows
+		out[text] = rows
 	return out
 
 
 def main() -> None:
-	pages = [pathlib.Path(a) for a in sys.argv[1:]] or PAGES
+	pages = [pathlib.Path(a) for a in sys.argv[1:] if a != '--all'] or PAGES
 	work = pathlib.Path(tempfile.mkdtemp(prefix='pygorst-vars-'))
 	example = snippets.serve_example()
 	started = time.monotonic()
 	stats = {lang: dict.fromkeys(STATS, 0) for lang in RUNNERS}
-	result: dict[str, list] = json.loads(OUT.read_text()) if OUT.exists() and sys.argv[1:] else {}
+	saved: dict[str, list] = {} if '--all' in sys.argv or not OUT.exists() else json.loads(OUT.read_text())
+	every = {
+		key
+		for page in PAGES
+		for _, body in snippets.sections(page)
+		for key, _ in snippets.section_keys(body).values()
+	}
+	result = {key: rows for key, rows in saved.items() if key in every}
 	for page in pages:
 		for title, body in snippets.sections(page):
+			keys = {lang: key for lang, (key, _) in snippets.section_keys(body).items() if key not in result}
 			groups = [(lang, codes, True) for lang, codes in snippets.programs(body)]
 			grouped = {code for _, codes, _ in groups for code in codes}
 			groups += [(lang, [code], False) for lang, _, code in FENCE.findall(body) if code not in grouped]
+			rows: dict[str, list] = {}
 			for k, (lang, codes, run) in enumerate(groups):
+				if lang not in keys:
+					continue
 				d = work / re.sub(r'\W+', '-', f'{page.stem}-{title}') / f'{lang}-{k}'
 				d.mkdir(parents=True)
-				result |= program_vars(lang, codes, d, example, stats[lang], run)
+				rows |= program_vars(lang, codes, d, example, stats[lang], run)
+			for lang, (key, fences) in snippets.section_keys(body).items():
+				if lang in keys:
+					result[key] = [rows.get(code, []) for code in fences]
 	OUT.write_text(
 		'{\n'
 		+ ',\n'.join(f'\t"{k}": {json.dumps(v, ensure_ascii=False)}' for k, v in sorted(result.items()))
@@ -544,7 +551,7 @@ def main() -> None:
 	)
 	for lang, s in stats.items():
 		print(lang, s)
-	print(f'{len(result)} fences in {time.monotonic() - started:.0f} s -> {OUT.relative_to(ROOT)}')
+	print(f'{len(result)} sections in {time.monotonic() - started:.0f} s -> {OUT.relative_to(ROOT)}')
 
 
 STATS = [

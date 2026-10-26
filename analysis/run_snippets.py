@@ -9,9 +9,11 @@
 # Toolchains are the targets, not whatever is on PATH: Python 3.15 via uv, Go 1.25.0 via GOTOOLCHAIN, stable Rust.
 # Snippets using crates build in a cargo project cached in ~/.cache/pygorst-snippets.
 # Requests to https://example.com go to a local server instead, so HTTP snippets run offline.
-# uv run analysis/run_snippets.py src/lib/content/langs/15-algorithms.md
+# --stale checks only sections whose code changed since the last capture (their key is not in vars.json).
+# uv run analysis/run_snippets.py src/lib/content/langs/15-algorithms.md [more.md ...] [--stale]
 import ast
 import http.server
+import json
 import os
 import pathlib
 import re
@@ -279,6 +281,30 @@ def serve_example() -> str:
 	return f'http://127.0.0.1:{server.server_port}'
 
 
+VARS = pathlib.Path(__file__).resolve().parent.parent / 'src/lib/content/vars.json'
+
+
+# FNV-1a over UTF-8 bytes; langs.ts computes the same key.
+def fence_key(text: str) -> str:
+	h = 0x811C9DC5
+	for byte in text.encode():
+		h = ((h ^ byte) * 0x01000193) & 0xFFFFFFFF
+	return f'{h:08x}'
+
+
+# Captured values are stored per section and language, keyed by all of that language's fences in the section, so
+# an edit to any of them marks the whole program stale. langs.ts computes the same keys.
+def section_keys(body: str) -> dict[str, tuple[str, list[str]]]:
+	codes: dict[str, list[str]] = {}
+	for lang, _, code in FENCE.findall(body):
+		codes.setdefault(lang, []).append(code)
+	return {lang: (fence_key(''.join(fences)), fences) for lang, fences in codes.items()}
+
+
+def captured_keys() -> set[str]:
+	return set(json.loads(VARS.read_text())) if VARS.exists() else set()
+
+
 WHOLE = {
 	'python': r"^if __name__ == '__main__':",
 	'rust': RUST_HAS_MAIN,
@@ -330,10 +356,13 @@ def check_runs(lang: str, code: str, d: pathlib.Path, example: str) -> str | Non
 
 def main() -> None:
 	example = serve_example()
-	path = pathlib.Path(sys.argv[1])
+	paths = [pathlib.Path(a) for a in sys.argv[1:] if a != '--stale']
+	known = captured_keys() if '--stale' in sys.argv else set()
 	work = pathlib.Path(tempfile.mkdtemp(prefix='pygorst-run-'))
 	failures = runs = 0
-	for title, body in sections(path):
+	for title, body in [section for path in paths for section in sections(path)]:
+		if known and all(key in known for key, _ in section_keys(body).values()):
+			continue
 		checks = [(lang, ''.join(codes), False) for lang, codes in programs(body)]
 		checks += [(lang, code, True) for lang, code in failing(body)]
 		for k, (lang, code, fails) in enumerate(checks):
@@ -344,7 +373,8 @@ def main() -> None:
 			if problem:
 				failures += 1
 				print(f'--- {title} / {lang}{" (written to fail)" if fails else ""}: {problem}')
-	print(f'{sys.argv[1]}: {runs} programs, {"all ok" if failures == 0 else f"{failures} failing"}')
+	where = ' '.join(map(str, paths))
+	print(f'{where}: {runs} programs, {"all ok" if failures == 0 else f"{failures} failing"}')
 	sys.exit(1 if failures else 0)
 
 

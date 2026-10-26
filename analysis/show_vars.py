@@ -8,15 +8,16 @@ import pathlib
 import sys
 
 import run_snippets as snippets
-from capture_vars import OUT, fence_key
+from capture_vars import OUT
 
 page, wanted = pathlib.Path(sys.argv[1]), sys.argv[2]
 saved = json.loads(OUT.read_text())
 for title, body in snippets.sections(page):
 	if wanted not in title:
 		continue
-	for lang, _, code in snippets.FENCE.findall(body):
-		lines = code.split('\n')
-		print(f'--- {title} / {lang}')
-		for row, col, name, value, sets in saved.get(fence_key(code.removesuffix('\n')), []):
-			print(f'{"set" if sets else "   "} {lines[row].strip()[:50]:50} {name} = {value}')
+	for lang, (key, fences) in snippets.section_keys(body).items():
+		for code, found in zip(fences, saved.get(key, [[] for _ in fences])):
+			lines = code.split('\n')
+			print(f'--- {title} / {lang}')
+			for row, col, name, value, sets in found:
+				print(f'{"set" if sets else "   "} {lines[row].strip()[:50]:50} {name} = {value}')

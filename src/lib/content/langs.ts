@@ -84,16 +84,39 @@ const lineCopy: ShikiTransformer = {
 	}
 };
 
-// analysis/capture_vars.py: per fence, every occurrence of a local as [row, UTF-16 column, name, value at
-// that line, 1 if the line sets it]. Keyed by an FNV-1a hash of the fence text.
+// analysis/capture_vars.py: per section and language, each fence's occurrences of locals as [row, UTF-16
+// column, name, value at that line, 1 if the line sets it]. Keyed by an FNV-1a hash of all of that language's
+// fences in the section, so editing any of them leaves the whole program uncaptured until it is recaptured.
 type Occurrence = [row: number, col: number, name: string, value: string, sets: number];
-const vars = captured as unknown as Record<string, Occurrence[]>;
+const vars = captured as unknown as Record<string, Occurrence[][]>;
 const uncaptured: string[] = [];
 
 function fenceKey(text: string): string {
 	let h = 0x811c9dc5;
 	for (const byte of new TextEncoder().encode(text)) h = Math.imul(h ^ byte, 0x01000193) >>> 0;
 	return h.toString(16).padStart(8, '0');
+}
+
+// Each python/rust/go fence's captured occurrences, found by its section's key. A section starts at every
+// `##` or `###`, as in analysis/run_snippets.py.
+function fenceVars(tokens: Token[]): Map<Token, Occurrence[] | undefined> {
+	const found = new Map<Token, Occurrence[] | undefined>();
+	let section = new Map<string, Tokens.Code[]>();
+	const close = () => {
+		for (const fences of section.values()) {
+			const saved = vars[fenceKey(fences.map((f) => f.text + '\n').join(''))];
+			fences.forEach((fence, i) => found.set(fence, saved?.[i]));
+		}
+		section = new Map();
+	};
+	for (const token of tokens) {
+		if (token.type === 'heading' && (token.depth === 2 || token.depth === 3)) close();
+		const lang = token.type === 'code' ? (token.lang ?? '').trim().split(/\s+/)[0] : '';
+		if (PICKABLE.includes(lang))
+			section.set(lang, [...(section.get(lang) ?? []), token as Tokens.Code]);
+	}
+	close();
+	return found;
 }
 
 // Columns pair a name by its key, so `max_retries` and `maxRetries` light together.
@@ -213,7 +236,7 @@ function toParts(
 	});
 }
 
-function highlight(code: string, info: string, section: string): Col {
+function highlight(code: string, info: string, section: string, occurrences?: Occurrence[]): Col {
 	const [lang, ...rest] = info.trim().split(/\s+/);
 	if (!LANGS.includes(lang as Lang)) throw new Error(`langs: unsupported fence language "${info}"`);
 	const label = rest.filter((word) => !word.startsWith('!')).join(' ') || LABELS[lang as Lang];
@@ -223,7 +246,6 @@ function highlight(code: string, info: string, section: string): Col {
 		throw new Error(`langs: ${section}: ${label} has a marker deeper than ${MAX_DEPTH} levels`);
 	if (depths[0] > 1)
 		throw new Error(`langs: ${section}: ${label} has a depth-2 marker without a depth-1 parent`);
-	const occurrences = PICKABLE.includes(lang) ? vars[fenceKey(code)] : undefined;
 	if (PICKABLE.includes(lang) && !occurrences) uncaptured.push(`${section} (${lang})`);
 	return { label, lang: pickLang(lang, label), parts: toParts(lines, lang, occurrences) };
 }
@@ -260,8 +282,14 @@ function printed(parts: Part[]): Printed[] {
 // Output line k of a part is diffed against line k of the same part in the other columns, so a part
 // that prints more lines in one language doesn't shift the comparison for the parts after it.
 // In a linked row each line carries its part's path, so hovering either side lights the other.
-function codeRow(fences: { text: string; info: string }[], section: string): Block {
-	const cols: Col[] = fences.map((f) => highlight(f.text, f.info, section));
+interface Fence {
+	text: string;
+	info: string;
+	occurrences?: Occurrence[];
+}
+
+function codeRow(fences: Fence[], section: string): Block {
+	const cols: Col[] = fences.map((f) => highlight(f.text, f.info, section, f.occurrences));
 	checkShape(
 		section,
 		cols,
@@ -310,20 +338,21 @@ function expand(tokens: Token[], slug: string): Token[] {
 
 function toBlocks(md: string, slug: string): Block[] {
 	const blocks: Block[] = [];
-	let fences: { text: string; info: string }[] = [];
+	let fences: Fence[] = [];
 	let section = slug;
 	const flush = () => {
 		if (fences.length) blocks.push(codeRow(fences, section));
 		fences = [];
 	};
 	const tokens = expand(marked.lexer(md) as Token[], slug);
+	const captured = fenceVars(tokens);
 	// With `###` present, `##` headings are groups (component-party style) and `###` are the sections.
 	const grouped = tokens.some((t) => t.type === 'heading' && t.depth === 3);
 	const sectionDepth = grouped ? 3 : 2;
 	for (const token of tokens) {
 		if (token.type === 'space') continue;
 		if (token.type === 'code') {
-			fences.push({ text: token.text, info: token.lang ?? '' });
+			fences.push({ text: token.text, info: token.lang ?? '', occurrences: captured.get(token) });
 			continue;
 		}
 		flush();
@@ -356,7 +385,7 @@ export const langPages: LangPage[] = Object.keys(sources)
 
 if (uncaptured.length)
 	console.warn(
-		`langs: no captured variables for ${uncaptured.length} fences, run \`uv run analysis/capture_vars.py\`:\n  ${uncaptured.join('\n  ')}`
+		`langs: no captured variables for ${new Set(uncaptured).size} section programs, run \`uv run analysis/capture_vars.py\`:\n  ${[...new Set(uncaptured)].join('\n  ')}`
 	);
 
 const orphans = Object.keys(sectionFiles).filter((path) => !linked.has(path));
