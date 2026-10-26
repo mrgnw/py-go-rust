@@ -37,7 +37,7 @@ importers:
         version: 0.8.1(prettier-plugin-svelte@4.1.1(prettier@3.9.10)(svelte@5.57.2))(prettier@3.9.10)
       section-nav:
         specifier: github:mrgnw/section-nav
-        version: git+https://git@github.com:mrgnw/section-nav.git#22c41e59640ae12023048eabd2c488afe1bb4c90(svelte@5.57.2)
+        version: git+https://git@github.com:mrgnw/section-nav.git#080f0cd4147e140399f20fe531f291b7c9ceb040(svelte@5.57.2)
       shiki:
         specifier: ^4.5.0
         version: 4.5.0
@@ -1205,8 +1205,8 @@ packages:
     resolution: {integrity: sha512-xal3CZX1Xlo/k4ApwCFrHVACi9fBqJ7V+mwhBsuf/1IOKbBy098Fex+Wa/5QMubw09pSZ/u8EY8PWgevJsXp1A==}
     engines: {node: '>=6'}
 
-  section-nav@git+https://git@github.com:mrgnw/section-nav.git#22c41e59640ae12023048eabd2c488afe1bb4c90:
-    resolution: {commit: 22c41e59640ae12023048eabd2c488afe1bb4c90, repo: git@github.com:mrgnw/section-nav.git, type: git}
+  section-nav@git+https://git@github.com:mrgnw/section-nav.git#080f0cd4147e140399f20fe531f291b7c9ceb040:
+    resolution: {commit: 080f0cd4147e140399f20fe531f291b7c9ceb040, repo: git@github.com:mrgnw/section-nav.git, type: git}
     version: 0.0.1
     peerDependencies:
       svelte: ^5.0.0
@@ -2240,7 +2240,7 @@ snapshots:
     dependencies:
       mri: 1.2.0
 
-  section-nav@git+https://git@github.com:mrgnw/section-nav.git#22c41e59640ae12023048eabd2c488afe1bb4c90(svelte@5.57.2):
+  section-nav@git+https://git@github.com:mrgnw/section-nav.git#080f0cd4147e140399f20fe531f291b7c9ceb040(svelte@5.57.2):
     dependencies:
       svelte: 5.57.2
 
