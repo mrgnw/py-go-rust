@@ -1,7 +1,9 @@
 import tailwindcss from '@tailwindcss/vite';
 import adapter from '@sveltejs/adapter-static';
 import { sveltekit } from '@sveltejs/kit/vite';
+import { isMainThread } from 'node:worker_threads';
 import { defineConfig } from 'vite';
+import checker from 'vite-plugin-checker';
 
 export default defineConfig({
 	plugins: [
@@ -12,7 +14,8 @@ export default defineConfig({
 					filename.split(/[/\\]/).includes('node_modules') ? undefined : true
 			},
 			adapter: adapter()
-		})
+		}),
+		isMainThread && checker({ svelteCheck: true, enableBuild: false })
 	],
 	server: {
 		port: 5237,
