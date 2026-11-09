@@ -24,3 +24,4 @@ vite.config.ts.timestamp-*
 .claude/worktrees/
 captures/
 __pycache__/
+analysis/out/
