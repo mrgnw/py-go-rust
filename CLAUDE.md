@@ -1,6 +1,6 @@
 # pygorst
 
-Python / Rust / Go side-by-side cheatsheet. Static SvelteKit site (adapter-static), served as Cloudflare Workers static assets with no Worker script; unknown URLs get the prerendered `/404` page. Client JS only where a feature needs it: hydration is on (`csr` default) for the sections sidebar, which comes from the `section-nav` package (github:mrgnw/section-nav, API in its SPEC.md); the rest of the interactivity is the inline script in `+layout.svelte`.
+Python / Rust / Go side-by-side cheatsheet. Static SvelteKit site (adapter-static), served as Cloudflare Workers static assets with no Worker script; unknown URLs get the prerendered `/404` page. Client JS only where a feature needs it: hydration is on (`csr` default) for the sections sidebar, which comes from the vendored `section-nav` component (`src/lib/section-nav`); the rest of the interactivity is the inline script in `+layout.svelte`.
 
 PLAN.md: goals and status. SPEC.md: the parts model (finer-grained cross-language linking), agreed but not built; read it before touching the loader or `/lab`.
 
