@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Col, LangPage, Part } from './content/langs';
-	import SectionNav from 'section-nav';
+	import SectionNav from './section-nav';
 	import Pivot from './Pivot.svelte';
 
 	let { page }: { page: LangPage } = $props();
