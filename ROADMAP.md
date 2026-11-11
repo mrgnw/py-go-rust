@@ -25,6 +25,7 @@ Compare at a finer grain than a whole snippet, with the languages linked part by
 - [#9](https://github.com/mrgnw/pygorst/issues/9) CI job that runs the snippet checker
 - [#7](https://github.com/mrgnw/pygorst/issues/7) Unit tests for the markdown loader
 - [#15](https://github.com/mrgnw/pygorst/issues/15) Accessibility pass
+- [#17](https://github.com/mrgnw/pygorst/issues/17) Depend on svelte-components for SectionNav instead of the vendored copy
 
 ## Polish
 
