@@ -1,7 +1,18 @@
 {
 	"name": "pygors",
+	"description": "Python, Rust and Go side by side: a cheatsheet for a Python developer learning Rust and Go",
 	"private": true,
 	"version": "0.0.1",
+	"license": "MIT",
+	"author": "Morgan Williams",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/mrgnw/pygorst.git"
+	},
+	"homepage": "https://pygors.xces.workers.dev",
+	"bugs": {
+		"url": "https://github.com/mrgnw/pygorst/issues"
+	},
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
