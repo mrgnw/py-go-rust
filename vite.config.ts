@@ -21,6 +21,6 @@ export default defineConfig({
 		port: 5237,
 		strictPort: true,
 		host: true,
-		allowedHosts: ['.example.ts.net']
+		allowedHosts: process.env.ALLOWED_HOSTS?.split(',').filter(Boolean) ?? []
 	}
 });
