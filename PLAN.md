@@ -44,7 +44,7 @@ Renderer: `src/lib/content/langs.ts` parses the markdown with marked, highlights
 - [x] Drag to reorder languages: drag a picker chip (mouse or touch) or Shift+Left/Right on a focused chip; `data-order` on `<html>` plus `--order-*` vars drive CSS `order` on columns, pivot lines and chips, saved in localStorage and set before first paint. `1 2 3` stay fixed to Python / Rust / Go. No reset action yet.
 - [ ] Parts, next: `---` groups on more sections so more rows expand.
 
-Handoff tasks for parallel agents: `todos/_priority.md`.
+Open work: [ROADMAP.md](ROADMAP.md) and the GitHub issues.
 
 ## Ideas, not committed to
 
