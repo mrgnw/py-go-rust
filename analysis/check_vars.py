@@ -1,6 +1,6 @@
 # Variable hover: hovering a name lights it in every column and shows each column's value at the end of its
 # line; hovering a line that sets names shows theirs; a click pins, Escape clears; `v` or the x= button turns it off.
-# Needs a server on BASE (`pnpm preview`, port 5238). Screenshots land in /tmp/pygorst-vars-*.png.
+# Needs a server on BASE (`pnpm preview`, port 5238). Screenshots land in /tmp/py-go-rust-vars-*.png.
 # uv run analysis/check_vars.py
 # /// script
 # dependencies = ['playwright']
@@ -50,11 +50,11 @@ with sync_playwright() as p:
 	val = basic.locator('.part > .val').first.bounding_box()
 	line = python.locator('[data-var="f"]').first.bounding_box()
 	check('value sits on its line', abs(val['y'] - line['y']) < 4, (val['y'], line['y']))
-	page.screenshot(path='/tmp/pygorst-vars-token.png', clip=basic.bounding_box())
+	page.screenshot(path='/tmp/py-go-rust-vars-token.png', clip=basic.bounding_box())
 
 	hover_line_end(python.locator('.line', has_text='f = n / 5'))
 	check('hover f = n / 5 line: f = 8.4 in 3 columns', vals(basic) == ['f = 8.4'] * 3, vals(basic))
-	page.screenshot(path='/tmp/pygorst-vars-line.png', clip=basic.bounding_box())
+	page.screenshot(path='/tmp/py-go-rust-vars-line.png', clip=basic.bounding_box())
 
 	hover_line_end(python.locator('.line', has_text='print('))
 	check('hover a line that sets nothing: no values', vals(basic) == [], vals(basic))
@@ -83,7 +83,7 @@ with sync_playwright() as p:
 	toggle.click()
 	python.locator('[data-var="f"]').first.hover()
 	check('the x= button turns values back on', vals(basic) == ['8.4'] * 3, vals(basic))
-	page.screenshot(path='/tmp/pygorst-vars-header.png', clip={'x': 900, 'y': 0, 'width': 500, 'height': 44})
+	page.screenshot(path='/tmp/py-go-rust-vars-header.png', clip={'x': 900, 'y': 0, 'width': 500, 'height': 44})
 
 	print('errors', errors)
 	check('no page errors', not errors)

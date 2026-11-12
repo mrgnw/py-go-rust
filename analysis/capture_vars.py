@@ -516,7 +516,7 @@ def program_vars(
 
 def main() -> None:
 	pages = [pathlib.Path(a) for a in sys.argv[1:] if a != '--all'] or PAGES
-	work = pathlib.Path(tempfile.mkdtemp(prefix='pygorst-vars-'))
+	work = pathlib.Path(tempfile.mkdtemp(prefix='py-go-rust-vars-'))
 	example = snippets.serve_example()
 	started = time.monotonic()
 	stats = {lang: dict.fromkeys(STATS, 0) for lang in RUNNERS}

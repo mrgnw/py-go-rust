@@ -1,6 +1,6 @@
 # Sections sidebar: desktop toggle keeps content put on wide screens, mobile sticky bar names the section and opens the list.
 # Motion: smooth scroll, part tint, dialog fade and language view transitions (scoped to main), all off under reduced motion.
-# Needs the dev server (`pnpm dev`, port 5237). Screenshots land in /tmp/pygorst-sidebar-*.png.
+# Needs the dev server (`pnpm dev`, port 5237). Screenshots land in /tmp/py-go-rust-sidebar-*.png.
 # uv run analysis/check_sidebar.py
 # /// script
 # dependencies = ['playwright']
@@ -39,7 +39,7 @@ with sync_playwright() as p:
 		page.evaluate('localStorage.clear()')
 		page.reload()
 		open_left = page.evaluate(CONTENT_LEFT)
-		page.screenshot(path=f'/tmp/pygorst-sidebar-{width}-open.png')
+		page.screenshot(path=f'/tmp/py-go-rust-sidebar-{width}-open.png')
 		page.evaluate(FRAMES)
 		page.click('[data-sidebar-toggle]')
 		page.wait_for_timeout(400)
@@ -48,12 +48,12 @@ with sync_playwright() as p:
 		page.evaluate(FRAMES)
 		page.click('[data-sidebar-toggle]')
 		page.wait_for_timeout(120)
-		page.screenshot(path=f'/tmp/pygorst-sidebar-{width}-mid.png')
+		page.screenshot(path=f'/tmp/py-go-rust-sidebar-{width}-mid.png')
 		page.wait_for_timeout(400)
 		page.click('[data-sidebar-toggle]')
 		page.wait_for_timeout(400)
 		closed_left = page.evaluate(CONTENT_LEFT)
-		page.screenshot(path=f'/tmp/pygorst-sidebar-{width}-closed.png')
+		page.screenshot(path=f'/tmp/py-go-rust-sidebar-{width}-closed.png')
 		check(
 			f'{width}: content stays put = {stays} ({open_left} -> {closed_left})',
 			(open_left == closed_left) == stays,
@@ -72,10 +72,10 @@ with sync_playwright() as p:
 	later = page.text_content('[data-section-now]')
 	check(f'mobile: bar follows scroll ({first!r} -> {later!r})', bool(first) and first != later)
 	check('mobile: bar stays on screen', page.locator('.section-now').bounding_box()['y'] < 100)
-	page.screenshot(path='/tmp/pygorst-sidebar-mobile-bar.png')
+	page.screenshot(path='/tmp/py-go-rust-sidebar-mobile-bar.png')
 	page.click('.section-now')
 	check('mobile: tap opens list', page.is_visible('#sections-nav'))
-	page.screenshot(path='/tmp/pygorst-sidebar-mobile-list.png')
+	page.screenshot(path='/tmp/py-go-rust-sidebar-mobile-list.png')
 	page.click('#sections-nav li:nth-child(2) a')
 	page.wait_for_timeout(300)
 	check('mobile: picking a section closes list', not page.is_visible('#sections-nav'))
