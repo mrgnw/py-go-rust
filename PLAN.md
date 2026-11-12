@@ -16,9 +16,9 @@ The reader should be able to:
 | ------------------------ | -------------------------------------- | ------------------------------------------------------ |
 | When to pick each        | `src/lib/content/langs/00-overview.md` | written, reviewed                                      |
 | Patterns (37, 8 groups)  | `10-compare.md`                        | written, every snippet executed in all three languages |
-| Python                   | `20-python.md`                         | written, reviewed, not executed                        |
-| Rust                     | `30-rust.md`                           | written, reviewed, not executed                        |
-| Go                       | `40-go.md`                             | written, reviewed, not executed                        |
+| Python                   | `20-python.md`                         | written, reviewed, executed except `!norun`            |
+| Rust                     | `30-rust.md`                           | written, reviewed, executed except `!norun`            |
+| Go                       | `40-go.md`                             | written, reviewed, executed except `!norun`            |
 | Algorithms (13 patterns) | `15-algorithms.md`                     | written, every snippet executed in all three languages |
 
 Renderer: `src/lib/content/langs.ts` parses the markdown with marked, highlights fences with shiki, and turns consecutive fences into columns. `src/routes/[[slug]]` renders one prerendered page per section. Content format rules are in CLAUDE.md.
@@ -48,7 +48,6 @@ Open work: [ROADMAP.md](ROADMAP.md) and the GitHub issues.
 
 ## Ideas, not committed to
 
-- Execute the Python, Rust and Go section snippets with `analysis/run_snippets.py` (used for compare and algorithms). Their Go fences omit `func main`, so the runner needs a wrap rule first.
 - Add more patterns to the compare section: string building, regex, logging, sleep/timers, process spawning, SQLite, Unicode handling, package publishing.
 - A fourth column toggle for TypeScript or Zig, if the reader list ever grows. The renderer already handles N columns.
 - Link each `##` to the relevant learnxinyminutes or official docs anchor.

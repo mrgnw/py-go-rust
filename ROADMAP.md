@@ -21,7 +21,7 @@ Compare at a finer grain than a whole snippet, with the languages linked part by
 
 ## Quality
 
-- [#8](https://github.com/mrgnw/py-go-rust/issues/8) Execute the Python, Rust and Go reference pages
+- [#8](https://github.com/mrgnw/py-go-rust/issues/8) Record why each reference-page fence is `!norun`
 - [#9](https://github.com/mrgnw/py-go-rust/issues/9) CI job that runs the snippet checker
 - [#7](https://github.com/mrgnw/py-go-rust/issues/7) Unit tests for the markdown loader
 - [#15](https://github.com/mrgnw/py-go-rust/issues/15) Accessibility pass
