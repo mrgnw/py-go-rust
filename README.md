@@ -4,6 +4,8 @@ Python, Rust and Go side by side. A cheatsheet for a Python developer learning R
 
 Live site: https://pygors.xces.workers.dev
 
+The repository is named py-go-rust; the deployed site is still branded pygors.
+
 ## Who it is for
 
 A Python developer who writes scripts and wants to reach for Rust or Go for heavier work.

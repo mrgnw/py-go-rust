@@ -7,7 +7,7 @@
 # Python echoes the value of a bare expression statement outside functions, like the interactive prompt, so
 # `xs.pop()  # => 3` needs no print.
 # Toolchains are the targets, not whatever is on PATH: Python 3.15 via uv, Go 1.25.0 via GOTOOLCHAIN, stable Rust.
-# Snippets using crates build in a cargo project cached in ~/.cache/pygorst-snippets.
+# Snippets using crates build in a cargo project cached in ~/.cache/py-go-rust-snippets.
 # Requests to https://example.com go to a local server instead, so HTTP snippets run offline.
 # --stale checks only sections whose code changed since the last capture (their key is not in vars.json).
 # uv run analysis/run_snippets.py src/lib/content/langs/15-algorithms.md [more.md ...] [--stale]
@@ -58,7 +58,7 @@ CRATE_ARGS = {
 	'clap': ['clap', '-F', 'clap/derive'],
 }
 RUST_HAS_MAIN = r'^(?:async )?fn main\('
-CARGO = pathlib.Path.home() / '.cache' / 'pygorst-snippets'
+CARGO = pathlib.Path.home() / '.cache' / 'py-go-rust-snippets'
 FENCE = re.compile(r'^```(python|rust|go)([^\n]*)\n(.*?)^```', re.MULTILINE | re.DOTALL)
 FAILS = re.compile(r'(?:#|//) (?:(error\[E\d+\]).*|compile error: (.*)|(panic: .*))$', re.MULTILINE)
 OUTPUT = re.compile(r'(?:^|[ \t])(?:#|//) =>(~?) (.*)$', re.MULTILINE)
@@ -358,7 +358,7 @@ def main() -> None:
 	example = serve_example()
 	paths = [pathlib.Path(a) for a in sys.argv[1:] if a != '--stale']
 	known = captured_keys() if '--stale' in sys.argv else set()
-	work = pathlib.Path(tempfile.mkdtemp(prefix='pygorst-run-'))
+	work = pathlib.Path(tempfile.mkdtemp(prefix='py-go-rust-run-'))
 	failures = runs = 0
 	for title, body in [section for path in paths for section in sections(path)]:
 		if known and all(key in known for key, _ in section_keys(body).values()):

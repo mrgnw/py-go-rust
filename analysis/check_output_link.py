@@ -1,6 +1,6 @@
 # Output strip lines link to the part that printed them: hovering a part lights its output lines in
 # every column, hovering an output line lights its part. Multi-line outputs (Loops) light together.
-# Needs a server on BASE (`pnpm preview`, port 5238). Screenshot lands in /tmp/pygorst-output-link.png.
+# Needs a server on BASE (`pnpm preview`, port 5238). Screenshot lands in /tmp/py-go-rust-output-link.png.
 # uv run analysis/check_output_link.py
 # /// script
 # dependencies = ['playwright']
@@ -44,7 +44,7 @@ with sync_playwright() as p:
 	strings.locator('[data-lang="go"] .out [data-part="2"]').hover()
 	check('hover Go split output lights split part in 3 columns', lit_parts(strings) == ['2'] * 3)
 	check('hover Go split output lights split output in 3 strips', len(lit_output(strings)) == 3)
-	page.screenshot(path='/tmp/pygorst-output-link.png', clip=strings.bounding_box())
+	page.screenshot(path='/tmp/py-go-rust-output-link.png', clip=strings.bounding_box())
 
 	loops = row_of(page, 'compare-loops')
 	loops.locator('[data-lang="rust"] .snippet [data-part="0"]').hover()
