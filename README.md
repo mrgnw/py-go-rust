@@ -16,7 +16,7 @@ A Python developer who writes scripts and wants to reach for Rust or Go for heav
 - One reference page per language for concepts Python lacks: ownership, goroutines, zero values.
 - Hover a part of a snippet to light the same part in the other two languages, step through parts with the keyboard, pivot a group, copy a single part, reorder or hide languages, hover a variable to see its value.
 
-Every snippet in the patterns and algorithms pages is executed in all three languages, and its `=>` output is checked. The three reference pages are reviewed but not executed yet.
+The Python, Rust and Go code fences on every page are run by `analysis/run_snippets.py` and their `=>` output is checked. Nine fences on the three reference pages are marked `!norun` and skipped, and shell, TOML and text fences are not run. The checker runs locally and in a pre-commit hook; CI does not run it yet.
 
 ## Built with
 
@@ -77,7 +77,7 @@ See [ROADMAP.md](ROADMAP.md) and the [open issues](https://github.com/mrgnw/py-g
 
 ## AI assistance
 
-Written with Claude Code. Snippets were reviewed and the patterns and algorithms pages were executed, but check anything you depend on.
+Written with Claude Code. Snippets were reviewed and run with the checker above, but check anything you depend on.
 
 ## License
 
