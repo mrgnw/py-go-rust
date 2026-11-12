@@ -62,7 +62,7 @@ uv run analysis/run_snippets.py src/lib/content/langs/15-algorithms.md
 
 The repository ships with no visitor analytics. `src/routes/+layout.svelte` adds a tracker `<script>` to the page head only when both build-time variables are set, and only when the page is served from `pygors.xces.workers.dev`. Local runs, forks and previews never load it.
 
-The live deployment sets both variables in its Cloudflare Workers Build settings, so analytics are enabled on that deployment only.
+The live site is published with `pnpm ship`, which builds locally and then uploads the build with Wrangler. The owner keeps both variables in a gitignored `.env` file next to `package.json`, which the build reads, so analytics are enabled on that deployment only. A Worker that only serves static assets has no runtime variables in Cloudflare, which is why they are build-time values.
 
 | Variable            | Purpose                                           |
 | ------------------- | ------------------------------------------------- |
