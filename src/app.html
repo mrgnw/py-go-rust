@@ -5,20 +5,6 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="text-scale" content="scale" />
 		%sveltekit.head%
-		<script>
-			window.traks =
-				window.traks ||
-				function () {
-					(window.traks.q = window.traks.q || []).push(arguments);
-				};
-			if (location.hostname === 'pygors.xces.workers.dev') {
-				const tracker = document.createElement('script');
-				tracker.defer = true;
-				tracker.dataset.site = 'pb_live_kyyebqait5vbkrdbdlad7iem';
-				tracker.src = 'https://traks-collect.xces.workers.dev/t.js';
-				document.head.appendChild(tracker);
-			}
-		</script>
 	</head>
 	<body>
 		<div style="display: contents">%sveltekit.body%</div>

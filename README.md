@@ -56,6 +56,19 @@ uv run analysis/run_snippets.py src/lib/content/langs/15-algorithms.md
 | --------------- | ------- | --------------------------------------------------------------------------------------------------------- |
 | `ALLOWED_HOSTS` | none    | Comma-separated extra hostnames the dev server accepts, for example `ALLOWED_HOSTS=.example.com pnpm dev` |
 
+## Analytics
+
+The repository ships with no visitor analytics. `src/routes/+layout.svelte` adds a tracker `<script>` to the page head only when both build-time variables are set, and only when the page is served from `pygors.xces.workers.dev`. Local runs, forks and previews never load it.
+
+The live deployment sets both variables in its Cloudflare Workers Build settings, so analytics are enabled on that deployment only.
+
+| Variable            | Purpose                                           |
+| ------------------- | ------------------------------------------------- |
+| `PUBLIC_TRAKS_SITE` | Site key passed to the tracker as `data-site`     |
+| `PUBLIC_TRAKS_SRC`  | URL of the tracker script served by the collector |
+
+What the tracker collects is decided by that remote script and its collector, which are not part of this repository. The code here only loads the script and defines the `window.traks` queue function; it sends no events of its own. Both variables are declared in `src/env.ts`, are public and are inlined into the prerendered HTML at build time, so the values are visible to every visitor and are a site identifier, not a secret.
+
 Content lives in `src/lib/content/langs/` as markdown. The format and the build checks are described in [CLAUDE.md](CLAUDE.md); the parts model is in [SPEC.md](SPEC.md).
 
 ## Roadmap

@@ -2,6 +2,7 @@
 	import './layout.css';
 	import favicon from '#lib/assets/favicon.svg';
 	import { page } from '$app/state';
+	import { PUBLIC_TRAKS_SITE, PUBLIC_TRAKS_SRC } from '$app/env/public';
 	import type { LayoutProps } from './$types';
 
 	let { data, children }: LayoutProps = $props();
@@ -23,6 +24,21 @@
 		['v', 'Variable values on hover: on / off'],
 		['?', 'This list']
 	];
+
+	const TRACKER_HOST = 'pygors.xces.workers.dev';
+	const trackerScript =
+		PUBLIC_TRAKS_SITE && PUBLIC_TRAKS_SRC
+			? `<script>
+	window.traks = window.traks || function () { (window.traks.q = window.traks.q || []).push(arguments); };
+	if (location.hostname === ${JSON.stringify(TRACKER_HOST)}) {
+		const tracker = document.createElement('script');
+		tracker.defer = true;
+		tracker.dataset.site = ${JSON.stringify(PUBLIC_TRAKS_SITE)};
+		tracker.src = ${JSON.stringify(PUBLIC_TRAKS_SRC)};
+		document.head.appendChild(tracker);
+	}
+<\/script>`
+			: '';
 
 	const sectionsJson = $derived(JSON.stringify(data.sections).replaceAll('<', '\\u003c'));
 
@@ -361,6 +377,7 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
+	{#if trackerScript}{@html trackerScript}{/if}
 	{@html inlineScript}
 	{@html '<script type="application/json" id="sections">' + sectionsJson + '<\/script>'}
 </svelte:head>
