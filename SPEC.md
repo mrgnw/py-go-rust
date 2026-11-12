@@ -1,4 +1,4 @@
-# pygorst — parts spec
+# py-go-rust — parts spec
 
 Status: design agreed. Parts (two levels), the build checks, hover-link, pivot and expand are built. Read PLAN.md for context. The goal is to compare
 the same idea across Python, Rust and Go at finer grain than a whole snippet:

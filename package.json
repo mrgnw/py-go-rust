@@ -7,11 +7,11 @@
 	"author": "Morgan Williams",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/mrgnw/pygorst.git"
+		"url": "git+https://github.com/mrgnw/py-go-rust.git"
 	},
 	"homepage": "https://pygors.xces.workers.dev",
 	"bugs": {
-		"url": "https://github.com/mrgnw/pygorst/issues"
+		"url": "https://github.com/mrgnw/py-go-rust/issues"
 	},
 	"type": "module",
 	"scripts": {
