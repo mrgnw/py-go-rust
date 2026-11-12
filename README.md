@@ -1,4 +1,4 @@
-# pygorst
+# py-go-rust
 
 Python, Rust and Go side by side. A cheatsheet for a Python developer learning Rust and Go: when to pick each, the same pattern written in all three, then the concepts each language does differently.
 
@@ -27,8 +27,8 @@ Svelte 5 and SvelteKit (prerendered, almost no client JavaScript), Tailwind 4, m
 Needs Node 22 or newer and pnpm 10.
 
 ```sh
-git clone https://github.com/mrgnw/pygorst.git
-cd pygorst
+git clone https://github.com/mrgnw/py-go-rust.git
+cd py-go-rust
 pnpm install
 pnpm dev
 ```
@@ -60,7 +60,7 @@ Content lives in `src/lib/content/langs/` as markdown. The format and the build 
 
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md) and the [open issues](https://github.com/mrgnw/pygorst/issues).
+See [ROADMAP.md](ROADMAP.md) and the [open issues](https://github.com/mrgnw/py-go-rust/issues).
 
 ## AI assistance
 

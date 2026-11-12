@@ -1,4 +1,4 @@
-# pygorst — plan
+# py-go-rust — plan
 
 ## Goal
 

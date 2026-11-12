@@ -1,4 +1,4 @@
-# pygorst
+# py-go-rust
 
 Python / Rust / Go side-by-side cheatsheet. Static SvelteKit site (adapter-static), served as Cloudflare Workers static assets with no Worker script; unknown URLs get the prerendered `/404` page. Client JS only where a feature needs it: hydration is on (`csr` default) for the sections sidebar, which comes from the vendored `section-nav` component (`src/lib/section-nav`); the rest of the interactivity is the inline script in `+layout.svelte`.
 
