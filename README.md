@@ -79,6 +79,14 @@ See [ROADMAP.md](ROADMAP.md) and the [open issues](https://github.com/mrgnw/py-g
 
 Written with Claude Code. Snippets were reviewed and run with the checker above, but check anything you depend on.
 
+## Sources
+
+The side-by-side layout follows [Component Party](https://component-party.dev) and the content depth follows [Learn X in Y Minutes](https://learnxinyminutes.com), whose pages are CC BY-SA 3.0. The text and code here are written for this project: an exact-line comparison of the content against the Learn X in Y Minutes Python, Rust and Go pages found only three shared idiomatic lines (`def wrapper(*args, **kwargs):` and `body, err := io.ReadAll(resp.Body)` twice).
+
+The `longest` function in the lifetimes section of `30-rust.md` is the same function that appears in [The Rust Programming Language](https://doc.rust-lang.org/book/ch10-03-lifetime-syntax.html), which is licensed under Apache-2.0 or MIT.
+
+`src/lib/section-nav` is a vendored copy of the SectionNav component from the author's [svelte-components](https://github.com/mrgnw/svelte-components), MIT.
+
 ## License
 
 [MIT](LICENSE)
