@@ -1,0 +1,29 @@
+name: Incorrect example or site bug
+description: Report an incorrect comparison, output or interaction.
+body:
+  - type: input
+    id: section
+    attributes:
+      label: Page and section
+      description: Paste a site link or content file path.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened?
+      description: Include the snippet, output or steps needed to reproduce the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What should happen?
+      description: Explain the expected result and link official language documentation if relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment and checks
+      description: Include browser or toolchain versions and any checker output. Do not include secrets or your .env file.
