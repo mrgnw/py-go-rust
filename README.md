@@ -1,38 +1,89 @@
 # py-go-rust
 
-Learn Rust and Go from the Python you already know: the same patterns side by side, with executed and checked snippets.
+**One task, written in Python, Rust and Go, side by side, so you see the difference at a glance.** Every pattern is run and its printed output checked.
 
-[**Explore the live cheatsheet →**](https://pygors.xces.workers.dev)
+[**Compare them on the live site →**](https://pygors.xces.workers.dev/compare)
 
 [![CI](https://img.shields.io/github/actions/workflow/status/mrgnw/py-go-rust/ci.yml?branch=main&style=flat&label=CI)](https://github.com/mrgnw/py-go-rust/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/github/license/mrgnw/py-go-rust?style=flat)](LICENSE)
-[![Last commit](https://img.shields.io/github/last-commit/mrgnw/py-go-rust?style=flat)](https://github.com/mrgnw/py-go-rust/commits/main)
-[![Open issues](https://img.shields.io/github/issues/mrgnw/py-go-rust?style=flat)](https://github.com/mrgnw/py-go-rust/issues)
-[![Svelte 5](https://img.shields.io/badge/Svelte-5-FF3E00?style=flat&logo=svelte&logoColor=white)](https://svelte.dev)
-[![Tailwind 4](https://img.shields.io/badge/Tailwind-4-06B6D4?style=flat&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![Patterns](https://img.shields.io/badge/patterns-37%20%2B%2013%20algorithms-2563EB?style=flat)](https://pygors.xces.workers.dev/compare)
 [![Live site](https://img.shields.io/badge/live%20site-pygors-2563EB?style=flat)](https://pygors.xces.workers.dev)
 
 > [!NOTE]
 > Built with AI assistance, including Claude Code and Codex. Snippets were reviewed and run with the checker below, but check anything you depend on.
 
-[![Python, Rust and Go conditionals with their output in three columns](docs/media/side-by-side.png)](https://pygors.xces.workers.dev/compare#compare-if-else-ternary-ish)
+## Count words, then print the most common one
 
-Pivot a group to compare its branches one part at a time, then return to columns:
+The same task in all three languages, copied from [the site](https://pygors.xces.workers.dev/algorithms#algorithms-frequency-count). The blocks run 4, 8 and 14 lines: Python has `Counter`, Rust and Go count into a map by hand. All three find `a`, 3 times.
 
-![Ten-second recording switching conditionals from columns to pivot and back](docs/media/pivot.gif)
+**Python**
 
-The repository is named py-go-rust; the deployed site is still branded pygors.
+```python
+from collections import Counter
+
+counts = Counter('a b a c b a'.split())
+print(counts.most_common(1))  # => [('a', 3)]
+```
+
+**Rust**
+
+```rust
+use std::collections::HashMap;
+
+let mut counts = HashMap::new();
+for w in "a b a c b a".split(' ') {
+    *counts.entry(w).or_insert(0) += 1;
+}
+let top = counts.iter().max_by_key(|&(_, &n)| n).unwrap();
+println!("{top:?}"); // => ("a", 3)
+```
+
+**Go**
+
+```go
+func main() {
+	counts := map[string]int{}
+	for _, w := range strings.Fields("a b a c b a") {
+		counts[w]++
+	}
+	top := ""
+	for w, n := range counts {
+		if n > counts[top] {
+			top = w
+		}
+	}
+	fmt.Println(top, counts[top]) // => a 3
+}
+```
+
+The `# =>` and `// =>` comments are the printed output. The [snippet checker](#what-the-checker-verifies) runs each block and fails if the output differs.
+
+On the site the three sit in columns. Point at a step and it lights up in all three; pivot a branch to stack it line by line:
+
+[![Reading a file in Python, Rust and Go in three columns, one step lit in all three, then if-else pivoted to compare each branch line by line](docs/media/compare.gif)](https://pygors.xces.workers.dev/compare#compare-file-read-write)
+
+## Three ways to compare
+
+1. **Columns.** Each of the [37 patterns](https://pygors.xces.workers.dev/compare) and [13 algorithms](https://pygors.xces.workers.dev/algorithms) is one row: Python, Rust and Go next to each other, with each column's output underneath. Hover a step, or press `.` and `,`, to light the matching lines in all three. Where the outputs differ, the differing words are highlighted.
+2. **Pivot by concept.** A step split into branches has a `pivot` button that stacks the three versions of each branch, so `elif`, `} else if {` and `case` sit on top of each other. Only [if-else](https://pygors.xces.workers.dev/compare#compare-if-else-ternary-ish) has branches so far; [#2](https://github.com/mrgnw/py-go-rust/issues/2) tracks adding more.
+3. **One language at a time.** Press `1`, `2` or `3` (or click `py`, `rs`, `go`) to hide a language, and drag the chips to reorder them; the choice is remembered. The [Python](https://pygors.xces.workers.dev/python), [Rust](https://pygors.xces.workers.dev/rust) and [Go](https://pygors.xces.workers.dev/go) pages cover each language alone: ownership, goroutines, zero values and the tooling.
+
+Press `?` on the site for every shortcut, and `x=` to show variable values on hover.
 
 ## Who it is for
 
-Python developers who write scripts and want to reach for Rust or Go for heavier work. Start with [when to pick each language](https://pygors.xces.workers.dev), then follow familiar Python code into the other two columns.
+Python developers who want to read and write Rust or Go. Start with [when to pick each language](https://pygors.xces.workers.dev), then look up the task you already know in Python.
 
-## What you can learn
+## What is in it
 
-- 37 patterns in 8 groups: strings, collections, control flow, types, errors, I/O, concurrency and tooling.
-- 13 algorithm patterns, including two pointers, heaps, breadth-first search and memoization.
-- A reference page per language covering concepts such as ownership, goroutines and zero values.
-- Linked highlights across matching parts, keyboard stepping, group pivoting, copying individual parts, language reordering and hiding, and variable values on hover.
+| Page                                                                                                                                     | Content                                                                                                                                 | Code blocks |
+| ---------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| [Patterns](https://pygors.xces.workers.dev/compare)                                                                                      | 37 patterns in 8 groups: basics, collections, control flow, types, errors and resources, data and I/O, concurrency, project and tooling | 108         |
+| [Algorithms](https://pygors.xces.workers.dev/algorithms)                                                                                 | 13 interview patterns, from two pointers and heaps to breadth-first search and memoization                                              | 39          |
+| [Python](https://pygors.xces.workers.dev/python), [Rust](https://pygors.xces.workers.dev/rust), [Go](https://pygors.xces.workers.dev/go) | One reference page per language                                                                                                         | 101         |
+| [When to pick each](https://pygors.xces.workers.dev)                                                                                     | Which language for which job, and how they differ                                                                                       | 6           |
+
+That is 254 Python, Rust and Go code blocks; the checker runs 245 of them.
 
 ## What the checker verifies
 
