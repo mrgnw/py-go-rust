@@ -25,7 +25,7 @@ Compare at a finer grain than a whole snippet, with the languages linked part by
 - [#9](https://github.com/mrgnw/py-go-rust/issues/9) CI job that runs the snippet checker
 - [#7](https://github.com/mrgnw/py-go-rust/issues/7) Unit tests for the markdown loader
 - [#15](https://github.com/mrgnw/py-go-rust/issues/15) Accessibility pass
-- [#17](https://github.com/mrgnw/py-go-rust/issues/17) Depend on svelte-components for SectionNav instead of the vendored copy
+- [#17](https://github.com/mrgnw/py-go-rust/issues/17) Depend on svelte-bits for SectionNav instead of the vendored copy
 
 ## Polish
 

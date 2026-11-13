@@ -87,7 +87,7 @@ The side-by-side layout follows [Component Party](https://component-party.dev) a
 
 The `longest` function in the lifetimes section of `30-rust.md` is the same function that appears in [The Rust Programming Language](https://doc.rust-lang.org/book/ch10-03-lifetime-syntax.html), which is licensed under Apache-2.0 or MIT.
 
-`src/lib/section-nav` is a vendored copy of the SectionNav component from the author's [svelte-components](https://github.com/mrgnw/svelte-components), MIT.
+`src/lib/section-nav` is a vendored copy of the SectionNav component from the author's [svelte-bits](https://github.com/mrgnw/svelte-bits), MIT.
 
 ## License
 
