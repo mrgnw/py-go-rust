@@ -1,0 +1,39 @@
+name: New pattern
+description: Suggest the same task in Python, Rust and Go.
+title: 'Pattern: '
+body:
+  - type: textarea
+    id: task
+    attributes:
+      label: What task should this pattern teach?
+      description: Describe the Python task and why a learner needs its Rust and Go equivalents.
+    validations:
+      required: true
+  - type: textarea
+    id: comparison
+    attributes:
+      label: Proposed comparison
+      description: Sketch the Python, Rust and Go approaches, expected output and any important differences.
+    validations:
+      required: true
+  - type: dropdown
+    id: location
+    attributes:
+      label: Where does it belong?
+      options:
+        - Patterns
+        - Algorithms
+        - Language reference
+        - Unsure
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: Sources and existing coverage
+      description: Link official docs and related patterns or issues. Identify adapted material and its license.
+  - type: textarea
+    id: execution
+    attributes:
+      label: Execution constraints
+      description: Can the example run offline and produce deterministic output? Note dependencies or reasons it cannot run in the checker.

@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Contribution walkthrough
+    url: https://github.com/mrgnw/py-go-rust/blob/main/CONTRIBUTING.md
+    about: Content locations, snippet format and checks for a new pattern.
